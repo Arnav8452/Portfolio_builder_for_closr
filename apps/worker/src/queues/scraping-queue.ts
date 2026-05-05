@@ -1,6 +1,6 @@
 import type { Database, Json } from "@closr/database/types";
 import { env } from "../env";
-import { insertRow, rpc, updateRow } from "../supabase-rest";
+import { insertRow, rpc, updateRow, upsertRow } from "../supabase-rest";
 import { parseRssFeed, scrapeRssSource } from "../scrapers/rss";
 import { fetchOauthPlatform } from "../scrapers/oauth";
 import { scrapeWithPlaywright } from "../scrapers/playwright";
@@ -43,6 +43,16 @@ async function processScrapingJob(job: ScrapingJob) {
       raw_output: rawOutput,
       completed_at: new Date().toISOString(),
     });
+
+    await upsertRow("platform_data", {
+      creator_id: job.creator_id,
+      link_id: job.link_id,
+      platform: job.platform,
+      identity_key: "default",
+      raw_payload: result.payload,
+      verified_via: "worker",
+      fetched_at: new Date().toISOString()
+    }, "creator_id,platform,identity_key");
 
     if (result.rawText.trim()) {
       await insertRow("analysis_queue", {

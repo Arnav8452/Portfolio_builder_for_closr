@@ -384,7 +384,20 @@ SELECT
         ), '[]'::jsonb)
         FROM creator_links cl
         WHERE cl.creator_id = c.id
-    ) AS verified_links
+    ) AS verified_links,
+    (
+        SELECT COALESCE(jsonb_agg(
+            jsonb_build_object(
+                'platform', pd.platform,
+                'identity_key', pd.identity_key,
+                'raw_payload', pd.raw_payload,
+                'fetched_at', pd.fetched_at
+            )
+            ORDER BY pd.fetched_at DESC
+        ), '[]'::jsonb)
+        FROM platform_data pd
+        WHERE pd.creator_id = c.id
+    ) AS platform_metrics
 FROM creators c
 LEFT JOIN creator_identities ci ON ci.creator_id = c.id
 WHERE c.onboarding_status IN ('completed', 'analysis_completed', 'intake');

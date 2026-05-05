@@ -1295,3 +1295,143 @@ p {
     font-size: 16px;
   }
 }
+
+/* Premium Portfolio Aesthetics */
+:root {
+  --glass-bg: rgba(24, 24, 27, 0.45);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-highlight: rgba(255, 255, 255, 0.12);
+  --accent-gradient: linear-gradient(135deg, #818cf8 0%, #c084fc 100%);
+  --youtube-gradient: linear-gradient(135deg, #ff4e50 0%, #f9d423 100%);
+  --github-gradient: linear-gradient(135deg, #242933 0%, #4b5563 100%);
+}
+
+.premium-page {
+  min-height: 100vh;
+  background: radial-gradient(circle at top right, rgba(79, 70, 229, 0.08) 0%, transparent 40%),
+              radial-gradient(circle at bottom left, rgba(192, 132, 252, 0.05) 0%, transparent 40%),
+              var(--bg);
+  padding: 48px 24px;
+}
+
+.portfolio-header {
+  max-width: 1040px;
+  margin: 0 auto 40px;
+  text-align: center;
+}
+
+.portfolio-header h1 {
+  font-size: 64px;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  background: linear-gradient(to bottom right, #ffffff, #a1a1aa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 16px;
+}
+
+.portfolio-header p {
+  font-size: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+  color: var(--muted);
+}
+
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.glass-panel:hover {
+  transform: translateY(-2px);
+  border-color: var(--glass-highlight);
+}
+
+.glass-panel h2 {
+  font-size: 18px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 24px;
+  color: var(--text);
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.04);
+  border-radius: 12px;
+  padding: 16px;
+  text-align: left;
+}
+
+.stat-card .stat-label {
+  font-size: 12px;
+  color: var(--muted-2);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.stat-card .stat-value {
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+}
+
+.demographics-bar {
+  height: 8px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.1);
+  overflow: hidden;
+  display: flex;
+  margin-top: 12px;
+}
+
+.demographics-segment {
+  height: 100%;
+}
+
+.portfolio-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  max-width: 1040px;
+  margin: 0 auto;
+}
+
+@media (min-width: 900px) {
+  .portfolio-layout {
+    grid-template-columns: 320px 1fr;
+  }
+}
+
+.skills-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.premium-chip {
+  background: rgba(129, 140, 248, 0.1);
+  border: 1px solid rgba(129, 140, 248, 0.2);
+  color: #a5b4fc;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 600;
+}
