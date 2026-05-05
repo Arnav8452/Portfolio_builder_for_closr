@@ -4,7 +4,9 @@
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 -- NextAuth Adapter Tables
-CREATE TABLE IF NOT EXISTS users (
+CREATE SCHEMA IF NOT EXISTS next_auth;
+
+CREATE TABLE IF NOT EXISTS next_auth.users (
   id uuid not null primary key default gen_random_uuid(),
   name text,
   email text,
@@ -12,9 +14,9 @@ CREATE TABLE IF NOT EXISTS users (
   image text
 );
 
-CREATE TABLE IF NOT EXISTS accounts (
+CREATE TABLE IF NOT EXISTS next_auth.accounts (
   id uuid not null primary key default gen_random_uuid(),
-  "userId" uuid not null references users(id) on delete cascade,
+  "userId" uuid not null references next_auth.users(id) on delete cascade,
   type text not null,
   provider text not null,
   "providerAccountId" text not null,
@@ -30,14 +32,14 @@ CREATE TABLE IF NOT EXISTS accounts (
   unique(provider, "providerAccountId")
 );
 
-CREATE TABLE IF NOT EXISTS sessions (
+CREATE TABLE IF NOT EXISTS next_auth.sessions (
   id uuid not null primary key default gen_random_uuid(),
   expires timestamp with time zone not null,
   "sessionToken" text not null unique,
-  "userId" uuid not null references users(id) on delete cascade
+  "userId" uuid not null references next_auth.users(id) on delete cascade
 );
 
-CREATE TABLE IF NOT EXISTS verification_tokens (
+CREATE TABLE IF NOT EXISTS next_auth.verification_tokens (
   identifier text,
   token text,
   expires timestamp with time zone not null,
@@ -45,10 +47,10 @@ CREATE TABLE IF NOT EXISTS verification_tokens (
 );
 
 -- Strict RLS Lockdown for NextAuth tables
-ALTER TABLE users ENABLE ROW LEVEL SECURITY;
-ALTER TABLE accounts ENABLE ROW LEVEL SECURITY;
-ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
-ALTER TABLE verification_tokens ENABLE ROW LEVEL SECURITY;
+ALTER TABLE next_auth.users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE next_auth.accounts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE next_auth.sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE next_auth.verification_tokens ENABLE ROW LEVEL SECURITY;
 
 -- Note: The frontend NEVER reads these directly. NextAuth server uses SERVICE_ROLE.
 -- The Oracle Worker also uses SERVICE_ROLE. So no public policies are created.
@@ -401,5 +403,5 @@ SELECT
     ) AS platform_metrics
 FROM creators c
 LEFT JOIN creator_identities ci ON ci.creator_id = c.id
-LEFT JOIN users u ON u.id::text = c.owner_user_id
+LEFT JOIN next_auth.users u ON u.id::text = c.owner_user_id
 WHERE c.onboarding_status IN ('completed', 'analysis_completed', 'intake');
