@@ -331,10 +331,7 @@ export function CreatorIntake() {
 
   function connectOauthRoot() {
     if (!detectedPlatform?.provider) return;
-    if (isAuthenticated) {
-      completeRootVerification();
-      return;
-    }
+    // We explicitly trigger the specific Layer 2 OAuth flow to grab deep data access tokens.
     void signIn(detectedPlatform.provider, { callbackUrl: "/creators" });
   }
 
@@ -463,8 +460,8 @@ export function CreatorIntake() {
     return (
       <section className="creator-stage narrow fade-in">
         <div className="creator-intro">
-          <h1>Claim your verified creator portfolio.</h1>
-          <p>Drop your main link below. We&apos;ll do the rest.</p>
+          <h1>Connect your Root Node.</h1>
+          <p>Choose the platform where you have the most authority and verifiable metrics. This will serve as the cryptographic anchor for your B2B portfolio.</p>
         </div>
 
         <form className="hero-form" onSubmit={handleHoneypotSubmit}>
