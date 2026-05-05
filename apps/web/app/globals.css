@@ -66,8 +66,8 @@ p {
 
 h1 {
   margin-bottom: 16px;
-  font-size: 56px;
-  line-height: 1;
+  font-size: clamp(36px, 8vw, 56px);
+  line-height: 1.1;
 }
 
 h2 {
@@ -1318,11 +1318,13 @@ p {
   max-width: 1040px;
   margin: 0 auto 40px;
   text-align: center;
+  padding: 0 16px;
 }
 
 .portfolio-header h1 {
-  font-size: 64px;
+  font-size: clamp(40px, 8vw, 64px);
   font-weight: 800;
+  line-height: 1.1;
   letter-spacing: -0.04em;
   background: linear-gradient(to bottom right, #ffffff, #a1a1aa);
   -webkit-background-clip: text;
@@ -1331,7 +1333,7 @@ p {
 }
 
 .portfolio-header p {
-  font-size: 20px;
+  font-size: clamp(16px, 4vw, 20px);
   max-width: 600px;
   margin: 0 auto;
   color: var(--muted);
@@ -1349,8 +1351,9 @@ p {
 }
 
 .glass-panel:hover {
-  transform: translateY(-2px);
+  transform: translateY(-4px);
   border-color: var(--glass-highlight);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
 .glass-panel h2 {
@@ -1375,6 +1378,12 @@ p {
   border-radius: 12px;
   padding: 16px;
   text-align: left;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  background: rgba(255, 255, 255, 0.03);
 }
 
 .stat-card .stat-label {
@@ -1434,4 +1443,61 @@ p {
   border-radius: 999px;
   font-size: 13px;
   font-weight: 600;
+}
+
+/* Auth Gate Specific Styles */
+.auth-gate-hero {
+  margin-top: clamp(2vh, 8vh, 12vh);
+  text-align: center;
+  padding: 0 16px;
+}
+
+.auth-gate-title {
+  font-size: clamp(32px, 7vw, 48px);
+  margin-bottom: 16px;
+  font-weight: 800;
+}
+
+.auth-gate-subtitle {
+  font-size: clamp(16px, 4vw, 20px);
+  max-width: 600px;
+  margin: 0 auto 32px;
+  color: var(--muted);
+}
+
+.auth-instruction-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 32px;
+  padding: 32px;
+  background: var(--surface);
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  max-width: 800px;
+  margin: 0 auto 48px auto;
+}
+
+/* Mobile Overrides */
+@media (max-width: 768px) {
+  .premium-page {
+    padding: 24px 16px;
+  }
+  
+  .glass-panel {
+    padding: 16px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-instruction-grid {
+    padding: 20px;
+    gap: 24px;
+    grid-template-columns: 1fr;
+  }
+
+  .creator-shell {
+    padding: 24px 16px;
+  }
 }

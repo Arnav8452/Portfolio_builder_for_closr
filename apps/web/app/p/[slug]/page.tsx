@@ -58,7 +58,7 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
         <div className="eyebrow" style={{ marginBottom: "1rem" }}>Verified Creator Identity</div>
         <h1>{profile.display_name}</h1>
         <p>{profile.bio_summary ?? "Verification is still processing."}</p>
-        <div className="chips" style={{ justifyContent: "center", marginTop: "1.5rem" }}>
+        <div className="chips" style={{ justifyContent: "center", marginTop: "1.5rem", flexWrap: "wrap", gap: "10px" }}>
           <span className="premium-chip">{profile.primary_niche ?? "pending"}</span>
           <span className="premium-chip">{profile.audience_size_tier ?? "audience pending"}</span>
         </div>
@@ -81,9 +81,9 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
                 <span className="eyebrow" style={{ color: "var(--muted-2)" }}>Verified Links</span>
                 <div className="stack" style={{ gap: "8px", marginTop: "8px" }}>
                   {profile.verified_links?.map((link) => (
-                    <div key={`${link.platform}-${link.url}`} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", background: "rgba(0,0,0,0.2)", padding: "8px 12px", borderRadius: "8px" }}>
-                      <span style={{ fontSize: "14px", textTransform: "capitalize" }}>{link.platform}</span>
-                      <span className="badge" style={{ fontSize: "10px" }}>Lvl {link.verification_level}</span>
+                    <div key={`${link.platform}-${link.url}`} style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", background: "rgba(0,0,0,0.2)", padding: "10px 14px", borderRadius: "8px", gap: "8px" }}>
+                      <span style={{ fontSize: "14px", textTransform: "capitalize", wordBreak: "break-all" }}>{link.platform}</span>
+                      <span className="badge" style={{ fontSize: "11px", whiteSpace: "nowrap" }}>Lvl {link.verification_level}</span>
                     </div>
                   ))}
                 </div>
@@ -186,12 +186,12 @@ function GitHubCard({ metrics }: { metrics: any }) {
       <h3 style={{ color: "var(--muted-2)", textTransform: "uppercase", fontSize: "12px", letterSpacing: "0.05em", marginBottom: "12px" }}>Recent Activity</h3>
       <div className="stack" style={{ gap: "10px" }}>
         {repos.slice(0, 3).map((repo: any) => (
-          <div key={repo.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", background: "rgba(0,0,0,0.2)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)" }}>
-            <div>
-              <div style={{ fontWeight: 600, color: "var(--text)" }}>{repo.name}</div>
+          <div key={repo.id} style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", padding: "14px", background: "rgba(0,0,0,0.2)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", gap: "10px" }}>
+            <div style={{ flex: "1 1 auto", minWidth: 0 }}>
+              <div style={{ fontWeight: 600, color: "var(--text)", wordBreak: "break-word" }}>{repo.name}</div>
               <div style={{ fontSize: "13px", color: "var(--muted)", marginTop: "4px" }}>{repo.language || "Mixed"}</div>
             </div>
-            <a href={repo.html_url} target="_blank" rel="noreferrer" style={{ color: "var(--muted-2)" }}><ExternalLink size={16} /></a>
+            <a href={repo.html_url} target="_blank" rel="noreferrer" style={{ color: "var(--muted-2)", flexShrink: 0, padding: "4px" }}><ExternalLink size={18} /></a>
           </div>
         ))}
       </div>
