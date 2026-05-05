@@ -45,6 +45,10 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
+  pages: {
+    signIn: "/creators",
+    error: "/creators",
+  },
 };
 
 
