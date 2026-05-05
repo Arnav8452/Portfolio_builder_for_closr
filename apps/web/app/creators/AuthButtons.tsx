@@ -1,7 +1,7 @@
 "use client";
 
 import { signIn, signOut, useSession } from "next-auth/react";
-import { Github, LogOut, Twitch, Youtube } from "lucide-react";
+import { Chrome, Github, LogOut, Twitch } from "lucide-react";
 
 export function AuthButtons() {
   const { data: session, status } = useSession();
@@ -21,7 +21,7 @@ export function AuthButtons() {
   return (
     <div className="chips">
       <button className="button secondary" type="button" onClick={() => signIn("google")}>
-        <Youtube size={16} /> YouTube
+        <Chrome size={16} /> Google
       </button>
       <button className="button secondary" type="button" onClick={() => signIn("github")}>
         <Github size={16} /> GitHub
