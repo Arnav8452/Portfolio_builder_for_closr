@@ -25,7 +25,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           </header>
           <Providers>{children}</Providers>
           <footer className="site-footer">
-            <p>Closr OSINT Engine 2026. Data is cryptographically verified.</p>
+            <p>Closr OSINT Engine 2026 · Data Cryptographically Verified</p>
           </footer>
         </div>
       </body>

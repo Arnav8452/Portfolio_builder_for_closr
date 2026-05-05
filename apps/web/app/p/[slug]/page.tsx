@@ -58,18 +58,20 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
       <header className="portfolio-header">
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
           {profile.owner_image ? (
-            <img 
-              src={profile.owner_image} 
-              alt={profile.display_name} 
-              style={{ width: 88, height: 88, borderRadius: "50%", border: "2px solid var(--glass-border)", objectFit: "cover" }}
-            />
+            <div style={{ width: 88, height: 88, border: "3px solid var(--arcade-ink)", boxShadow: "4px 4px 0 0 var(--arcade-ink)", overflow: "hidden" }}>
+              <img 
+                src={profile.owner_image} 
+                alt={profile.display_name} 
+                style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              />
+            </div>
           ) : (
-            <div style={{ width: 88, height: 88, borderRadius: "50%", background: "var(--surface-3)", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid var(--glass-border)", fontSize: "32px", fontWeight: 800, color: "var(--muted)" }}>
+            <div style={{ width: 88, height: 88, background: "var(--arcade-cream-soft)", display: "flex", alignItems: "center", justifyContent: "center", border: "3px solid var(--arcade-ink)", fontFamily: "'Press Start 2P', monospace", fontSize: "24px", color: "var(--arcade-ink)", boxShadow: "4px 4px 0 0 var(--arcade-ink)" }}>
               {profile.display_name.charAt(0).toUpperCase()}
             </div>
           )}
         </div>
-        <div className="eyebrow" style={{ marginBottom: "1rem" }}>Verified Creator Identity</div>
+        <div className="eyebrow" style={{ marginBottom: "1rem", color: "var(--arcade-green)" }}>Verified Creator Identity</div>
         <h1>{profile.display_name}</h1>
         <p>{profile.bio_summary ?? "Verification is still processing."}</p>
         <div className="chips" style={{ justifyContent: "center", marginTop: "1.5rem", flexWrap: "wrap", gap: "10px" }}>
@@ -81,23 +83,23 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
       <div className="portfolio-layout">
         <aside className="stack">
           <div className="glass-panel">
-            <h2><Activity size={20} className="text-accent" /> Identity Graph</h2>
+            <h2><Activity size={18} /> 01 · Identity Graph</h2>
             <div className="stack">
               <div>
-                <span className="eyebrow" style={{ color: "var(--muted-2)" }}>Root Platform</span>
+                <span className="eyebrow" style={{ color: "var(--arcade-red)", fontFamily: "'Press Start 2P', monospace", fontSize: "8px" }}>Root Platform</span>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "4px" }}>
-                  {profile.root_platform === "youtube" ? <Youtube size={16} color="var(--youtube)" /> : <Github size={16} />}
-                  <strong style={{ textTransform: "capitalize" }}>{profile.root_platform}</strong>
+                  {profile.root_platform === "youtube" ? <Youtube size={16} color="var(--arcade-red)" /> : <Github size={16} />}
+                  <strong style={{ textTransform: "capitalize", fontFamily: "'VT323', monospace", fontSize: "22px" }}>{profile.root_platform}</strong>
                 </div>
               </div>
-              <hr style={{ borderColor: "var(--glass-border)" }} />
+              <hr style={{ borderColor: "var(--arcade-ink)" }} />
               <div>
-                <span className="eyebrow" style={{ color: "var(--muted-2)" }}>Verified Links</span>
+                <span className="eyebrow" style={{ color: "var(--arcade-red)", fontFamily: "'Press Start 2P', monospace", fontSize: "8px" }}>Verified Links</span>
                 <div className="stack" style={{ gap: "8px", marginTop: "8px" }}>
                   {profile.verified_links?.map((link) => (
-                    <div key={`${link.platform}-${link.url}`} style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", background: "rgba(0,0,0,0.2)", padding: "10px 14px", borderRadius: "8px", gap: "8px" }}>
+                    <div key={`${link.platform}-${link.url}`} style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", background: "var(--arcade-cream)", padding: "10px 14px", border: "2px solid var(--arcade-ink)", gap: "8px" }}>
                       <span style={{ fontSize: "14px", textTransform: "capitalize", wordBreak: "break-all" }}>{link.platform}</span>
-                      <span className="badge" style={{ fontSize: "11px", whiteSpace: "nowrap" }}>Lvl {link.verification_level}</span>
+                      <span className="badge" style={{ fontSize: "8px", whiteSpace: "nowrap" }}>Lvl {link.verification_level}</span>
                     </div>
                   ))}
                 </div>
@@ -106,9 +108,9 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
           </div>
 
           <div className="glass-panel">
-            <h2><Code size={20} className="text-accent" /> Creator Traits</h2>
+            <h2><Code size={18} /> 02 · Creator Traits</h2>
             <div style={{ marginBottom: "16px" }}>
-              <span className="eyebrow" style={{ color: "var(--muted-2)" }}>Technical Skills</span>
+              <span className="eyebrow" style={{ color: "var(--arcade-red)", fontFamily: "'Press Start 2P', monospace", fontSize: "8px" }}>Technical Skills</span>
               <div className="skills-tags" style={{ marginTop: "8px" }}>
                 {profile.technical_skills?.map((skill) => (
                   <span className="chip" key={skill}>{skill}</span>
@@ -116,7 +118,7 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
               </div>
             </div>
             <div>
-              <span className="eyebrow" style={{ color: "var(--muted-2)" }}>Content Formats</span>
+              <span className="eyebrow" style={{ color: "var(--arcade-red)", fontFamily: "'Press Start 2P', monospace", fontSize: "8px" }}>Content Formats</span>
               <div className="skills-tags" style={{ marginTop: "8px" }}>
                 {profile.content_format?.map((format) => (
                   <span className="chip" key={format}>{format}</span>
@@ -153,9 +155,9 @@ function YouTubeCard({ metrics }: { metrics: any }) {
 
   return (
     <div className="glass-panel" style={{ position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "4px", background: "var(--youtube-gradient)" }} />
-      <h2><Youtube size={24} color="var(--youtube)" /> YouTube Deep Analytics</h2>
-      <p style={{ marginBottom: "24px" }}>Cryptographically verified via NextAuth Oracle Worker.</p>
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "4px", background: "var(--arcade-red)" }} />
+      <h2><Youtube size={20} color="var(--arcade-red)" /> 03 · YouTube Analytics</h2>
+      <p style={{ marginBottom: "24px", fontFamily: "'VT323', monospace", fontSize: "18px", color: "var(--muted)" }}>Cryptographically verified via NextAuth Oracle Worker.</p>
       
       <div className="stats-grid">
         <div className="stat-card">
@@ -163,7 +165,7 @@ function YouTubeCard({ metrics }: { metrics: any }) {
           <div className="stat-value">{views}</div>
         </div>
         <div className="stat-card">
-          <div className="stat-label">Watch Time (Hours)</div>
+          <div className="stat-label">Watch Time (Hrs)</div>
           <div className="stat-value">{watchTime}</div>
         </div>
         <div className="stat-card">
@@ -183,8 +185,8 @@ function GitHubCard({ metrics }: { metrics: any }) {
 
   return (
     <div className="glass-panel" style={{ position: "relative", overflow: "hidden" }}>
-      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "4px", background: "var(--github-gradient)" }} />
-      <h2><Github size={24} color="var(--github)" /> GitHub Telemetry</h2>
+      <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: "4px", background: "var(--arcade-ink)" }} />
+      <h2><Github size={20} /> 04 · GitHub Telemetry</h2>
       
       <div className="stats-grid" style={{ marginBottom: "24px" }}>
         <div className="stat-card">
@@ -197,13 +199,13 @@ function GitHubCard({ metrics }: { metrics: any }) {
         </div>
       </div>
 
-      <h3 style={{ color: "var(--muted-2)", textTransform: "uppercase", fontSize: "12px", letterSpacing: "0.05em", marginBottom: "12px" }}>Recent Activity</h3>
+      <h3 style={{ color: "var(--arcade-yellow)", marginBottom: "12px" }}>Recent Activity</h3>
       <div className="stack" style={{ gap: "10px" }}>
         {repos.slice(0, 3).map((repo: any) => (
-          <div key={repo.id} style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", padding: "14px", background: "rgba(0,0,0,0.2)", borderRadius: "8px", border: "1px solid rgba(255,255,255,0.05)", gap: "10px" }}>
+          <div key={repo.id} style={{ display: "flex", flexWrap: "wrap", justifyContent: "space-between", alignItems: "center", padding: "14px", background: "var(--arcade-cream)", border: "2px solid var(--arcade-ink)", gap: "10px" }}>
             <div style={{ flex: "1 1 auto", minWidth: 0 }}>
-              <div style={{ fontWeight: 600, color: "var(--text)", wordBreak: "break-word" }}>{repo.name}</div>
-              <div style={{ fontSize: "13px", color: "var(--muted)", marginTop: "4px" }}>{repo.language || "Mixed"}</div>
+              <div style={{ fontWeight: 600, color: "var(--arcade-ink)", wordBreak: "break-word" }}>{repo.name}</div>
+              <div style={{ fontFamily: "'VT323', monospace", fontSize: "16px", color: "var(--muted)", marginTop: "4px" }}>{repo.language || "Mixed"}</div>
             </div>
             <a href={repo.html_url} target="_blank" rel="noreferrer" style={{ color: "var(--muted-2)", flexShrink: 0, padding: "4px" }}><ExternalLink size={18} /></a>
           </div>
@@ -262,4 +264,3 @@ const demoProfile: PublicProfile = {
     }
   ]
 };
-

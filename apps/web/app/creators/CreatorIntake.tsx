@@ -14,10 +14,12 @@ import {
   GitCommit,
   Globe,
   Hash,
+  Instagram,
   Link as LinkIcon,
   Linkedin,
   Loader2,
   Mail,
+  Music,
   Network,
   PieChart,
   Plus,
@@ -93,6 +95,9 @@ const CATEGORY_TITLES: Record<string, string> = {
   medium: "Written",
   twitter: "Social",
   x: "Social",
+  linkedin: "Social",
+  instagram: "Social",
+  tiktok: "Social",
   website: "Owned Domain",
   domain: "Owned Domain",
   other: "Claimed Link",
@@ -241,6 +246,30 @@ function parseUrlForPlatform(input: string): PlatformDetection {
       };
     }
 
+    if (hostname.includes("instagram.com")) {
+      return {
+        id: "instagram",
+        formValue: "other",
+        name: "Instagram",
+        icon: Instagram,
+        type: "bio",
+        trust: "Bio L2",
+        accent: "social",
+      };
+    }
+
+    if (hostname.includes("tiktok.com")) {
+      return {
+        id: "tiktok",
+        formValue: "other",
+        name: "TikTok",
+        icon: Music,
+        type: "bio",
+        trust: "Bio L2",
+        accent: "social",
+      };
+    }
+
     return {
       id: "website",
       formValue: "website",
@@ -331,8 +360,10 @@ export function CreatorIntake() {
 
   function connectOauthRoot() {
     if (!detectedPlatform?.provider) return;
-    // We explicitly trigger the specific Layer 2 OAuth flow to grab deep data access tokens.
-    void signIn(detectedPlatform.provider, { callbackUrl: "/creators" });
+    // For YouTube, we use the 'youtube' provider ID which grants YouTube-specific scopes
+    // NextAuth will handle the session linking automatically
+    const providerId = detectedPlatform.provider === "youtube" ? "youtube" : detectedPlatform.provider;
+    void signIn(providerId, { callbackUrl: "/creators" });
   }
 
   function handleAddLink(event: FormEvent<HTMLFormElement>) {
@@ -461,7 +492,7 @@ export function CreatorIntake() {
       <section className="creator-stage narrow fade-in">
         <div className="creator-intro">
           <h1>Connect your Root Node.</h1>
-          <p>Choose the platform where you have the most authority and verifiable metrics. This will serve as the cryptographic anchor for your B2B portfolio.</p>
+          <p style={{ fontFamily: "'VT323', monospace", fontSize: "22px" }}>Choose the platform where you have the most authority and verifiable metrics. This will serve as the cryptographic anchor for your B2B portfolio.</p>
         </div>
 
         <form className="hero-form" onSubmit={handleHoneypotSubmit}>
@@ -472,13 +503,13 @@ export function CreatorIntake() {
             type="text"
             value={mainLinkInput}
             onChange={(event) => setMainLinkInput(event.target.value)}
-            placeholder="youtube.com/c/yourname, substack.com/..."
+            placeholder="youtube.com/c/yourname"
             required
             autoFocus
           />
           <button className="primary-action hero-action" type="submit">
             Start Building
-            <ArrowRight size={20} />
+            <ArrowRight size={18} />
           </button>
         </form>
       </section>
@@ -501,9 +532,9 @@ export function CreatorIntake() {
             <Icon size={38} />
           </div>
           <div className="router-copy">
-            <div className="eyebrow">{detectedPlatform.trust}</div>
+            <div className="eyebrow" style={{ color: "var(--arcade-red)" }}>{detectedPlatform.trust}</div>
             <h2>{detectedPlatform.type === "domain" ? "Nice domain." : detectedPlatform.type === "oauth" ? "Awesome channel." : "Great page."}</h2>
-            <p>
+            <p style={{ fontFamily: "'VT323', monospace", fontSize: "20px" }}>
               {detectedPlatform.type === "oauth"
                 ? "To pull your verified stats and prove ownership, just click below."
                 : detectedPlatform.type === "domain"
@@ -590,7 +621,7 @@ export function CreatorIntake() {
 
         <div className="gather-copy">
           <h2>Build your matrix.</h2>
-          <p>Add your LinkedIn, your podcast, your secondary channels. We will cross-reference and verify them automatically.</p>
+          <p style={{ fontFamily: "'VT323', monospace", fontSize: "20px" }}>Add your LinkedIn, your podcast, your secondary channels. We will cross-reference and verify them automatically.</p>
         </div>
 
         <form className="link-submit-row clean" onSubmit={handleAddLink}>
