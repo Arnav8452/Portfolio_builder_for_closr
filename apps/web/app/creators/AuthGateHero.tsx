@@ -23,7 +23,7 @@ export function AuthGateHero() {
           </div>
           <h3 style={{ fontSize: "1.1rem", marginBottom: "0.5rem" }}>1. Create Account</h3>
           <p style={{ fontSize: "0.9rem", color: "var(--muted)", lineHeight: 1.5, marginBottom: 0 }}>
-            Secure your dashboard via Google. We use strict NextAuth sessions to keep your data locked down.
+            Secure your dashboard via Google, GitHub, or Twitch. We use strict NextAuth sessions to keep your data locked down.
           </p>
         </div>
         
