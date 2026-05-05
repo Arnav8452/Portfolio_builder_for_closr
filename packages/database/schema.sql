@@ -371,6 +371,7 @@ SELECT
     ci.past_topics,
     ci.bio_summary,
     ci.confidence,
+    u.image AS owner_image,
     (
         SELECT COALESCE(jsonb_agg(
             jsonb_build_object(
@@ -400,4 +401,5 @@ SELECT
     ) AS platform_metrics
 FROM creators c
 LEFT JOIN creator_identities ci ON ci.creator_id = c.id
+LEFT JOIN users u ON u.id::text = c.owner_user_id
 WHERE c.onboarding_status IN ('completed', 'analysis_completed', 'intake');

@@ -29,6 +29,7 @@ type PublicProfile = {
     verification_status: string;
   }>;
   platform_metrics?: PlatformMetric[];
+  owner_image?: string | null;
 };
 
 export default async function PublicProfilePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -55,6 +56,19 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
   return (
     <main className="premium-page fade-in">
       <header className="portfolio-header">
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
+          {profile.owner_image ? (
+            <img 
+              src={profile.owner_image} 
+              alt={profile.display_name} 
+              style={{ width: 88, height: 88, borderRadius: "50%", border: "2px solid var(--glass-border)", objectFit: "cover" }}
+            />
+          ) : (
+            <div style={{ width: 88, height: 88, borderRadius: "50%", background: "var(--surface-3)", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid var(--glass-border)", fontSize: "32px", fontWeight: 800, color: "var(--muted)" }}>
+              {profile.display_name.charAt(0).toUpperCase()}
+            </div>
+          )}
+        </div>
         <div className="eyebrow" style={{ marginBottom: "1rem" }}>Verified Creator Identity</div>
         <h1>{profile.display_name}</h1>
         <p>{profile.bio_summary ?? "Verification is still processing."}</p>
@@ -212,6 +226,7 @@ const demoProfile: PublicProfile = {
   past_topics: ["Local LLMs", "AI Agents", "React Server Components"],
   bio_summary: "A technical educator specializing in making complex AI concepts accessible to full-stack developers.",
   confidence: 0.98,
+  owner_image: "https://github.com/shadcn.png",
   verified_links: [
     { platform: "youtube", url: "https://youtube.com/c/demo", verification_level: 3, verification_status: "oauth_verified" },
     { platform: "github", url: "https://github.com/demo", verification_level: 3, verification_status: "oauth_verified" },
