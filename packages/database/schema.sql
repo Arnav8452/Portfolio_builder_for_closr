@@ -3,6 +3,56 @@
 
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
+-- NextAuth Adapter Tables
+CREATE TABLE IF NOT EXISTS users (
+  id uuid not null primary key default gen_random_uuid(),
+  name text,
+  email text,
+  "emailVerified" timestamp with time zone,
+  image text
+);
+
+CREATE TABLE IF NOT EXISTS accounts (
+  id uuid not null primary key default gen_random_uuid(),
+  "userId" uuid not null references users(id) on delete cascade,
+  type text not null,
+  provider text not null,
+  "providerAccountId" text not null,
+  refresh_token text,
+  access_token text,
+  expires_at bigint,
+  token_type text,
+  scope text,
+  id_token text,
+  session_state text,
+  oauth_token_secret text,
+  oauth_token text,
+  unique(provider, "providerAccountId")
+);
+
+CREATE TABLE IF NOT EXISTS sessions (
+  id uuid not null primary key default gen_random_uuid(),
+  expires timestamp with time zone not null,
+  "sessionToken" text not null unique,
+  "userId" uuid not null references users(id) on delete cascade
+);
+
+CREATE TABLE IF NOT EXISTS verification_tokens (
+  identifier text,
+  token text,
+  expires timestamp with time zone not null,
+  primary key (identifier, token)
+);
+
+-- Strict RLS Lockdown for NextAuth tables
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
+ALTER TABLE accounts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE sessions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE verification_tokens ENABLE ROW LEVEL SECURITY;
+
+-- Note: The frontend NEVER reads these directly. NextAuth server uses SERVICE_ROLE.
+-- The Oracle Worker also uses SERVICE_ROLE. So no public policies are created.
+
 DO $$ BEGIN
     CREATE TYPE creator_platform AS ENUM (
         'youtube',
@@ -230,33 +280,6 @@ FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
 DROP TRIGGER IF EXISTS trg_creator_links_touch ON creator_links;
 CREATE TRIGGER trg_creator_links_touch
 BEFORE UPDATE ON creator_links
-FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
-
-CREATE TABLE IF NOT EXISTS oauth_tokens (
-    id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    creator_id     UUID NOT NULL REFERENCES creators(id) ON DELETE CASCADE,
-    provider       TEXT NOT NULL,
-    access_token   TEXT NOT NULL,
-    refresh_token  TEXT,
-    expires_at     BIGINT,
-    created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    UNIQUE (creator_id, provider)
-);
-
-ALTER TABLE oauth_tokens ENABLE ROW LEVEL SECURITY;
-
-CREATE POLICY "Users can view their own tokens"
-    ON oauth_tokens FOR SELECT
-    USING (creator_id IN (SELECT id FROM creators WHERE owner_email = current_setting('request.jwt.claims', true)::jsonb->>'email' OR owner_user_id = current_setting('request.jwt.claims', true)::jsonb->>'email'));
-
-CREATE POLICY "Users can update their own tokens"
-    ON oauth_tokens FOR UPDATE
-    USING (creator_id IN (SELECT id FROM creators WHERE owner_email = current_setting('request.jwt.claims', true)::jsonb->>'email' OR owner_user_id = current_setting('request.jwt.claims', true)::jsonb->>'email'));
-
-DROP TRIGGER IF EXISTS trg_oauth_tokens_touch ON oauth_tokens;
-CREATE TRIGGER trg_oauth_tokens_touch
-BEFORE UPDATE ON oauth_tokens
 FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
 
 CREATE OR REPLACE FUNCTION claim_scraping_jobs(

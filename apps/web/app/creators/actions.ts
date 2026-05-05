@@ -14,18 +14,18 @@ function slugify(value: string) {
     .slice(0, 56);
 }
 
-type CustomSession = {
-  user?: { name?: string | null; email?: string | null; image?: string | null };
-  youtube?: { access_token: string; refresh_token?: string; expires_at?: number };
-};
-
 export async function submitCreatorProfile(formData: FormData) {
-  const session = (await getServerSession(authOptions)) as CustomSession | null;
+  const session = await getServerSession(authOptions);
   const allowLocalDev = process.env.ALLOW_LOCAL_DEV_AUTH === "true";
-  if (!session?.user?.email && !allowLocalDev) {
+  const userId = (session?.user as any)?.id;
+  const userEmail = session?.user?.email;
+
+  if (!userId && !allowLocalDev) {
     return { ok: false, message: "Please sign in first." };
   }
-  const userEmail = session?.user?.email ?? "local-dev@closr.test";
+  
+  const finalUserId = userId ?? "local-dev-uuid";
+  const finalUserEmail = userEmail ?? "local-dev@closr.test";
   const displayName = String(formData.get("displayName") ?? "").trim();
   const rootPlatform = String(formData.get("rootPlatform") ?? "github");
   const rootUrl = String(formData.get("rootUrl") ?? "").trim();
@@ -47,8 +47,8 @@ export async function submitCreatorProfile(formData: FormData) {
   const { data: creator, error: creatorError } = await supabase
     .from("creators")
     .insert({
-      owner_user_id: userEmail,
-      owner_email: userEmail,
+      owner_user_id: finalUserId,
+      owner_email: finalUserEmail,
       slug,
       display_name: displayName,
       root_platform: root,
@@ -61,17 +61,6 @@ export async function submitCreatorProfile(formData: FormData) {
   if (creatorError || !creator) {
     return { ok: false, message: creatorError?.message ?? "Could not create creator." };
   }
-
-  if (session?.youtube) {
-    await supabase.from("oauth_tokens").insert({
-      creator_id: creator.id,
-      provider: "youtube",
-      access_token: session.youtube.access_token,
-      refresh_token: session.youtube.refresh_token,
-      expires_at: session.youtube.expires_at,
-    });
-  }
-
   const allLinks = [
     { url: normalizedRootUrl, platform: root, level: 3 },
     ...secondaryLinks.map((url) => ({

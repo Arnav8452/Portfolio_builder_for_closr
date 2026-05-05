@@ -2,8 +2,13 @@ import type { NextAuthOptions } from "next-auth";
 import GithubProvider from "next-auth/providers/github";
 import GoogleProvider from "next-auth/providers/google";
 import TwitchProvider from "next-auth/providers/twitch";
+import { SupabaseAdapter } from "@auth/supabase-adapter";
 
 export const authOptions: NextAuthOptions = {
+  adapter: SupabaseAdapter({
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL ?? "",
+    secret: process.env.SUPABASE_SERVICE_ROLE_KEY ?? "",
+  }) as any,
   providers: [
     GithubProvider({
       clientId: process.env.GITHUB_ID ?? "",
@@ -33,26 +38,13 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
-    async jwt({ token, account }) {
-      if (account?.provider === "youtube") {
-        token.youtube = {
-          access_token: account.access_token,
-          refresh_token: account.refresh_token,
-          expires_at: account.expires_at,
-        };
-      }
-      return token;
-    },
-    async session({ session, token }) {
-      if (session.user) {
-        session.user.name = session.user.name ?? token.name;
-        session.user.email = session.user.email ?? token.email;
-      }
-      if (token.youtube) {
-        (session as any).youtube = token.youtube;
+    async session({ session, user }) {
+      if (session.user && user) {
+        (session.user as any).id = user.id;
       }
       return session;
     },
   },
 };
+
 

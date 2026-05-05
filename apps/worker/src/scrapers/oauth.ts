@@ -70,9 +70,13 @@ type OauthToken = {
 };
 
 async function getValidYouTubeToken(creatorId: string): Promise<string | null> {
-  const tokens = await getRow<OauthToken[]>("oauth_tokens", `creator_id=eq.${creatorId}&provider=eq.youtube`);
-  if (!tokens || tokens.length === 0) return null;
-  const tokenRecord = tokens[0];
+  const creators = await getRow<any>("creators", `id=eq.${creatorId}&select=owner_user_id`);
+  if (!creators || creators.length === 0) return null;
+  const userId = creators[0].owner_user_id;
+
+  const accounts = await getRow<any>("accounts", `userId=eq.${userId}&provider=eq.youtube`);
+  if (!accounts || accounts.length === 0) return null;
+  const tokenRecord = accounts[0];
 
   const nowSeconds = Math.floor(Date.now() / 1000);
   if (tokenRecord.expires_at && tokenRecord.expires_at < nowSeconds + 300) {
@@ -97,7 +101,7 @@ async function getValidYouTubeToken(creatorId: string): Promise<string | null> {
     const newAccessToken = data.access_token;
     const newExpiresAt = nowSeconds + data.expires_in;
     
-    await updateRow("oauth_tokens", tokenRecord.id, {
+    await updateRow("accounts", tokenRecord.id, {
       access_token: newAccessToken,
       expires_at: newExpiresAt,
     });
