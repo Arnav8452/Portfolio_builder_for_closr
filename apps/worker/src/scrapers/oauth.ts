@@ -1,21 +1,20 @@
 import type { CreatorPlatform, Json } from "@closr/database/types";
 import { env } from "../env";
+import { getRow, updateRow } from "../supabase-rest";
 
 type OauthScrapeResult = {
   rawText: string;
   payload: Json;
 };
 
-export async function fetchOauthPlatform(platform: CreatorPlatform, url: string): Promise<OauthScrapeResult> {
+export async function fetchOauthPlatform(platform: CreatorPlatform, url: string, creatorId?: string): Promise<OauthScrapeResult> {
   if (platform === "github") {
     return fetchGithubProfile(url);
   }
 
   if (platform === "youtube") {
-    return {
-      rawText: "YouTube API collection is queued. Configure OAuth token storage before production fetching.",
-      payload: { source: "youtube_api", configured: Boolean(env.youtubeApiKey) },
-    };
+    if (!creatorId) throw new Error("creatorId required for YouTube Analytics.");
+    return fetchYouTubeAnalytics(url, creatorId);
   }
 
   if (platform === "twitch") {
@@ -60,5 +59,87 @@ async function fetchGithubProfile(url: string): Promise<OauthScrapeResult> {
       profile,
       repos: repos.slice(0, 10),
     },
+  };
+}
+
+type OauthToken = {
+  id: string;
+  access_token: string;
+  refresh_token?: string;
+  expires_at?: number;
+};
+
+async function getValidYouTubeToken(creatorId: string): Promise<string | null> {
+  const tokens = await getRow<OauthToken[]>("oauth_tokens", `creator_id=eq.${creatorId}&provider=eq.youtube`);
+  if (!tokens || tokens.length === 0) return null;
+  const tokenRecord = tokens[0];
+
+  const nowSeconds = Math.floor(Date.now() / 1000);
+  if (tokenRecord.expires_at && tokenRecord.expires_at < nowSeconds + 300) {
+    if (!tokenRecord.refresh_token) return null;
+    
+    const params = new URLSearchParams({
+      client_id: process.env.GOOGLE_ID ?? "",
+      client_secret: process.env.GOOGLE_SECRET ?? "",
+      refresh_token: tokenRecord.refresh_token,
+      grant_type: "refresh_token",
+    });
+    
+    const res = await fetch("https://oauth2.googleapis.com/token", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: params.toString(),
+    });
+    
+    if (!res.ok) return null;
+    
+    const data = await res.json() as { access_token: string, expires_in: number };
+    const newAccessToken = data.access_token;
+    const newExpiresAt = nowSeconds + data.expires_in;
+    
+    await updateRow("oauth_tokens", tokenRecord.id, {
+      access_token: newAccessToken,
+      expires_at: newExpiresAt,
+    });
+    
+    return newAccessToken;
+  }
+  
+  return tokenRecord.access_token;
+}
+
+async function fetchYouTubeAnalytics(url: string, creatorId: string): Promise<OauthScrapeResult> {
+  const token = await getValidYouTubeToken(creatorId);
+  if (!token) {
+    throw new Error("Missing or expired YouTube OAuth token. Creator must re-authenticate.");
+  }
+
+  const headers = { Authorization: `Bearer ${token}` };
+  const today = new Date().toISOString().split("T")[0];
+  const paramsCommon = `ids=channel==MINE&startDate=2010-01-01&endDate=${today}`;
+  
+  const [demoRes, geoRes, watchRes, trafficRes] = await Promise.all([
+    fetch(`https://youtubeanalytics.googleapis.com/v2/reports?${paramsCommon}&metrics=viewerPercentage&dimensions=ageGroup,gender&sort=-viewerPercentage`, { headers }),
+    fetch(`https://youtubeanalytics.googleapis.com/v2/reports?${paramsCommon}&metrics=views&dimensions=country&sort=-views&maxResults=3`, { headers }),
+    fetch(`https://youtubeanalytics.googleapis.com/v2/reports?${paramsCommon}&metrics=views,estimatedMinutesWatched,averageViewDuration`, { headers }),
+    fetch(`https://youtubeanalytics.googleapis.com/v2/reports?${paramsCommon}&metrics=views&dimensions=insightTrafficSourceType&sort=-views&maxResults=10`, { headers })
+  ]);
+
+  const [demo, geo, watch, traffic] = await Promise.all([
+    demoRes.ok ? demoRes.json() : Promise.resolve(null),
+    geoRes.ok ? geoRes.json() : Promise.resolve(null),
+    watchRes.ok ? watchRes.json() : Promise.resolve(null),
+    trafficRes.ok ? trafficRes.json() : Promise.resolve(null),
+  ]);
+
+  return {
+    rawText: `YouTube Analytics Data Extracted for ${url}`,
+    payload: {
+      source: "youtube_analytics_api",
+      demographics: (demo as any)?.rows ?? [],
+      geography: (geo as any)?.rows ?? [],
+      engagement: (watch as any)?.rows ?? [],
+      traffic_sources: (traffic as any)?.rows ?? []
+    }
   };
 }

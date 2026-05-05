@@ -32,10 +32,11 @@ import {
   Youtube,
 } from "lucide-react";
 import { submitCreatorProfile } from "./actions";
+import { SupportedPlatforms } from "../components/SupportedPlatforms";
 
 type Step = "honeypot" | "router" | "input" | "processing" | "challenge" | "result";
 type PlatformKind = "oauth" | "bio" | "domain";
-type ProviderId = "google" | "github" | "twitch";
+type ProviderId = "google" | "youtube" | "github" | "twitch";
 type LogTone = "system" | "info" | "warning" | "success" | "error";
 
 type PlatformDetection = {
@@ -161,7 +162,7 @@ function parseUrlForPlatform(input: string): PlatformDetection {
         icon: Youtube,
         type: "oauth",
         trust: "OAuth L3",
-        provider: "google",
+        provider: "youtube",
         accent: "youtube",
       };
     }
@@ -615,20 +616,7 @@ export function CreatorIntake() {
           </button>
         </form>
 
-        <div className="supported-block">
-          <p>Auto-verification supported</p>
-          <div className="supported-row">
-            {SUPPORTED_LINKS.map((platform) => {
-              const Icon = platform.icon;
-              return (
-                <span className="chip" key={platform.name}>
-                  <Icon size={14} />
-                  {platform.name}
-                </span>
-              );
-            })}
-          </div>
-        </div>
+        <SupportedPlatforms />
 
         {secondaryCards.length ? (
           <div className="queue-list clean">

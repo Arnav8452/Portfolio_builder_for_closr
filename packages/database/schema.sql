@@ -232,6 +232,33 @@ CREATE TRIGGER trg_creator_links_touch
 BEFORE UPDATE ON creator_links
 FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
 
+CREATE TABLE IF NOT EXISTS oauth_tokens (
+    id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    creator_id     UUID NOT NULL REFERENCES creators(id) ON DELETE CASCADE,
+    provider       TEXT NOT NULL,
+    access_token   TEXT NOT NULL,
+    refresh_token  TEXT,
+    expires_at     BIGINT,
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (creator_id, provider)
+);
+
+ALTER TABLE oauth_tokens ENABLE ROW LEVEL SECURITY;
+
+CREATE POLICY "Users can view their own tokens"
+    ON oauth_tokens FOR SELECT
+    USING (creator_id IN (SELECT id FROM creators WHERE owner_email = current_setting('request.jwt.claims', true)::jsonb->>'email' OR owner_user_id = current_setting('request.jwt.claims', true)::jsonb->>'email'));
+
+CREATE POLICY "Users can update their own tokens"
+    ON oauth_tokens FOR UPDATE
+    USING (creator_id IN (SELECT id FROM creators WHERE owner_email = current_setting('request.jwt.claims', true)::jsonb->>'email' OR owner_user_id = current_setting('request.jwt.claims', true)::jsonb->>'email'));
+
+DROP TRIGGER IF EXISTS trg_oauth_tokens_touch ON oauth_tokens;
+CREATE TRIGGER trg_oauth_tokens_touch
+BEFORE UPDATE ON oauth_tokens
+FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
+
 CREATE OR REPLACE FUNCTION claim_scraping_jobs(
     p_worker_id TEXT,
     p_batch_size INT DEFAULT 5,

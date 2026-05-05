@@ -63,3 +63,9 @@ export function upsertRow<T>(table: string, payload: Record<string, Json | undef
     body: JSON.stringify(payload),
   });
 }
+
+export function getRow<T>(table: string, query: string) {
+  return supabaseFetch<T>(`/rest/v1/${table}?${query}`, {
+    method: "GET",
+  });
+}

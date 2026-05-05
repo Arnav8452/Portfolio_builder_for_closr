@@ -10,11 +10,20 @@ export const authOptions: NextAuthOptions = {
       clientSecret: process.env.GITHUB_SECRET ?? "",
     }),
     GoogleProvider({
+      id: "google",
+      clientId: process.env.GOOGLE_ID ?? "",
+      clientSecret: process.env.GOOGLE_SECRET ?? "",
+    }),
+    GoogleProvider({
+      id: "youtube",
+      name: "YouTube",
       clientId: process.env.GOOGLE_ID ?? "",
       clientSecret: process.env.GOOGLE_SECRET ?? "",
       authorization: {
         params: {
-          scope: "openid email profile https://www.googleapis.com/auth/youtube.readonly",
+          scope: "openid email profile https://www.googleapis.com/auth/youtube.readonly https://www.googleapis.com/auth/yt-analytics.readonly",
+          access_type: "offline",
+          prompt: "consent",
         },
       },
     }),
@@ -24,10 +33,23 @@ export const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async jwt({ token, account }) {
+      if (account?.provider === "youtube") {
+        token.youtube = {
+          access_token: account.access_token,
+          refresh_token: account.refresh_token,
+          expires_at: account.expires_at,
+        };
+      }
+      return token;
+    },
     async session({ session, token }) {
       if (session.user) {
         session.user.name = session.user.name ?? token.name;
         session.user.email = session.user.email ?? token.email;
+      }
+      if (token.youtube) {
+        (session as any).youtube = token.youtube;
       }
       return session;
     },

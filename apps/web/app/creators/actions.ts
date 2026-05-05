@@ -14,11 +14,16 @@ function slugify(value: string) {
     .slice(0, 56);
 }
 
+type CustomSession = {
+  user?: { name?: string | null; email?: string | null; image?: string | null };
+  youtube?: { access_token: string; refresh_token?: string; expires_at?: number };
+};
+
 export async function submitCreatorProfile(formData: FormData) {
-  const session = await getServerSession(authOptions);
+  const session = (await getServerSession(authOptions)) as CustomSession | null;
   const allowLocalDev = process.env.ALLOW_LOCAL_DEV_AUTH === "true";
   if (!session?.user?.email && !allowLocalDev) {
-    return { ok: false, message: "Authenticate with YouTube, GitHub, or Twitch first." };
+    return { ok: false, message: "Please sign in first." };
   }
   const userEmail = session?.user?.email ?? "local-dev@closr.test";
   const displayName = String(formData.get("displayName") ?? "").trim();
@@ -55,6 +60,16 @@ export async function submitCreatorProfile(formData: FormData) {
 
   if (creatorError || !creator) {
     return { ok: false, message: creatorError?.message ?? "Could not create creator." };
+  }
+
+  if (session?.youtube) {
+    await supabase.from("oauth_tokens").insert({
+      creator_id: creator.id,
+      provider: "youtube",
+      access_token: session.youtube.access_token,
+      refresh_token: session.youtube.refresh_token,
+      expires_at: session.youtube.expires_at,
+    });
   }
 
   const allLinks = [

@@ -62,7 +62,7 @@ async function processScrapingJob(job: ScrapingJob) {
 
 async function scrape(job: ScrapingJob): Promise<ScrapeResult> {
   if (job.platform === "youtube" || job.platform === "github" || job.platform === "twitch") {
-    return fetchOauthPlatform(job.platform, job.url);
+    return fetchOauthPlatform(job.platform, job.url, job.creator_id);
   }
 
   if (job.platform === "substack" || job.platform === "medium") {
