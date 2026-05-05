@@ -1,0 +1,340 @@
+-- Closr Tool 2: Verified Portfolio Builder
+-- Supabase / PostgreSQL schema and queue RPCs.
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+DO $$ BEGIN
+    CREATE TYPE creator_platform AS ENUM (
+        'youtube',
+        'github',
+        'twitch',
+        'substack',
+        'medium',
+        'twitter',
+        'x',
+        'pinterest',
+        'website',
+        'other'
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE queue_status AS ENUM (
+        'pending',
+        'processing',
+        'completed',
+        'failed'
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE challenge_status AS ENUM (
+        'pending',
+        'verified',
+        'expired',
+        'failed'
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE creator_primary_niche AS ENUM (
+        'ai_ml',
+        'devtools',
+        'software_engineering',
+        'gaming',
+        'creator_economy',
+        'business_marketing',
+        'finance',
+        'education',
+        'fitness_wellness',
+        'beauty',
+        'fashion',
+        'food',
+        'travel',
+        'music',
+        'photography_video',
+        'lifestyle',
+        'other'
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+DO $$ BEGIN
+    CREATE TYPE audience_size_tier AS ENUM (
+        'micro',
+        'emerging',
+        'mid_market',
+        'large',
+        'enterprise'
+    );
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+CREATE TABLE IF NOT EXISTS creators (
+    id                  UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    owner_user_id       TEXT NOT NULL,
+    owner_email         TEXT,
+    slug                TEXT UNIQUE NOT NULL,
+    display_name        TEXT NOT NULL,
+    root_platform       creator_platform NOT NULL,
+    root_external_id    TEXT,
+    root_handle         TEXT,
+    root_oauth_subject  TEXT,
+    onboarding_status   TEXT NOT NULL DEFAULT 'intake',
+    created_at          TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at          TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS creator_links (
+    id                    UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    creator_id             UUID NOT NULL REFERENCES creators(id) ON DELETE CASCADE,
+    platform               creator_platform NOT NULL,
+    url                    TEXT NOT NULL,
+    normalized_url         TEXT NOT NULL,
+    submitted_handle       TEXT,
+    verification_level     INT NOT NULL DEFAULT 1 CHECK (verification_level IN (1, 2, 3)),
+    verification_status    TEXT NOT NULL DEFAULT 'claimed',
+    verification_chain     JSONB NOT NULL DEFAULT '{}'::jsonb,
+    raw_identity           JSONB NOT NULL DEFAULT '{}'::jsonb,
+    last_verified_at       TIMESTAMPTZ,
+    created_at             TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at             TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (creator_id, normalized_url)
+);
+
+CREATE TABLE IF NOT EXISTS platform_verifications (
+    id                   UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    creator_id            UUID NOT NULL REFERENCES creators(id) ON DELETE CASCADE,
+    link_id               UUID REFERENCES creator_links(id) ON DELETE CASCADE,
+    platform              creator_platform NOT NULL,
+    level                 INT NOT NULL CHECK (level IN (1, 2, 3)),
+    method                TEXT NOT NULL,
+    score                 NUMERIC(5, 2) NOT NULL DEFAULT 0,
+    verification_chain    JSONB NOT NULL DEFAULT '{}'::jsonb,
+    root_evidence         JSONB NOT NULL DEFAULT '{}'::jsonb,
+    last_verified_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS platform_data (
+    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    creator_id      UUID NOT NULL REFERENCES creators(id) ON DELETE CASCADE,
+    link_id         UUID REFERENCES creator_links(id) ON DELETE SET NULL,
+    platform        creator_platform NOT NULL,
+    external_id     TEXT,
+    handle          TEXT,
+    identity_key    TEXT NOT NULL DEFAULT 'unknown',
+    metrics         JSONB NOT NULL DEFAULT '{}'::jsonb,
+    recent_items    JSONB NOT NULL DEFAULT '[]'::jsonb,
+    raw_payload     JSONB NOT NULL DEFAULT '{}'::jsonb,
+    verified_via    TEXT NOT NULL DEFAULT 'claimed',
+    fetched_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (creator_id, platform, identity_key)
+);
+
+CREATE TABLE IF NOT EXISTS creator_identities (
+    creator_id            UUID PRIMARY KEY REFERENCES creators(id) ON DELETE CASCADE,
+    primary_niche          creator_primary_niche NOT NULL DEFAULT 'other',
+    technical_skills       TEXT[] NOT NULL DEFAULT '{}',
+    brand_tone             TEXT[] NOT NULL DEFAULT '{}',
+    content_format         TEXT[] NOT NULL DEFAULT '{}',
+    audience_size_tier     audience_size_tier NOT NULL DEFAULT 'micro',
+    past_topics            TEXT[] NOT NULL DEFAULT '{}',
+    bio_summary            TEXT,
+    confidence             NUMERIC(4, 3) NOT NULL DEFAULT 0,
+    raw_model_output       JSONB NOT NULL DEFAULT '{}'::jsonb,
+    updated_at             TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS scraping_queue (
+    id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    creator_id     UUID NOT NULL REFERENCES creators(id) ON DELETE CASCADE,
+    link_id        UUID REFERENCES creator_links(id) ON DELETE CASCADE,
+    platform       creator_platform NOT NULL,
+    url            TEXT NOT NULL,
+    priority       INT NOT NULL DEFAULT 0,
+    status         queue_status NOT NULL DEFAULT 'pending',
+    locked_at      TIMESTAMPTZ,
+    locked_by      TEXT,
+    attempts       INT NOT NULL DEFAULT 0,
+    max_attempts   INT NOT NULL DEFAULT 3,
+    error_log      JSONB NOT NULL DEFAULT '[]'::jsonb,
+    raw_output     JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    completed_at   TIMESTAMPTZ
+);
+
+CREATE TABLE IF NOT EXISTS analysis_queue (
+    id               UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    creator_id       UUID NOT NULL REFERENCES creators(id) ON DELETE CASCADE,
+    scraping_job_id  UUID REFERENCES scraping_queue(id) ON DELETE SET NULL,
+    raw_text         TEXT NOT NULL,
+    payload          JSONB NOT NULL DEFAULT '{}'::jsonb,
+    status           queue_status NOT NULL DEFAULT 'pending',
+    locked_at        TIMESTAMPTZ,
+    locked_by        TEXT,
+    attempts         INT NOT NULL DEFAULT 0,
+    max_attempts     INT NOT NULL DEFAULT 2,
+    error_log        JSONB NOT NULL DEFAULT '[]'::jsonb,
+    created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    completed_at     TIMESTAMPTZ
+);
+
+CREATE TABLE IF NOT EXISTS verification_challenges (
+    id             UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    creator_id     UUID NOT NULL REFERENCES creators(id) ON DELETE CASCADE,
+    link_id        UUID REFERENCES creator_links(id) ON DELETE CASCADE,
+    platform       creator_platform NOT NULL,
+    code           TEXT NOT NULL,
+    instructions   TEXT NOT NULL,
+    expires_at     TIMESTAMPTZ NOT NULL DEFAULT (NOW() + INTERVAL '30 minutes'),
+    used_at        TIMESTAMPTZ,
+    status         challenge_status NOT NULL DEFAULT 'pending',
+    created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS creator_processing_events (
+    id          BIGSERIAL PRIMARY KEY,
+    creator_id  UUID NOT NULL REFERENCES creators(id) ON DELETE CASCADE,
+    event_type  TEXT NOT NULL,
+    message     TEXT NOT NULL,
+    payload     JSONB NOT NULL DEFAULT '{}'::jsonb,
+    created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_creator_links_creator ON creator_links (creator_id);
+CREATE INDEX IF NOT EXISTS idx_platform_data_creator ON platform_data (creator_id);
+CREATE INDEX IF NOT EXISTS idx_scraping_queue_status ON scraping_queue (status, priority DESC, created_at);
+CREATE INDEX IF NOT EXISTS idx_analysis_queue_status ON analysis_queue (status, created_at);
+CREATE INDEX IF NOT EXISTS idx_events_creator_created ON creator_processing_events (creator_id, created_at DESC);
+
+CREATE OR REPLACE FUNCTION touch_updated_at()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    NEW.updated_at = NOW();
+    RETURN NEW;
+END;
+$$;
+
+DROP TRIGGER IF EXISTS trg_creators_touch ON creators;
+CREATE TRIGGER trg_creators_touch
+BEFORE UPDATE ON creators
+FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
+
+DROP TRIGGER IF EXISTS trg_creator_links_touch ON creator_links;
+CREATE TRIGGER trg_creator_links_touch
+BEFORE UPDATE ON creator_links
+FOR EACH ROW EXECUTE FUNCTION touch_updated_at();
+
+CREATE OR REPLACE FUNCTION claim_scraping_jobs(
+    p_worker_id TEXT,
+    p_batch_size INT DEFAULT 5,
+    p_lock_timeout INTERVAL DEFAULT INTERVAL '10 minutes'
+)
+RETURNS SETOF scraping_queue
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    WITH picked AS (
+        SELECT id
+        FROM scraping_queue
+        WHERE
+            status = 'pending'
+            OR (
+                status = 'processing'
+                AND locked_at < NOW() - p_lock_timeout
+                AND attempts < max_attempts
+            )
+        ORDER BY priority DESC, created_at ASC
+        LIMIT p_batch_size
+        FOR UPDATE SKIP LOCKED
+    )
+    UPDATE scraping_queue q
+    SET
+        status = 'processing',
+        locked_at = NOW(),
+        locked_by = p_worker_id,
+        attempts = q.attempts + 1,
+        updated_at = NOW()
+    FROM picked
+    WHERE q.id = picked.id
+    RETURNING q.*;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION claim_analysis_jobs(
+    p_worker_id TEXT,
+    p_batch_size INT DEFAULT 1,
+    p_lock_timeout INTERVAL DEFAULT INTERVAL '20 minutes'
+)
+RETURNS SETOF analysis_queue
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    RETURN QUERY
+    WITH picked AS (
+        SELECT id
+        FROM analysis_queue
+        WHERE
+            status = 'pending'
+            OR (
+                status = 'processing'
+                AND locked_at < NOW() - p_lock_timeout
+                AND attempts < max_attempts
+            )
+        ORDER BY created_at ASC
+        LIMIT p_batch_size
+        FOR UPDATE SKIP LOCKED
+    )
+    UPDATE analysis_queue q
+    SET
+        status = 'processing',
+        locked_at = NOW(),
+        locked_by = p_worker_id,
+        attempts = q.attempts + 1,
+        updated_at = NOW()
+    FROM picked
+    WHERE q.id = picked.id
+    RETURNING q.*;
+END;
+$$;
+
+CREATE OR REPLACE VIEW public_creator_profiles AS
+SELECT
+    c.id,
+    c.slug,
+    c.display_name,
+    c.root_platform,
+    c.root_handle,
+    ci.primary_niche,
+    ci.technical_skills,
+    ci.brand_tone,
+    ci.content_format,
+    ci.audience_size_tier,
+    ci.past_topics,
+    ci.bio_summary,
+    ci.confidence,
+    (
+        SELECT COALESCE(jsonb_agg(
+            jsonb_build_object(
+                'platform', cl.platform,
+                'url', cl.normalized_url,
+                'verification_level', cl.verification_level,
+                'verification_status', cl.verification_status,
+                'last_verified_at', cl.last_verified_at
+            )
+            ORDER BY cl.verification_level DESC, cl.platform
+        ), '[]'::jsonb)
+        FROM creator_links cl
+        WHERE cl.creator_id = c.id
+    ) AS verified_links
+FROM creators c
+LEFT JOIN creator_identities ci ON ci.creator_id = c.id
+WHERE c.onboarding_status IN ('completed', 'analysis_completed', 'intake');

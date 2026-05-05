@@ -1,0 +1,26 @@
+{
+  "name": "closr-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*",
+    "packages/config/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @closr/web",
+    "web:dev": "npm run dev --workspace @closr/web",
+    "worker:dev": "npm run dev --workspace @closr/worker",
+    "build": "turbo build",
+    "typecheck": "turbo typecheck",
+    "web:build": "npm run build --workspace @closr/web",
+    "web:typecheck": "npm run typecheck --workspace @closr/web",
+    "worker:build": "npm run build --workspace @closr/worker",
+    "worker:typecheck": "npm run typecheck --workspace @closr/worker",
+    "legacy-worker:test": "pytest apps/worker-python/tests"
+  },
+  "devDependencies": {
+    "turbo": "^2.5.6",
+    "typescript": "^5.7.2"
+  }
+}

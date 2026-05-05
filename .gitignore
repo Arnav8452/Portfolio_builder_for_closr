@@ -1,0 +1,14 @@
+.env
+.env.local
+.env.*.local
+node_modules/
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+api_quotas.json

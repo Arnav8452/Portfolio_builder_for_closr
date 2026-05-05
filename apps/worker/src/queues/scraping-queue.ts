@@ -1,0 +1,97 @@
+import type { Database, Json } from "@closr/database/types";
+import { env } from "../env";
+import { insertRow, rpc, updateRow } from "../supabase-rest";
+import { parseRssFeed, scrapeRssSource } from "../scrapers/rss";
+import { fetchOauthPlatform } from "../scrapers/oauth";
+import { scrapeWithPlaywright } from "../scrapers/playwright";
+import { parseBioLinks } from "../osint/bio-parser";
+
+type ScrapingJob = Database["public"]["Tables"]["scraping_queue"]["Row"];
+
+type ScrapeResult = {
+  rawText: string;
+  payload: Json;
+};
+
+export async function claimScrapingJobs() {
+  return rpc<ScrapingJob[]>("claim_scraping_jobs", {
+    p_worker_id: env.workerId,
+    p_batch_size: env.scrapingBatchSize,
+  });
+}
+
+export async function pollScrapingQueue() {
+  const jobs = await claimScrapingJobs();
+
+  for (const job of jobs) {
+    await processScrapingJob(job);
+  }
+
+  return jobs.length;
+}
+
+async function processScrapingJob(job: ScrapingJob) {
+  try {
+    const result = await scrape(job);
+    const rawOutput = {
+      payload: result.payload,
+      bio_links: parseBioLinks(result.rawText),
+    };
+
+    await updateRow<ScrapingJob[]>("scraping_queue", job.id, {
+      status: "completed",
+      raw_output: rawOutput,
+      completed_at: new Date().toISOString(),
+    });
+
+    if (result.rawText.trim()) {
+      await insertRow("analysis_queue", {
+        creator_id: job.creator_id,
+        scraping_job_id: job.id,
+        raw_text: result.rawText,
+        payload: rawOutput,
+      });
+    }
+  } catch (error) {
+    await updateRow<ScrapingJob[]>("scraping_queue", job.id, {
+      status: job.attempts + 1 >= job.max_attempts ? "failed" : "pending",
+      error_log: [...asArray(job.error_log), serializeError(error)],
+    });
+  }
+}
+
+async function scrape(job: ScrapingJob): Promise<ScrapeResult> {
+  if (job.platform === "youtube" || job.platform === "github" || job.platform === "twitch") {
+    return fetchOauthPlatform(job.platform, job.url);
+  }
+
+  if (job.platform === "substack" || job.platform === "medium") {
+    const xml = await scrapeRssSource(job.url);
+    return {
+      rawText: parseRssFeed(xml).join("\n\n"),
+      payload: { source: "rss", xml_length: xml.length },
+    };
+  }
+
+  if (job.platform === "twitter" || job.platform === "x" || job.platform === "pinterest") {
+    return scrapeWithPlaywright(job.platform, job.url);
+  }
+
+  const response = await fetch(job.url);
+  const text = await response.text();
+  return {
+    rawText: text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").slice(0, 20000),
+    payload: { source: "website", status: response.status },
+  };
+}
+
+function asArray(value: Json) {
+  return Array.isArray(value) ? value : [];
+}
+
+function serializeError(error: unknown): Json {
+  if (error instanceof Error) {
+    return { message: error.message, stack: error.stack };
+  }
+  return { message: String(error) };
+}
