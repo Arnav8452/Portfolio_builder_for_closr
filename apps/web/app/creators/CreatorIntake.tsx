@@ -33,8 +33,9 @@ import {
   X,
   Youtube,
 } from "lucide-react";
-import { submitCreatorProfile } from "./actions";
+import { submitCreatorProfile, updateCreatorProfile } from "./actions";
 import { SupportedPlatforms } from "../components/SupportedPlatforms";
+import type { ExistingPortfolio } from "./CreatorDashboard";
 
 type Step = "honeypot" | "router" | "input" | "processing" | "challenge" | "result";
 type PlatformKind = "oauth" | "bio" | "domain";
@@ -300,22 +301,42 @@ function createLog(message: string, tone: LogTone = "info"): LogEntry {
   };
 }
 
-export function CreatorIntake() {
+export function CreatorIntake({ existingPortfolio }: { existingPortfolio?: ExistingPortfolio }) {
+  const isEditing = Boolean(existingPortfolio);
   const { data: session, status } = useSession();
-  const [currentStep, setCurrentStep] = useState<Step>(STEPS.HONEYPOT);
-  const [rootNode, setRootNode] = useState<RootNode | null>(null);
-  const [mainLinkInput, setMainLinkInput] = useState("");
-  const [detectedPlatform, setDetectedPlatform] = useState<PlatformDetection | null>(null);
+
+  // Pre-populate from existing portfolio when editing
+  const existingRootLink = existingPortfolio?.links.find(
+    (l) => l.verification_level === 3 || l.platform === existingPortfolio?.root_platform,
+  );
+  const existingSecondaryUrls = existingPortfolio?.links
+    .filter((l) => l !== existingRootLink)
+    .map((l) => l.url) ?? [];
+
+  const initialRootNode: RootNode | null = existingPortfolio && existingRootLink
+    ? {
+        ...parseUrlForPlatform(existingRootLink.url),
+        url: existingRootLink.url,
+        username: existingPortfolio.root_handle ?? handleFromUrl(existingRootLink.url),
+      }
+    : null;
+
+  const [currentStep, setCurrentStep] = useState<Step>(isEditing ? STEPS.INPUT : STEPS.HONEYPOT);
+  const [rootNode, setRootNode] = useState<RootNode | null>(initialRootNode);
+  const [mainLinkInput, setMainLinkInput] = useState(existingRootLink?.url ?? "");
+  const [detectedPlatform, setDetectedPlatform] = useState<PlatformDetection | null>(
+    initialRootNode ? parseUrlForPlatform(initialRootNode.url) : null,
+  );
   const [showDnsInstructions, setShowDnsInstructions] = useState(false);
   const [challengeCode, setChallengeCode] = useState("");
-  const [displayName, setDisplayName] = useState("");
-  const [secondaryLinks, setSecondaryLinks] = useState<string[]>([]);
+  const [displayName, setDisplayName] = useState(existingPortfolio?.display_name ?? "");
+  const [secondaryLinks, setSecondaryLinks] = useState<string[]>(existingSecondaryUrls);
   const [currentLinkInput, setCurrentLinkInput] = useState("");
   const [progress, setProgress] = useState(0);
   const [logs, setLogs] = useState<LogEntry[]>([]);
   const [challengedLink, setChallengedLink] = useState<string | null>(null);
-  const [challengeHandled, setChallengeHandled] = useState(false);
-  const [challengeVerified, setChallengeVerified] = useState<boolean | null>(null);
+  const [challengeHandled, setChallengeHandled] = useState(isEditing);
+  const [challengeVerified, setChallengeVerified] = useState<boolean | null>(isEditing ? true : null);
   const [timeLeft, setTimeLeft] = useState(1799);
   const [submitResult, setSubmitResult] = useState<SubmissionResult | null>(null);
   const [isPending, startTransition] = useTransition();
@@ -401,6 +422,11 @@ export function CreatorIntake() {
     form.set("rootUrl", rootNode.url);
     secondaryLinks.forEach((link) => form.append("secondaryLinks", link));
 
+    // If editing, use update action with creatorId
+    if (isEditing && existingPortfolio) {
+      form.set("creatorId", existingPortfolio.id);
+    }
+
     startTransition(() => {
       void runSubmission(form, verifiedChallenge);
     });
@@ -415,7 +441,9 @@ export function CreatorIntake() {
       setProgress(24);
       setLogs((current) => [...current, createLog("Writing root node and claimed links to Supabase.", "info")]);
 
-      const responsePromise = submitCreatorProfile(form) as Promise<SubmissionResult>;
+      const responsePromise = (isEditing
+        ? updateCreatorProfile(form)
+        : submitCreatorProfile(form)) as Promise<SubmissionResult>;
 
       await sleep(550);
       setProgress(46);
