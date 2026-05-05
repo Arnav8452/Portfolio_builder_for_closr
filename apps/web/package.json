@@ -11,9 +11,7 @@
   },
   "dependencies": {
     "@auth/supabase-adapter": "^1.11.2",
-    "@closr/database": "file:../../packages/database",
     "@supabase/supabase-js": "^2.105.3",
-    "closr-monorepo": "file:../..",
     "lucide-react": "^0.468.0",
     "next": "^16.1.5",
     "next-auth": "^4.24.11",

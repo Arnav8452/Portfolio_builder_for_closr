@@ -1,5 +1,3 @@
-import type { CreatorPlatform } from "@closr/database/types";
-
 export const platforms = [
   "youtube",
   "github",
@@ -12,6 +10,8 @@ export const platforms = [
   "website",
   "other",
 ] as const;
+
+export type CreatorPlatform = (typeof platforms)[number];
 
 const hostMap: Record<string, CreatorPlatform> = {
   "youtube.com": "youtube",
