@@ -178,6 +178,21 @@ export async function updateCreatorProfile(formData: FormData) {
     .eq("creator_id", creatorId);
 
   const existingUrls = new Set((existingLinks ?? []).map((l) => l.normalized_url));
+  const submittedUrls = new Set(secondaryLinks.map(normalizeUrl));
+  submittedUrls.add(normalizeUrl(rootUrl));
+
+  // Delete orphaned links that the user removed
+  const urlsToDelete = (existingLinks ?? [])
+    .filter((l) => !submittedUrls.has(l.normalized_url))
+    .map((l) => l.normalized_url);
+
+  if (urlsToDelete.length > 0) {
+    await supabase
+      .from("creator_links")
+      .delete()
+      .eq("creator_id", creatorId)
+      .in("normalized_url", urlsToDelete);
+  }
 
   // Add new secondary links that don't already exist
   for (const url of secondaryLinks) {

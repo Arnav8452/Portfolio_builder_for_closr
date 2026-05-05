@@ -62,6 +62,11 @@ async function processScrapingJob(job: ScrapingJob) {
         payload: rawOutput,
       });
     }
+
+    await updateRow("creators", job.creator_id, {
+      onboarding_status: "completed",
+      updated_at: new Date().toISOString(),
+    });
   } catch (error) {
     await updateRow<ScrapingJob[]>("scraping_queue", job.id, {
       status: job.attempts + 1 >= job.max_attempts ? "failed" : "pending",

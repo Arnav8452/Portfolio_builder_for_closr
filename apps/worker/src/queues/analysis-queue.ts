@@ -1,7 +1,7 @@
 import type { Database } from "@closr/database/types";
 import { env } from "../env";
 import { extractCreatorIdentity } from "../llm/ollama-client";
-import { rpc, updateRow, upsertRow } from "../supabase-rest";
+import { getRow, rpc, updateRow, upsertRow } from "../supabase-rest";
 
 type AnalysisJob = Database["public"]["Tables"]["analysis_queue"]["Row"];
 
@@ -26,19 +26,33 @@ async function processAnalysisJob(job: AnalysisJob) {
   try {
     const identity = await extractCreatorIdentity(job.raw_text, job.payload);
 
+    // Fetch existing identity to merge arrays
+    const existingResult = await getRow<any[]>("creator_identities", `creator_id=eq.${job.creator_id}`);
+    const existing = existingResult?.[0];
+
+    const mergedSkills = [...new Set([...(existing?.technical_skills ?? []), ...(identity.technical_skills ?? [])])];
+    const mergedTone = [...new Set([...(existing?.brand_tone ?? []), ...(identity.brand_tone ?? [])])];
+    const mergedFormat = [...new Set([...(existing?.content_format ?? []), ...(identity.content_format ?? [])])];
+    const mergedTopics = [...new Set([...(existing?.past_topics ?? []), ...(identity.past_topics ?? [])])];
+
     await upsertRow("creator_identities", {
       creator_id: job.creator_id,
-      primary_niche: identity.primary_niche,
-      technical_skills: identity.technical_skills,
-      brand_tone: identity.brand_tone,
-      content_format: identity.content_format,
-      audience_size_tier: identity.audience_size_tier,
-      past_topics: identity.past_topics,
-      bio_summary: identity.bio_summary,
-      confidence: identity.confidence,
+      primary_niche: identity.primary_niche ?? existing?.primary_niche,
+      technical_skills: mergedSkills,
+      brand_tone: mergedTone,
+      content_format: mergedFormat,
+      audience_size_tier: identity.audience_size_tier ?? existing?.audience_size_tier,
+      past_topics: mergedTopics,
+      bio_summary: identity.bio_summary ?? existing?.bio_summary,
+      confidence: Math.max(identity.confidence ?? 0, existing?.confidence ?? 0),
       raw_model_output: identity.raw_model_output,
       updated_at: new Date().toISOString(),
     }, "creator_id");
+
+    await updateRow("creators", job.creator_id, {
+      onboarding_status: "analysis_completed",
+      updated_at: new Date().toISOString(),
+    });
 
     await updateRow<AnalysisJob[]>("analysis_queue", job.id, {
       status: "completed",
