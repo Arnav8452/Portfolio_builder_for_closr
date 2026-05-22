@@ -2,9 +2,11 @@
   "extends": "../../packages/config/typescript-config/worker.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "outDir": "dist",
+    "rootDir": "src",
     "paths": {
       "@closr/database/*": ["../../packages/database/*"]
     }
   },
-  "include": ["src/**/*.ts", "scripts/**/*.ts"]
+  "include": ["src/**/*.ts"]
 }

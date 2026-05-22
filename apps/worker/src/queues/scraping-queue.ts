@@ -5,6 +5,8 @@ import { parseRssFeed, scrapeRssSource } from "../scrapers/rss";
 import { fetchOauthPlatform } from "../scrapers/oauth";
 import { scrapeWithPlaywright } from "../scrapers/playwright";
 import { parseBioLinks } from "../osint/bio-parser";
+import { cleanScrapedContent } from "../osint/cleaner";
+import { extractMetricsFromText } from "../osint/metrics";
 
 type ScrapingJob = Database["public"]["Tables"]["scraping_queue"]["Row"];
 
@@ -44,21 +46,26 @@ async function processScrapingJob(job: ScrapingJob) {
       completed_at: new Date().toISOString(),
     });
 
+    const metrics = extractMetricsFromText(result.rawText);
+
     await upsertRow("platform_data", {
       creator_id: job.creator_id,
       link_id: job.link_id,
       platform: job.platform,
       identity_key: "default",
       raw_payload: result.payload,
+      metrics: metrics,
       verified_via: "worker",
       fetched_at: new Date().toISOString()
     }, "creator_id,platform,identity_key");
 
-    if (result.rawText.trim()) {
+    const cleanedText = cleanScrapedContent(result.rawText);
+
+    if (cleanedText) {
       await insertRow("analysis_queue", {
         creator_id: job.creator_id,
         scraping_job_id: job.id,
-        raw_text: result.rawText,
+        raw_text: cleanedText,
         payload: rawOutput,
       });
     }

@@ -127,9 +127,35 @@ export type Database = {
           audience_size_tier: AudienceSizeTier;
           past_topics: string[];
           bio_summary: string | null;
-          confidence: number;
+          extraction_confidence: number;
+          llm_provider: string;
+          llm_model: string;
+          prompt_version: string;
+          prompt_hash: string;
+          llm_request_id: string | null;
+          processing_duration_ms: number | null;
+          input_tokens: number | null;
+          output_tokens: number | null;
+          estimated_cost_usd: number | null;
           raw_model_output: Json;
           updated_at: string;
+        };
+      };
+      platform_data: {
+        Row: {
+          id: string;
+          creator_id: string;
+          link_id: string | null;
+          platform: CreatorPlatform;
+          external_id: string | null;
+          handle: string | null;
+          identity_key: string;
+          metrics: Json;
+          recent_items: Json;
+          raw_payload: Json;
+          verified_via: string;
+          fetched_at: string;
+          created_at: string;
         };
       };
       creator_processing_events: {

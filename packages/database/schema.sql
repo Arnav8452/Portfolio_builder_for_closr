@@ -195,7 +195,16 @@ CREATE TABLE IF NOT EXISTS creator_identities (
     audience_size_tier     audience_size_tier NOT NULL DEFAULT 'micro',
     past_topics            TEXT[] NOT NULL DEFAULT '{}',
     bio_summary            TEXT,
-    confidence             NUMERIC(4, 3) NOT NULL DEFAULT 0,
+    extraction_confidence  NUMERIC(4, 3) NOT NULL DEFAULT 0,
+    llm_provider           TEXT NOT NULL DEFAULT 'unknown',
+    llm_model              TEXT NOT NULL DEFAULT 'unknown',
+    prompt_version         TEXT NOT NULL DEFAULT 'unknown',
+    prompt_hash            TEXT NOT NULL DEFAULT 'unknown',
+    llm_request_id         TEXT,
+    processing_duration_ms INT,
+    input_tokens           INT,
+    output_tokens          INT,
+    estimated_cost_usd     NUMERIC(10, 6),
     raw_model_output       JSONB NOT NULL DEFAULT '{}'::jsonb,
     updated_at             TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -257,6 +266,31 @@ CREATE TABLE IF NOT EXISTS creator_processing_events (
     payload     JSONB NOT NULL DEFAULT '{}'::jsonb,
     created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
+
+ALTER TABLE platform_data ADD COLUMN IF NOT EXISTS metrics JSONB NOT NULL DEFAULT '{}'::jsonb;
+ALTER TABLE creator_identities ADD COLUMN IF NOT EXISTS extraction_confidence NUMERIC(4, 3) NOT NULL DEFAULT 0;
+DO $$
+BEGIN
+    IF EXISTS (
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'public'
+          AND table_name = 'creator_identities'
+          AND column_name = 'confidence'
+    ) THEN
+        EXECUTE 'UPDATE creator_identities SET extraction_confidence = confidence WHERE extraction_confidence = 0 AND confidence IS NOT NULL';
+    END IF;
+END;
+$$;
+ALTER TABLE creator_identities ADD COLUMN IF NOT EXISTS llm_provider TEXT NOT NULL DEFAULT 'unknown';
+ALTER TABLE creator_identities ADD COLUMN IF NOT EXISTS llm_model TEXT NOT NULL DEFAULT 'unknown';
+ALTER TABLE creator_identities ADD COLUMN IF NOT EXISTS prompt_version TEXT NOT NULL DEFAULT 'unknown';
+ALTER TABLE creator_identities ADD COLUMN IF NOT EXISTS prompt_hash TEXT NOT NULL DEFAULT 'unknown';
+ALTER TABLE creator_identities ADD COLUMN IF NOT EXISTS llm_request_id TEXT;
+ALTER TABLE creator_identities ADD COLUMN IF NOT EXISTS processing_duration_ms INT;
+ALTER TABLE creator_identities ADD COLUMN IF NOT EXISTS input_tokens INT;
+ALTER TABLE creator_identities ADD COLUMN IF NOT EXISTS output_tokens INT;
+ALTER TABLE creator_identities ADD COLUMN IF NOT EXISTS estimated_cost_usd NUMERIC(10, 6);
 
 CREATE INDEX IF NOT EXISTS idx_creator_links_creator ON creator_links (creator_id);
 CREATE INDEX IF NOT EXISTS idx_platform_data_creator ON platform_data (creator_id);
@@ -372,7 +406,7 @@ SELECT
     ci.audience_size_tier,
     ci.past_topics,
     ci.bio_summary,
-    ci.confidence,
+    ci.extraction_confidence AS confidence,
     u.image AS owner_image,
     (
         SELECT COALESCE(jsonb_agg(

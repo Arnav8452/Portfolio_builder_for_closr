@@ -1,6 +1,6 @@
 import type { Database } from "@closr/database/types";
 import { env } from "../env";
-import { extractCreatorIdentity } from "../llm/ollama-client";
+import { extractCreatorIdentity } from "../llm/pipeline";
 import { getRow, rpc, updateRow, upsertRow } from "../supabase-rest";
 
 type AnalysisJob = Database["public"]["Tables"]["analysis_queue"]["Row"];
@@ -24,7 +24,8 @@ export async function pollAnalysisQueue() {
 
 async function processAnalysisJob(job: AnalysisJob) {
   try {
-    const identity = await extractCreatorIdentity(job.raw_text, job.payload);
+    const result = await extractCreatorIdentity(job.raw_text);
+    const identity = result.parsed;
 
     // Fetch existing identity to merge arrays
     const existingResult = await getRow<any[]>("creator_identities", `creator_id=eq.${job.creator_id}`);
@@ -44,8 +45,17 @@ async function processAnalysisJob(job: AnalysisJob) {
       audience_size_tier: identity.audience_size_tier ?? existing?.audience_size_tier,
       past_topics: mergedTopics,
       bio_summary: identity.bio_summary ?? existing?.bio_summary,
-      confidence: Math.max(identity.confidence ?? 0, existing?.confidence ?? 0),
-      raw_model_output: identity.raw_model_output,
+      extraction_confidence: Math.max(identity.confidence ?? 0, existing?.extraction_confidence ?? 0),
+      llm_provider: result.provider,
+      llm_model: result.model,
+      prompt_version: result.prompt_version,
+      prompt_hash: result.prompt_hash,
+      llm_request_id: result.request_id,
+      processing_duration_ms: result.duration_ms,
+      input_tokens: result.input_tokens,
+      output_tokens: result.output_tokens,
+      estimated_cost_usd: result.estimated_cost_usd,
+      raw_model_output: { raw: result.raw_model_output, source_payload: job.payload },
       updated_at: new Date().toISOString(),
     }, "creator_id");
 
