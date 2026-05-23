@@ -39,7 +39,7 @@ import type { ExistingPortfolio } from "./CreatorDashboard";
 
 type Step = "honeypot" | "router" | "input" | "processing" | "challenge" | "result";
 type PlatformKind = "oauth" | "bio" | "domain";
-type ProviderId = "google" | "youtube" | "github" | "twitch";
+type ProviderId = "google" | "youtube" | "github" | "twitch" | "meta";
 type LogTone = "system" | "info" | "warning" | "success" | "error";
 
 type PlatformDetection = {
