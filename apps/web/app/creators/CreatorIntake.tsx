@@ -250,11 +250,12 @@ function parseUrlForPlatform(input: string): PlatformDetection {
     if (hostname.includes("instagram.com")) {
       return {
         id: "instagram",
-        formValue: "other",
+        formValue: "instagram",
         name: "Instagram",
         icon: Instagram,
-        type: "bio",
-        trust: "Bio L2",
+        type: "oauth",
+        trust: "OAuth L3",
+        provider: "meta",
         accent: "social",
       };
     }
@@ -381,6 +382,10 @@ export function CreatorIntake({ existingPortfolio }: { existingPortfolio?: Exist
 
   function connectOauthRoot() {
     if (!detectedPlatform?.provider) return;
+    if (detectedPlatform.provider === "meta") {
+      window.location.href = "/api/auth/meta";
+      return;
+    }
     // For YouTube, we use the 'youtube' provider ID which grants YouTube-specific scopes
     // NextAuth will handle the session linking automatically
     const providerId = detectedPlatform.provider === "youtube" ? "youtube" : detectedPlatform.provider;
@@ -573,6 +578,17 @@ export function CreatorIntake({ existingPortfolio }: { existingPortfolio?: Exist
 
           {detectedPlatform.type === "oauth" ? (
             <div className="router-actions">
+              {detectedPlatform.provider === "meta" && (
+                <div className="instruction-card" style={{ marginBottom: "1rem", textAlign: "left" }}>
+                  <div className="instruction-row">
+                    <span className="step-index">!</span>
+                    <p>
+                      <strong>Important:</strong> Your Instagram account must be set to "Professional" or "Creator" 
+                      (free in the IG app) and linked to a Facebook Page to connect.
+                    </p>
+                  </div>
+                </div>
+              )}
               <button className={`primary-action ${detectedPlatform.accent}`} type="button" onClick={connectOauthRoot}>
                 <Icon size={20} />
                 Connect {detectedPlatform.name}
