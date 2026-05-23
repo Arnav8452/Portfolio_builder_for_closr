@@ -18,6 +18,9 @@
     "web:typecheck": "npm run typecheck --workspace @closr/web",
     "worker:build": "npm run build --workspace @closr/worker",
     "worker:typecheck": "npm run typecheck --workspace @closr/worker",
+    "gateway:dev": "npm run dev --workspace @closr/ai-gateway",
+    "gateway:build": "npm run build --workspace @closr/ai-gateway",
+    "gateway:test": "npm run test --workspace @closr/ai-gateway",
     "legacy-worker:test": "pytest apps/worker-python/tests"
   },
   "devDependencies": {

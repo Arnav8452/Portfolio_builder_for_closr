@@ -1,0 +1,36 @@
+name: AI Gateway CI
+
+on:
+  push:
+    branches: [ "main" ]
+    paths:
+      - 'apps/ai-gateway/**'
+  pull_request:
+    branches: [ "main" ]
+    paths:
+      - 'apps/ai-gateway/**'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Use Node.js
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20.x'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Typecheck
+      run: npm run gateway:typecheck || npm run typecheck --workspace @closr/ai-gateway
+
+    - name: Build
+      run: npm run gateway:build || npm run build --workspace @closr/ai-gateway
+
+    - name: Test
+      run: npm run gateway:test || npm run test --workspace @closr/ai-gateway

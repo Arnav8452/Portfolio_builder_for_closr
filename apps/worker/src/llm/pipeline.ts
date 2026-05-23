@@ -1,86 +1,75 @@
 import { env } from "../env";
-import type { LLMProvider, LLMResponse } from "./types";
-import { DeepSeekProvider } from "./providers/deepseek";
-import { OllamaProvider } from "./providers/ollama";
+import type { LLMResponse } from "./types";
 import { creatorIdentityZodSchema, creatorIdentityJsonSchema } from "./schema";
-
-// Basic in-memory circuit breaker
-let deepSeekFailures = 0;
-let deepSeekCircuitOpenUntil = 0;
-const MAX_FAILURES = 3;
-const CIRCUIT_TIMEOUT_MS = 60000; // 1 minute pause
-
-const providers = {
-  deepseek: new DeepSeekProvider(),
-  ollama: new OllamaProvider(),
-};
 
 export async function extractCreatorIdentity(rawText: string): Promise<LLMResponse> {
   const schemaString = JSON.stringify(creatorIdentityJsonSchema);
-
-  // 1. Determine active provider chain
-  const chain: LLMProvider[] = [];
-  
-  if (env.llmProvider === "deepseek") {
-    if (Date.now() > deepSeekCircuitOpenUntil) {
-      chain.push(providers.deepseek);
-    }
-    chain.push(providers.ollama); // Fallback
-  } else {
-    chain.push(providers.ollama);
-  }
-
-  let lastError: any = null;
-
-  for (const provider of chain) {
-    try {
-      const result = await executeWithRepair(provider, rawText, schemaString);
-      
-      if (provider.name === "deepseek") {
-        deepSeekFailures = 0; // Reset circuit breaker
-      }
-      return result;
-    } catch (err) {
-      lastError = err;
-      if (provider.name === "deepseek") {
-        deepSeekFailures++;
-        if (deepSeekFailures >= MAX_FAILURES) {
-          deepSeekCircuitOpenUntil = Date.now() + CIRCUIT_TIMEOUT_MS;
-          console.warn(`[CIRCUIT BREAKER] DeepSeek failed ${MAX_FAILURES} times. Pausing API calls for 1 minute.`);
-        }
-      }
-      console.warn(`[LLM] Provider ${provider.name} failed:`, String(err));
-      // Continue to next provider in chain
-    }
-  }
-
-  throw new Error(`All LLM providers failed. Last error: ${String(lastError)}`);
+  return executeWithRepair(rawText, schemaString);
 }
 
 async function executeWithRepair(
-  provider: LLMProvider,
   rawText: string,
   schemaString: string,
   attempt = 1
 ): Promise<LLMResponse> {
-  const result = await provider.extractIdentity(rawText, schemaString);
+  const GATEWAY_URL = env.aiGatewayUrl || "http://localhost:3000/v1/chat/completions";
+  const GATEWAY_SECRET = env.aiGatewaySecret || "dev-secret";
+
+  const startTime = Date.now();
+
+  const response = await fetch(GATEWAY_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${GATEWAY_SECRET}`
+    },
+    body: JSON.stringify({
+      model: "gpt-4o-mini", // Virtualized by Freeloader
+      messages: [
+        { role: "system", content: `Extract creator identity following this JSON schema exactly: ${schemaString}` },
+        { role: "user", content: rawText }
+      ],
+      response_format: { type: "json_object" },
+      temperature: 0.1
+    })
+  });
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`AI Gateway error: ${response.status} ${errText}`);
+  }
+
+  const data = await response.json();
+  const duration_ms = Date.now() - startTime;
   
-  let jsonString = result.raw_model_output;
+  let jsonString = data.choices[0]?.message?.content || "{}";
+  
   // Strip markdown fences
-  if (jsonString.startsWith("```")) {
-    jsonString = jsonString.replace(/^```(json)?\n/, "").replace(/\n```$/, "");
+  if (jsonString.startsWith("\`\`\`")) {
+    jsonString = jsonString.replace(/^\`\`\`(json)?\n/, "").replace(/\n\`\`\`$/, "");
   }
 
   try {
     const rawParsed = JSON.parse(jsonString);
     const parsed = creatorIdentityZodSchema.parse(rawParsed);
-    return { ...result, parsed };
+    return {
+      parsed,
+      raw_model_output: jsonString,
+      provider: data.provider_used || "freeloader",
+      model: data.model || "unknown",
+      prompt_version: "v2-gateway",
+      prompt_hash: "hash-placeholder",
+      request_id: data.id || "req-id",
+      duration_ms,
+      input_tokens: data.usage?.prompt_tokens,
+      output_tokens: data.usage?.completion_tokens,
+      estimated_cost_usd: 0
+    };
   } catch (err) {
     if (attempt === 1) {
-      console.warn(`[LLM] Schema validation failed for ${provider.name}, trying repair prompt...`, err);
-      // Construct a repair prompt
+      console.warn(`[LLM] Schema validation failed via gateway, trying repair prompt...`, err);
       const repairPrompt = `The previous JSON you output was invalid or failed validation. Please fix it.\n\nOriginal text:\n${rawText}\n\nFailed output:\n${jsonString}\n\nValidation errors:\n${String(err)}`;
-      return executeWithRepair(provider, repairPrompt, schemaString, attempt + 1);
+      return executeWithRepair(repairPrompt, schemaString, attempt + 1);
     }
     throw new Error(`Failed to parse/validate LLM output after repair. Errors: ${String(err)}`);
   }
