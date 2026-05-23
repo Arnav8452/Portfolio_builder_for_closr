@@ -19,8 +19,8 @@ export async function fetchOauthPlatform(platform: CreatorPlatform, url: string,
 
   if (platform === "twitch") {
     return {
-      rawText: "Twitch API collection is queued. Configure app token exchange before production fetching.",
-      payload: { source: "twitch_api", configured: Boolean(env.twitchClientId && env.twitchClientSecret) },
+      rawText: "[SYSTEM] Twitch API collection is not supported in the current worker environment.",
+      payload: { source: "unsupported", status: "not_supported", platform },
     };
   }
 

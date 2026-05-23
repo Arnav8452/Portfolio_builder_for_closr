@@ -35,6 +35,17 @@ export async function pollScrapingQueue() {
 async function processScrapingJob(job: ScrapingJob) {
   try {
     const result = await scrape(job);
+    
+    // Check for bio / domain verification challenges
+    if (result.rawText && (result.rawText.includes("closr-8f2a") || result.rawText.includes("closr-verification=8f2a"))) {
+      if (job.link_id) {
+        await updateRow("creator_links", job.link_id, {
+          verification_level: 2,
+          verification_status: "challenge_verified",
+        });
+      }
+    }
+
     const rawOutput = {
       payload: result.payload,
       bio_links: parseBioLinks(result.rawText),
