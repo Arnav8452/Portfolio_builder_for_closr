@@ -439,3 +439,25 @@ FROM creators c
 LEFT JOIN creator_identities ci ON ci.creator_id = c.id
 LEFT JOIN next_auth.users u ON u.id::text = c.owner_user_id
 WHERE c.onboarding_status IN ('completed', 'analysis_completed', 'intake');
+
+CREATE TABLE IF NOT EXISTS external_api_tokens (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    creator_id UUID NOT NULL REFERENCES creators(id) ON DELETE CASCADE,
+    provider TEXT NOT NULL,
+    access_token TEXT NOT NULL,
+    expires_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(creator_id, provider)
+);
+
+CREATE TABLE IF NOT EXISTS social_cache (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    creator_id UUID NOT NULL REFERENCES creators(id) ON DELETE CASCADE,
+    platform TEXT NOT NULL,
+    handle TEXT,
+    profile_data JSONB NOT NULL DEFAULT '{}'::jsonb,
+    recent_media JSONB NOT NULL DEFAULT '[]'::jsonb,
+    synced_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE(creator_id, platform)
+);

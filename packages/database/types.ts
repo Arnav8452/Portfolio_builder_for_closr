@@ -168,6 +168,28 @@ export type Database = {
           created_at: string;
         };
       };
+      external_api_tokens: {
+        Row: {
+          id: string;
+          creator_id: string;
+          provider: string;
+          access_token: string;
+          expires_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+      };
+      social_cache: {
+        Row: {
+          id: string;
+          creator_id: string;
+          platform: string;
+          handle: string | null;
+          profile_data: Json;
+          recent_media: Json;
+          synced_at: string;
+        };
+      };
     };
     Functions: {
       claim_scraping_jobs: {
