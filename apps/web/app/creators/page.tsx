@@ -43,7 +43,7 @@ export default async function CreatorsPage() {
       portfolio = { ...creator, links: links ?? [] };
 
       // Fetch NextAuth accounts for this user
-      const { data: accounts } = await supabase
+      const { data: accounts } = await supabase.schema("next_auth")
         .from("accounts")
         .select("provider")
         .eq("userId", userId);

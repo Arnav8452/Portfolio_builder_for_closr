@@ -25,7 +25,7 @@ export async function GET(request: Request) {
   }
 
   // 2. Get their NextAuth accounts
-  const { data: accounts } = await supabase
+  const { data: accounts } = await supabase.schema("next_auth")
     .from("accounts")
     .select("provider, providerAccountId")
     .eq("userId", userId);
