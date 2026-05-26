@@ -362,8 +362,17 @@ export function CreatorIntake({ existingPortfolio }: { existingPortfolio?: Exist
       if (savedNode) {
         try {
           const parsed = JSON.parse(savedNode);
-          setRootNode(parsed);
-          setDisplayName(nameFromHandle(parsed.username));
+          
+          // JSON.stringify strips functions (like Lucide icons), so we must re-attach it
+          // to prevent React from throwing "Element type is invalid" when rendering <Icon />
+          const detection = parseUrlForPlatform(parsed.url);
+          const reconstructedNode: RootNode = {
+            ...parsed,
+            icon: detection.icon,
+          };
+          
+          setRootNode(reconstructedNode);
+          setDisplayName(nameFromHandle(reconstructedNode.username));
           setCurrentStep(STEPS.INPUT);
           window.sessionStorage.removeItem("pendingRootNode");
         } catch {
