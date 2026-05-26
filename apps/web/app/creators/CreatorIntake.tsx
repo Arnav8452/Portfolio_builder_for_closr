@@ -355,6 +355,24 @@ export function CreatorIntake({ existingPortfolio }: { existingPortfolio?: Exist
     return () => window.clearInterval(interval);
   }, [currentStep]);
 
+  // Restore root node after OAuth redirect
+  useEffect(() => {
+    if (isAuthenticated && !isEditing) {
+      const savedNode = window.sessionStorage.getItem("pendingRootNode");
+      if (savedNode) {
+        try {
+          const parsed = JSON.parse(savedNode);
+          setRootNode(parsed);
+          setDisplayName(nameFromHandle(parsed.username));
+          setCurrentStep(STEPS.INPUT);
+          window.sessionStorage.removeItem("pendingRootNode");
+        } catch {
+          // ignore parsing errors
+        }
+      }
+    }
+  }, [isAuthenticated, isEditing]);
+
   function handleHoneypotSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!mainLinkInput.trim()) return;
@@ -386,6 +404,15 @@ export function CreatorIntake({ existingPortfolio }: { existingPortfolio?: Exist
       window.location.href = "/api/auth/meta";
       return;
     }
+
+    // Save state before redirecting to NextAuth
+    const username = handleFromUrl(mainLinkInput);
+    window.sessionStorage.setItem("pendingRootNode", JSON.stringify({
+      ...detectedPlatform,
+      url: withProtocol(mainLinkInput),
+      username,
+    }));
+
     // For YouTube, we use the 'youtube' provider ID which grants YouTube-specific scopes
     // NextAuth will handle the session linking automatically
     const providerId = detectedPlatform.provider === "youtube" ? "youtube" : detectedPlatform.provider;
