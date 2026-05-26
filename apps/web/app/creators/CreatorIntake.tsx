@@ -257,8 +257,6 @@ function parseUrlForPlatform(input: string): PlatformDetection {
         trust: "OAuth L3",
         provider: "meta",
         accent: "social",
-        url: withProtocol(mainLinkInput),
-        username: handleFromUrl(mainLinkInput),
       };
     }
 
@@ -402,11 +400,7 @@ export function CreatorIntake({ existingPortfolio }: { existingPortfolio?: Exist
 
   function connectOauthRoot() {
     if (!detectedPlatform?.provider) return;
-    if (detectedPlatform.provider === "meta") {
-      window.location.href = "/api/auth/meta";
-      return;
-    }
-
+    
     // Save state before redirecting to NextAuth
     const username = handleFromUrl(mainLinkInput);
     window.sessionStorage.setItem("pendingRootNode", JSON.stringify({
@@ -414,6 +408,11 @@ export function CreatorIntake({ existingPortfolio }: { existingPortfolio?: Exist
       url: withProtocol(mainLinkInput),
       username,
     }));
+
+    if (detectedPlatform.provider === "meta") {
+      window.location.href = "/api/auth/meta";
+      return;
+    }
 
     // For YouTube, we use the 'youtube' provider ID which grants YouTube-specific scopes
     // NextAuth will handle the session linking automatically
