@@ -69,24 +69,23 @@ APIFY_API_TOKEN=your_apify_token
 CRON_SECRET=secret_for_cron_endpoint
 ```
 
-### 3. Configure the AI Gateway (`apps/ai-gateway/.env`)
-Deploy this gateway as a long-running service.
-```env
-DEEPSEEK_API_KEY=your_key
-GROQ_API_KEY=your_key
-CEREBRAS_API_KEY=your_key
-OPENROUTER_API_KEY=your_key
-```
+### 3. Deploy the Monolith Worker (Koyeb / Render)
+We merged the AI Gateway and the Scraping Worker into a single `@closr/worker` Node.js application to run easily on a single free Koyeb instance.
 
-### 4. Configure the Worker (`apps/worker/.env`)
-Deploy this worker to Render or Railway. 
+When deploying to Koyeb, configure it as a web service:
+- **Build Command:** `npm install && npx turbo run build --filter=@closr/worker`
+- **Run Command:** `npm run start --workspace=@closr/worker`
+- **Port:** `8080`
+
 ```env
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
 
-# Gateway Routing
-AI_GATEWAY_URL=http://localhost:3001
-GATEWAY_AUTH_TOKEN=your_bearer_token
+# Gateway Configuration
+GEMINI_API_KEY=your_google_studio_key
+GATEWAY_SECRET=closr-secure-ai-key-2026
+AI_GATEWAY_URL=http://localhost:8080/v1/chat/completions # The worker queries its own internal Express server!
 
+GITHUB_TOKEN=your_github_pat
 PORT=8080 
 ```

@@ -1,6 +1,11 @@
 import * as Sentry from "@sentry/node";
 import { nodeProfilingIntegration } from "@sentry/profiling-node";
-import http from "http";
+import express from "express";
+import cors from "cors";
+import helmet from "helmet";
+import { PipelineOrchestrator } from "@freeloaderapi/core";
+import { GeminiAdapter, GroqAdapter, CerebrasAdapter, OpenRouterAdapter } from "@freeloaderapi/adapters";
+import { authenticate } from "./middleware/auth";
 import { pollAnalysisQueue } from "./queues/analysis-queue";
 import { pollScrapingQueue } from "./queues/scraping-queue";
 import { env } from "./env";
@@ -40,21 +45,45 @@ async function tick() {
 async function main() {
   console.log(`[worker] ${env.workerId} started`);
 
-  // 3. Health Check Server for Render/Railway
-  const server = http.createServer((req, res) => {
-    if (req.url === "/health") {
-      res.writeHead(200);
-      res.end("OK");
-    } else {
-      res.writeHead(404);
-      res.end("Not Found");
+  // 3. Initialize AI Gateway Pipeline
+  const providers = [];
+  providers.push(new GeminiAdapter());
+  providers.push(new CerebrasAdapter());
+  providers.push(new GroqAdapter());
+  providers.push(new OpenRouterAdapter());
+  
+  const pipeline = new PipelineOrchestrator(providers);
+
+  // 4. Start Express Server (Monolith mode: Health Check + AI Gateway)
+  const app = express();
+  app.use(helmet());
+  app.use(cors());
+  app.use(express.json());
+
+  app.get("/health", (req, res) => {
+    res.status(200).json({ status: "ok" });
+  });
+
+  app.post("/v1/chat/completions", authenticate, async (req, res) => {
+    try {
+      const result = await pipeline.execute(req.body);
+      res.json(result);
+    } catch (error: any) {
+      console.error("[ai-gateway] Freeloader error:", error);
+      res.status(500).json({
+        error: {
+          message: error.message || "Internal Server Error",
+          type: "server_error"
+        }
+      });
     }
   });
 
-  server.listen(env.port, () => {
-    console.log(`[worker] Health check server listening on port ${env.port}`);
+  const server = app.listen(env.port, () => {
+    console.log(`[worker] Express AI Gateway & Health server listening on port ${env.port}`);
   });
 
+  // 5. Start Background Polling Loop
   while (isRunning) {
     try {
       const processed = await tick();
