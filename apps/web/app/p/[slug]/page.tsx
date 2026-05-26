@@ -52,15 +52,22 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
 function ProfileView({ profile }: { profile: PublicProfile }) {
   const youtubeMetrics = profile.platform_metrics?.find((m) => m.platform === "youtube");
   const githubMetrics = profile.platform_metrics?.find((m) => m.platform === "github");
+  const twitchMetrics = profile.platform_metrics?.find((m) => m.platform === "twitch");
+
+  const displayImage = 
+    profile.owner_image || 
+    githubMetrics?.raw_payload?.profile?.avatar_url ||
+    twitchMetrics?.raw_payload?.profile?.profile_image_url ||
+    null;
 
   return (
     <main className="premium-page fade-in">
       <header className="portfolio-header">
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "1.5rem" }}>
-          {profile.owner_image ? (
+          {displayImage ? (
             <div style={{ width: 88, height: 88, border: "3px solid var(--arcade-ink)", boxShadow: "4px 4px 0 0 var(--arcade-ink)", overflow: "hidden" }}>
               <img 
-                src={profile.owner_image} 
+                src={displayImage} 
                 alt={profile.display_name} 
                 style={{ width: "100%", height: "100%", objectFit: "cover" }}
               />
