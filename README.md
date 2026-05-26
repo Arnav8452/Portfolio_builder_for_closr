@@ -69,13 +69,18 @@ APIFY_API_TOKEN=your_apify_token
 CRON_SECRET=secret_for_cron_endpoint
 ```
 
-### 3. Deploy the Monolith Worker (Koyeb / Render)
-We merged the AI Gateway and the Scraping Worker into a single `@closr/worker` Node.js application to run easily on a single free Koyeb instance.
+### 3. Deploy the Monolith Worker (Render)
+We merged the AI Gateway and the Scraping Worker into a single `@closr/worker` Node.js application.
 
-When deploying to Koyeb, configure it as a web service:
-- **Build Command:** `npm install && npx turbo run build --filter=@closr/worker`
-- **Run Command:** `npm run start --workspace=@closr/worker`
-- **Port:** `8080`
+To deploy it to Render instantly:
+1. Go to your Render Dashboard.
+2. Click **New +** and select **Blueprint**.
+3. Connect your GitHub repository.
+4. Render will read the `render.yaml` file in this repository and automatically configure the Web Service with the correct Build Command, Run Command, and standard Environment Variables.
+5. In the Render Dashboard, you will be prompted to supply your private keys:
+   - `SUPABASE_URL`
+   - `SUPABASE_SERVICE_ROLE_KEY`
+   - `GEMINI_API_KEY`
 
 ```env
 SUPABASE_URL=https://your-project.supabase.co

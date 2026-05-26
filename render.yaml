@@ -1,0 +1,21 @@
+services:
+  - type: web
+    name: closr-worker-monolith
+    env: node
+    buildCommand: npm install && npx turbo run build --filter=@closr/worker
+    startCommand: npm run start --workspace=@closr/worker
+    envVars:
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GATEWAY_SECRET
+        value: dev-secret_2005
+      - key: AI_GATEWAY_URL
+        value: http://localhost:8080/v1/chat/completions
+      - key: GITHUB_TOKEN
+        sync: false
+      - key: PORT
+        value: 8080
