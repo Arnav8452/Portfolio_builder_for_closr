@@ -24,6 +24,11 @@ export async function fetchOauthPlatform(platform: CreatorPlatform, url: string,
     };
   }
 
+  if (platform === "instagram") {
+    if (!creatorId) throw new Error("creatorId required for Instagram Analytics.");
+    return fetchInstagramStats(url, creatorId);
+  }
+
   return {
     rawText: "",
     payload: { source: "oauth", unsupported_platform: platform },
@@ -144,6 +149,54 @@ async function fetchYouTubeAnalytics(url: string, creatorId: string): Promise<Oa
       geography: (geo as any)?.rows ?? [],
       engagement: (watch as any)?.rows ?? [],
       traffic_sources: (traffic as any)?.rows ?? []
+    }
+  };
+}
+
+async function fetchInstagramStats(url: string, creatorId: string): Promise<OauthScrapeResult> {
+  // 1. Get the Meta token from external_api_tokens
+  const tokens = await getRow<any>("external_api_tokens", `creator_id=eq.${creatorId}&provider=eq.meta`);
+  if (!tokens || tokens.length === 0) {
+    throw new Error("Missing Meta OAuth token. Creator must re-authenticate Instagram.");
+  }
+  const token = tokens[0].access_token;
+
+  // 2. Resolve the connected Instagram Business/Creator Account ID
+  const pagesRes = await fetch(`https://graph.facebook.com/v19.0/me/accounts?fields=instagram_business_account&access_token=${token}`);
+  if (!pagesRes.ok) {
+    const err = await pagesRes.text();
+    throw new Error(`Failed to fetch Meta Pages: ${err}`);
+  }
+  
+  const pagesData = await pagesRes.json() as { data: Array<{ instagram_business_account?: { id: string } }> };
+  const igAccountId = pagesData.data?.find((p) => p.instagram_business_account?.id)?.instagram_business_account?.id;
+  
+  if (!igAccountId) {
+    throw new Error("No connected Instagram Professional account found for this Meta user.");
+  }
+
+  // 3. Fetch the Instagram Analytics
+  const igRes = await fetch(`https://graph.facebook.com/v19.0/${igAccountId}?fields=username,name,biography,followers_count,media_count,website&access_token=${token}`);
+  if (!igRes.ok) {
+    const err = await igRes.text();
+    throw new Error(`Failed to fetch Instagram stats: ${err}`);
+  }
+
+  const igData = await igRes.json() as Record<string, any>;
+  
+  const rawText = [
+    igData.name ? `Name: ${igData.name}` : "",
+    igData.username ? `Username: ${igData.username}` : "",
+    igData.biography ? `Bio: ${igData.biography}` : "",
+    igData.followers_count !== undefined ? `Followers: ${igData.followers_count}` : "",
+    igData.media_count !== undefined ? `Posts: ${igData.media_count}` : "",
+  ].filter(Boolean).join("\n\n");
+
+  return {
+    rawText,
+    payload: {
+      source: "instagram_graph_api",
+      profile: igData,
     }
   };
 }

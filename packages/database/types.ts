@@ -16,6 +16,7 @@ export const platforms = [
   "x",
   "pinterest",
   "website",
+  "instagram",
   "other",
 ] as const;
 
