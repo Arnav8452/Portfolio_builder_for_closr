@@ -30,7 +30,6 @@ export const env = {
   ollamaBaseUrl: (process.env.OLLAMA_BASE_URL ?? "http://localhost:11434").replace(/\/$/, ""),
   ollamaModel: process.env.OLLAMA_MODEL ?? "qwen2.5:3b",
   githubToken: process.env.GITHUB_TOKEN,
-  youtubeApiKey: process.env.YOUTUBE_API_KEY,
   twitchClientId: process.env.TWITCH_CLIENT_ID,
   twitchClientSecret: process.env.TWITCH_CLIENT_SECRET,
 };
