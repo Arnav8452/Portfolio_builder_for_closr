@@ -12,3 +12,7 @@ __pycache__/
 .venv/
 .pytest_cache/
 api_quotas.json
+
+# API Files
+Render_apis.md
+vercel_apis.md
