@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/node";
 import { nodeProfilingIntegration } from "@sentry/profiling-node";
-import express from "express";
+import express, { type Request, type Response } from "express";
 import cors from "cors";
 import helmet from "helmet";
 import { PipelineOrchestrator } from "@freeloaderapi/core";
@@ -60,11 +60,11 @@ async function main() {
   app.use(cors());
   app.use(express.json());
 
-  app.get("/health", (req, res) => {
+  app.get("/health", (req: Request, res: Response) => {
     res.status(200).json({ status: "ok" });
   });
 
-  app.post("/v1/chat/completions", authenticate, async (req, res) => {
+  app.post("/v1/chat/completions", authenticate, async (req: Request, res: Response) => {
     try {
       const result = await pipeline.execute(req.body);
       res.json(result);
