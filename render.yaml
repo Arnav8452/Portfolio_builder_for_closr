@@ -29,5 +29,13 @@ services:
         sync: false
       - key: TWITCH_CLIENT_SECRET
         sync: false
+      - key: GOOGLE_ID
+        sync: false
+      - key: GOOGLE_SECRET
+        sync: false
+      - key: META_CLIENT_ID
+        sync: false
+      - key: META_CLIENT_SECRET
+        sync: false
       - key: PORT
         value: 8080
