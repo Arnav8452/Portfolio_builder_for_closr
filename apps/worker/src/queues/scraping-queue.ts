@@ -4,6 +4,7 @@ import { insertRow, rpc, updateRow, upsertRow } from "../supabase-rest.js";
 import { parseRssFeed, scrapeRssSource } from "../scrapers/rss.js";
 import { fetchOauthPlatform } from "../scrapers/oauth.js";
 import { scrapeWithPlaywright } from "../scrapers/playwright.js";
+import { scrapeTwitterWithApify } from "../scrapers/apify.js";
 import { parseBioLinks } from "../osint/bio-parser.js";
 import { cleanScrapedContent } from "../osint/cleaner.js";
 import { extractMetricsFromText } from "../osint/metrics.js";
@@ -106,7 +107,11 @@ async function scrape(job: ScrapingJob): Promise<ScrapeResult> {
     };
   }
 
-  if (job.platform === "twitter" || job.platform === "x" || job.platform === "pinterest") {
+  if (job.platform === "twitter" || job.platform === "x") {
+    return scrapeTwitterWithApify(job.url);
+  }
+
+  if (job.platform === "pinterest") {
     return scrapeWithPlaywright(job.platform, job.url);
   }
 

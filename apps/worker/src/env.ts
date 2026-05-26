@@ -32,4 +32,5 @@ export const env = {
   githubToken: process.env.GITHUB_TOKEN,
   twitchClientId: process.env.TWITCH_CLIENT_ID,
   twitchClientSecret: process.env.TWITCH_CLIENT_SECRET,
+  apifyToken: process.env.APIFY_API_TOKEN,
 };

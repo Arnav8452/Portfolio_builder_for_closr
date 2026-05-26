@@ -18,10 +18,8 @@ export async function fetchOauthPlatform(platform: CreatorPlatform, url: string,
   }
 
   if (platform === "twitch") {
-    return {
-      rawText: "[SYSTEM] Twitch API collection is not supported in the current worker environment.",
-      payload: { source: "unsupported", status: "not_supported", platform },
-    };
+    if (!creatorId) throw new Error("creatorId required for Twitch API.");
+    return fetchTwitchProfile(url, creatorId);
   }
 
   if (platform === "instagram") {
@@ -197,6 +195,55 @@ async function fetchInstagramStats(url: string, creatorId: string): Promise<Oaut
     payload: {
       source: "instagram_graph_api",
       profile: igData,
+    }
+  };
+}
+
+async function fetchTwitchProfile(url: string, creatorId: string): Promise<OauthScrapeResult> {
+  const creators = await getRow<any>("creators", `id=eq.${creatorId}&select=owner_user_id`);
+  if (!creators || creators.length === 0) throw new Error("Creator not found");
+  const userId = creators[0].owner_user_id;
+
+  const accounts = await getRow<any>("accounts", `userId=eq.${userId}&provider=eq.twitch`);
+  if (!accounts || accounts.length === 0) {
+    throw new Error("Missing Twitch OAuth token. Creator must connect Twitch.");
+  }
+  const token = accounts[0].access_token;
+  const providerAccountId = accounts[0].providerAccountId;
+
+  const headers = {
+    Authorization: `Bearer ${token}`,
+    "Client-Id": env.twitchClientId || "",
+  };
+
+  const userRes = await fetch(`https://api.twitch.tv/helix/users?id=${providerAccountId}`, { headers });
+  if (!userRes.ok) {
+    throw new Error(`Failed to fetch Twitch user: ${await userRes.text()}`);
+  }
+  const userData = await userRes.json() as any;
+  const user = userData.data?.[0];
+  if (!user) {
+    throw new Error("Twitch user not found in API response.");
+  }
+
+  const channelRes = await fetch(`https://api.twitch.tv/helix/channels?broadcaster_id=${providerAccountId}`, { headers });
+  const channelData = channelRes.ok ? await channelRes.json() as any : null;
+  const channel = channelData?.data?.[0];
+
+  const rawText = [
+    user.display_name ? `Display Name: ${user.display_name}` : "",
+    user.description ? `Bio: ${user.description}` : "",
+    user.view_count !== undefined ? `Total Views: ${user.view_count}` : "",
+    channel?.game_name ? `Game: ${channel.game_name}` : "",
+    channel?.title ? `Title: ${channel.title}` : "",
+  ].filter(Boolean).join("\n\n");
+
+  return {
+    rawText,
+    payload: {
+      source: "twitch_api",
+      profile: user,
+      channel: channel || null,
     }
   };
 }
