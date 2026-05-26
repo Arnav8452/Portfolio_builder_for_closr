@@ -8,6 +8,7 @@ export const platforms = [
   "x",
   "pinterest",
   "website",
+  "instagram",
   "other",
 ] as const;
 
@@ -23,6 +24,7 @@ const hostMap: Record<string, CreatorPlatform> = {
   "twitter.com": "twitter",
   "x.com": "x",
   "pinterest.com": "pinterest",
+  "instagram.com": "instagram",
 };
 
 export function normalizeUrl(input: string) {

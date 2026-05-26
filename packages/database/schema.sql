@@ -66,6 +66,7 @@ DO $$ BEGIN
         'x',
         'pinterest',
         'website',
+        'instagram',
         'other'
     );
 EXCEPTION WHEN duplicate_object THEN NULL;

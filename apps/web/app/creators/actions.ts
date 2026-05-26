@@ -40,7 +40,7 @@ export async function submitCreatorProfile(formData: FormData) {
   const slug = `${baseSlug}-${Math.random().toString(36).slice(2, 7)}`;
   const normalizedRootUrl = normalizeUrl(rootUrl);
   const rootDetectedPlatform = detectPlatform(rootUrl);
-  const root = rootPlatform === "youtube" || rootPlatform === "github" || rootPlatform === "twitch"
+  const root = rootPlatform === "youtube" || rootPlatform === "github" || rootPlatform === "twitch" || rootPlatform === "instagram"
     ? rootPlatform
     : rootDetectedPlatform;
 
@@ -164,7 +164,7 @@ export async function updateCreatorProfile(formData: FormData) {
     .from("creators")
     .update({
       display_name: displayName,
-      root_platform: rootPlatform === "youtube" || rootPlatform === "github" || rootPlatform === "twitch"
+      root_platform: rootPlatform === "youtube" || rootPlatform === "github" || rootPlatform === "twitch" || rootPlatform === "instagram"
         ? rootPlatform
         : detectPlatform(rootUrl),
       onboarding_status: "queued",

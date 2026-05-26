@@ -257,6 +257,8 @@ function parseUrlForPlatform(input: string): PlatformDetection {
         trust: "OAuth L3",
         provider: "meta",
         accent: "social",
+        url: withProtocol(mainLinkInput),
+        username: handleFromUrl(mainLinkInput),
       };
     }
 
