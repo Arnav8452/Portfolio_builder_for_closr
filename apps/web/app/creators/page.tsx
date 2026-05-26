@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { Loader2 } from "lucide-react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { CreatorIntake } from "./CreatorIntake";
@@ -62,7 +64,9 @@ export default async function CreatorsPage() {
       <CreatorHeader user={session.user as any} />
       <div className="flex-grow">
         {portfolio ? (
-          <CreatorDashboard portfolio={portfolio} missingProviders={missingProviders} />
+          <Suspense fallback={<div className="p-8 text-center"><Loader2 className="spin inline mr-2" size={16} /> Loading dashboard...</div>}>
+            <CreatorDashboard portfolio={portfolio} missingProviders={missingProviders} />
+          </Suspense>
         ) : (
           <CreatorIntake />
         )}
