@@ -15,8 +15,8 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Missing code" }, { status: 400 });
   }
 
-  const appId = process.env.META_APP_ID;
-  const appSecret = process.env.META_APP_SECRET;
+  const appId = process.env.META_CLIENT_ID || process.env.META_APP_ID;
+  const appSecret = process.env.META_CLIENT_SECRET || process.env.META_APP_SECRET;
   const redirectUri = `${process.env.NEXTAUTH_URL}/api/auth/meta/callback`;
 
   if (!appId || !appSecret) {

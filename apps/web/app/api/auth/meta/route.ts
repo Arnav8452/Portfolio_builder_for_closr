@@ -8,7 +8,7 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const appId = process.env.META_APP_ID;
+  const appId = process.env.META_CLIENT_ID || process.env.META_APP_ID;
   const redirectUri = `${process.env.NEXTAUTH_URL}/api/auth/meta/callback`;
   
   if (!appId || !process.env.NEXTAUTH_URL) {

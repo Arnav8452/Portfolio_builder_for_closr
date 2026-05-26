@@ -15,6 +15,28 @@ export async function fetchInstagramGraphData(userId: string) {
   }
 
   const token = tokenRecord.access_token;
+  const fields = "id,username,biography,profile_picture_url,followers_count,media.limit(100){id,caption,media_url,media_type,permalink,timestamp}";
+  
+  try {
+    // Attempt the direct /me approach first (if app uses Instagram Login directly)
+    const meRes = await fetch(`https://graph.facebook.com/v19.0/me?fields=${fields}&access_token=${token}`);
+    const meData = await meRes.json();
+    
+    if (!meData.error && (meData.username || meData.followers_count !== undefined)) {
+      return {
+        biography: meData.biography,
+        profile_picture_url: meData.profile_picture_url,
+        followers_count: meData.followers_count,
+        media: meData.media?.data?.map((m: any) => ({
+          media_url: m.media_url,
+          caption: m.caption,
+          permalink: m.permalink
+        })) || []
+      };
+    }
+  } catch (e) {
+    // Ignore error and fall through to page method
+  }
   
   const pagesRes = await fetch(`https://graph.facebook.com/v19.0/me/accounts?fields=instagram_business_account&access_token=${token}`);
   const pagesData = await pagesRes.json();
