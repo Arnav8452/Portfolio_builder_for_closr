@@ -21,6 +21,7 @@ export default async function CreatorsPage() {
   // Phase 2: Routing fork — check for existing portfolio
   const userId = (session.user as any).id;
   let portfolio: ExistingPortfolio | null = null;
+  let missingProviders: string[] = ["github", "youtube", "twitch"];
 
   try {
     const supabase = getSupabaseAdmin();
@@ -40,6 +41,17 @@ export default async function CreatorsPage() {
         .order("verification_level", { ascending: false });
 
       portfolio = { ...creator, links: links ?? [] };
+
+      // Fetch NextAuth accounts for this user
+      const { data: accounts } = await supabase
+        .from("accounts")
+        .select("provider")
+        .eq("userId", userId);
+
+      if (accounts) {
+        const connectedProviders = accounts.map((a) => a.provider.toLowerCase());
+        missingProviders = missingProviders.filter(p => !connectedProviders.includes(p));
+      }
     }
   } catch {
     // Supabase not configured or no data — show builder
@@ -50,7 +62,7 @@ export default async function CreatorsPage() {
       <CreatorHeader user={session.user as any} />
       <div className="flex-grow">
         {portfolio ? (
-          <CreatorDashboard portfolio={portfolio} />
+          <CreatorDashboard portfolio={portfolio} missingProviders={missingProviders} />
         ) : (
           <CreatorIntake />
         )}

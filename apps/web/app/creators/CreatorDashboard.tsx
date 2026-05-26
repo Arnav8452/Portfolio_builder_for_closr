@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
-import { signOut } from "next-auth/react";
+import { useState, useEffect } from "react";
+import { signOut, signIn } from "next-auth/react";
+import { useSearchParams } from "next/navigation";
 import {
   ExternalLink,
   Edit3,
@@ -15,6 +16,7 @@ import {
   Twitter,
   Linkedin,
   LogOut,
+  AlertCircle,
   type LucideIcon,
 } from "lucide-react";
 import { CreatorIntake } from "./CreatorIntake";
@@ -71,9 +73,20 @@ function timeSince(dateStr: string) {
   return `${days}d ago`;
 }
 
-export function CreatorDashboard({ portfolio }: { portfolio: ExistingPortfolio }) {
+export function CreatorDashboard({ portfolio, missingProviders = [] }: { portfolio: ExistingPortfolio, missingProviders?: string[] }) {
   const [mode, setMode] = useState<"dashboard" | "edit">("dashboard");
   const [copied, setCopied] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const searchParams = useSearchParams();
+
+  useEffect(() => {
+    const err = searchParams?.get("error");
+    if (err === "OAuthAccountNotLinked") {
+      setErrorMsg("This account is already connected to another portfolio.");
+      // Optional: Clean up URL
+      window.history.replaceState(null, "", "/creators");
+    }
+  }, [searchParams]);
 
   if (mode === "edit") {
     return <CreatorIntake existingPortfolio={portfolio} />;
@@ -129,6 +142,14 @@ export function CreatorDashboard({ portfolio }: { portfolio: ExistingPortfolio }
           <LogOut size={14} /> Sign Out
         </button>
       </div>
+
+      {/* Error Message */}
+      {errorMsg && (
+        <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded-md mb-6 flex items-center gap-2">
+          <AlertCircle size={16} />
+          {errorMsg}
+        </div>
+      )}
 
       {/* Main portfolio card */}
       <div className="portfolio-dash-card">
@@ -191,6 +212,45 @@ export function CreatorDashboard({ portfolio }: { portfolio: ExistingPortfolio }
           </button>
         </div>
       </div>
+
+      {/* Connect More Accounts */}
+      {missingProviders.length > 0 && (
+        <div className="share-card" style={{ marginBottom: "24px" }}>
+          <h3>Connect More Verified Accounts (Root Nodes)</h3>
+          <p className="dashboard-subtitle" style={{ marginBottom: "16px", marginTop: "4px" }}>
+            Linking these platforms cryptographically proves your identity.
+          </p>
+          <div className="share-social-row">
+            {missingProviders.includes("github") && (
+              <button
+                className="secondary-action"
+                type="button"
+                onClick={() => signIn("github", { callbackUrl: "/api/auth/sync-oauth" })}
+              >
+                <Github size={14} /> Connect GitHub
+              </button>
+            )}
+            {missingProviders.includes("youtube") && (
+              <button
+                className="secondary-action"
+                type="button"
+                onClick={() => signIn("youtube", { callbackUrl: "/api/auth/sync-oauth" })}
+              >
+                <Youtube size={14} /> Connect YouTube
+              </button>
+            )}
+            {missingProviders.includes("twitch") && (
+              <button
+                className="secondary-action"
+                type="button"
+                onClick={() => signIn("twitch", { callbackUrl: "/api/auth/sync-oauth" })}
+              >
+                <Twitch size={14} /> Connect Twitch
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Share card */}
       <div className="share-card">
