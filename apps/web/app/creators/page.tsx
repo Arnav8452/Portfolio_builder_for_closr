@@ -4,6 +4,7 @@ import { CreatorIntake } from "./CreatorIntake";
 import { AuthGateHero } from "./AuthGateHero";
 import { CreatorDashboard, type ExistingPortfolio } from "./CreatorDashboard";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
+import { CreatorHeader } from "./CreatorHeader";
 
 export default async function CreatorsPage() {
   const session = await getServerSession(authOptions);
@@ -45,12 +46,15 @@ export default async function CreatorsPage() {
   }
 
   return (
-    <main className="creator-page">
-      {portfolio ? (
-        <CreatorDashboard portfolio={portfolio} />
-      ) : (
-        <CreatorIntake />
-      )}
+    <main className="creator-page flex flex-col min-h-screen">
+      <CreatorHeader user={session.user as any} />
+      <div className="flex-grow">
+        {portfolio ? (
+          <CreatorDashboard portfolio={portfolio} />
+        ) : (
+          <CreatorIntake />
+        )}
+      </div>
     </main>
   );
 }
