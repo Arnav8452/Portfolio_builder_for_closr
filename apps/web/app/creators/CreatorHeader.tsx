@@ -13,25 +13,43 @@ type CreatorHeaderProps = {
 
 export function CreatorHeader({ user }: CreatorHeaderProps) {
   return (
-    <header className="w-full flex items-center justify-between p-4 bg-white dark:bg-gray-900 border-b border-gray-200 dark:border-gray-800">
-      <div className="flex items-center gap-3">
+    <header style={{
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "space-between",
+      padding: "16px 24px",
+      borderBottom: "3px solid var(--arcade-ink)",
+      background: "var(--arcade-cream-soft)",
+      fontFamily: "'VT323', monospace"
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
         {user.image ? (
           <img
             src={user.image}
             alt="Profile Picture"
-            className="w-10 h-10 rounded-full object-cover"
+            style={{ width: "48px", height: "48px", border: "3px solid var(--arcade-ink)" }}
           />
         ) : (
-          <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
-            {user.name?.[0]?.toUpperCase() || "U"}
+          <div style={{
+            width: "48px",
+            height: "48px",
+            background: "var(--arcade-blue)",
+            color: "var(--arcade-cream)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "24px",
+            border: "3px solid var(--arcade-ink)"
+          }}>
+            {user.name?.[0]?.toUpperCase() || "C"}
           </div>
         )}
-        <div className="flex flex-col">
-          <span className="font-semibold text-gray-900 dark:text-white">
+        <div style={{ display: "flex", flexDirection: "column" }}>
+          <span style={{ fontSize: "24px", color: "var(--arcade-ink)", lineHeight: 1.2 }}>
             {user.name || "Creator"}
           </span>
           {user.id && (
-            <span className="text-xs text-gray-500 font-mono">
+            <span style={{ fontSize: "16px", color: "var(--muted)", lineHeight: 1.2 }}>
               ID: {user.id.slice(0, 8)}...
             </span>
           )}
@@ -39,7 +57,8 @@ export function CreatorHeader({ user }: CreatorHeaderProps) {
       </div>
       <button
         onClick={() => signOut({ callbackUrl: "/creators" })}
-        className="px-4 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 rounded-md transition-colors"
+        className="secondary-action"
+        style={{ color: "var(--arcade-red)", borderColor: "var(--arcade-red)", boxShadow: "3px 3px 0 0 var(--arcade-red)" }}
       >
         Sign Out
       </button>

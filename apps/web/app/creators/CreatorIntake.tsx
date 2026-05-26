@@ -536,7 +536,7 @@ export function CreatorIntake({ existingPortfolio }: { existingPortfolio?: Exist
             type="text"
             value={mainLinkInput}
             onChange={(event) => setMainLinkInput(event.target.value)}
-            placeholder="youtube.com/c/yourname"
+            placeholder="https://your-profile-url.com"
             required
             autoFocus
           />
