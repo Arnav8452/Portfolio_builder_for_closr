@@ -1,6 +1,6 @@
 import type { CreatorPlatform, Json } from "@closr/database/types";
-import { env } from "../env";
-import { getRow, updateRow } from "../supabase-rest";
+import { env } from "../env.js";
+import { getRow, updateRow } from "../supabase-rest.js";
 
 type OauthScrapeResult = {
   rawText: string;

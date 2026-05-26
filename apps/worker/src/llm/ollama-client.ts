@@ -1,6 +1,6 @@
 import type { AudienceSizeTier, CreatorPrimaryNiche, Json } from "@closr/database/types";
-import { env } from "../env";
-import { creatorIdentityPrompt, creatorIdentitySchema } from "./prompts";
+import { env } from "../env.js";
+import { creatorIdentityPrompt, creatorIdentitySchema } from "./prompts.js";
 
 export type CreatorIdentityOutput = {
   primary_niche: CreatorPrimaryNiche;

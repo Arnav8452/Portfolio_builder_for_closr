@@ -1,6 +1,6 @@
-import { env } from "../env";
-import type { LLMResponse } from "./types";
-import { creatorIdentityZodSchema, creatorIdentityJsonSchema } from "./schema";
+import { env } from "../env.js";
+import type { LLMResponse } from "./types.js";
+import { creatorIdentityZodSchema, creatorIdentityJsonSchema } from "./schema.js";
 
 export async function extractCreatorIdentity(rawText: string): Promise<LLMResponse> {
   const schemaString = JSON.stringify(creatorIdentityJsonSchema);

@@ -1,5 +1,5 @@
 import type { Json } from "@closr/database/types";
-import { env } from "./env";
+import { env } from "./env.js";
 
 type SupabaseError = {
   message?: string;

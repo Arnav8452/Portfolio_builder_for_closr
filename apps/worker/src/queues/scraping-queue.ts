@@ -1,12 +1,12 @@
 import type { Database, Json } from "@closr/database/types";
-import { env } from "../env";
-import { insertRow, rpc, updateRow, upsertRow } from "../supabase-rest";
-import { parseRssFeed, scrapeRssSource } from "../scrapers/rss";
-import { fetchOauthPlatform } from "../scrapers/oauth";
-import { scrapeWithPlaywright } from "../scrapers/playwright";
-import { parseBioLinks } from "../osint/bio-parser";
-import { cleanScrapedContent } from "../osint/cleaner";
-import { extractMetricsFromText } from "../osint/metrics";
+import { env } from "../env.js";
+import { insertRow, rpc, updateRow, upsertRow } from "../supabase-rest.js";
+import { parseRssFeed, scrapeRssSource } from "../scrapers/rss.js";
+import { fetchOauthPlatform } from "../scrapers/oauth.js";
+import { scrapeWithPlaywright } from "../scrapers/playwright.js";
+import { parseBioLinks } from "../osint/bio-parser.js";
+import { cleanScrapedContent } from "../osint/cleaner.js";
+import { extractMetricsFromText } from "../osint/metrics.js";
 
 type ScrapingJob = Database["public"]["Tables"]["scraping_queue"]["Row"];
 

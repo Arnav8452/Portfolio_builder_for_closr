@@ -1,7 +1,7 @@
 import type { Database } from "@closr/database/types";
-import { env } from "../env";
-import { extractCreatorIdentity } from "../llm/pipeline";
-import { getRow, rpc, updateRow, upsertRow } from "../supabase-rest";
+import { env } from "../env.js";
+import { extractCreatorIdentity } from "../llm/pipeline.js";
+import { getRow, rpc, updateRow, upsertRow } from "../supabase-rest.js";
 
 type AnalysisJob = Database["public"]["Tables"]["analysis_queue"]["Row"];
 

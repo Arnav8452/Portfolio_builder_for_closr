@@ -1,4 +1,4 @@
-import type { ParsedCreatorIdentity } from "./schema";
+import type { ParsedCreatorIdentity } from "./schema.js";
 
 export type LLMResponse = {
   parsed: ParsedCreatorIdentity;

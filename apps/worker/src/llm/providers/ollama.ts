@@ -1,5 +1,5 @@
-import { env } from "../../env";
-import type { LLMProvider, LLMResponse } from "../types";
+import { env } from "../../env.js";
+import type { LLMProvider, LLMResponse } from "../types.js";
 import { createHash } from "crypto";
 
 export class OllamaProvider implements LLMProvider {

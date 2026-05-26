@@ -5,10 +5,10 @@ import cors from "cors";
 import helmet from "helmet";
 import { PipelineOrchestrator } from "@freeloaderapi/core";
 import { GeminiAdapter, GroqAdapter, CerebrasAdapter, OpenRouterAdapter } from "@freeloaderapi/adapters";
-import { authenticate } from "./middleware/auth";
-import { pollAnalysisQueue } from "./queues/analysis-queue";
-import { pollScrapingQueue } from "./queues/scraping-queue";
-import { env } from "./env";
+import { authenticate } from "./middleware/auth.js";
+import { pollAnalysisQueue } from "./queues/analysis-queue.js";
+import { pollScrapingQueue } from "./queues/scraping-queue.js";
+import { env } from "./env.js";
 
 // 1. Initialize Sentry if configured
 if (env.sentryDsn) {
