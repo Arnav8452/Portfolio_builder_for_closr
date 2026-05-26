@@ -79,7 +79,7 @@ async function main() {
     }
   });
 
-  const server = app.listen(env.port, () => {
+  const server = app.listen(env.port, "0.0.0.0", () => {
     console.log(`[worker] Express AI Gateway & Health server listening on port ${env.port}`);
   });
 
