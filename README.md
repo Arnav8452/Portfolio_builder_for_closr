@@ -72,15 +72,25 @@ CRON_SECRET=secret_for_cron_endpoint
 ### 3. Deploy the Monolith Worker (Render)
 We merged the AI Gateway and the Scraping Worker into a single `@closr/worker` Node.js application.
 
-To deploy it to Render instantly:
+To deploy it to Render, you can either use our automated Blueprint or set it up manually.
+
+#### Option A: Automated Blueprint (Recommended)
 1. Go to your Render Dashboard.
 2. Click **New +** and select **Blueprint**.
 3. Connect your GitHub repository.
 4. Render will read the `render.yaml` file in this repository and automatically configure the Web Service with the correct Build Command, Run Command, and standard Environment Variables.
-5. In the Render Dashboard, you will be prompted to supply your private keys:
-   - `SUPABASE_URL`
-   - `SUPABASE_SERVICE_ROLE_KEY`
-   - `GEMINI_API_KEY`
+5. In the Render Dashboard, you will be prompted to supply your private keys.
+
+#### Option B: Manual Setup
+1. Go to your Render Dashboard, click **New +**, and select **Web Service**.
+2. Choose **Build and deploy from a Git repository** and connect your repo.
+3. Configure the service:
+   - **Name:** `closr-monolith-worker`
+   - **Root Directory:** *(leave blank)*
+   - **Runtime:** `Node`
+   - **Build Command:** `npm install && npm run build --workspace=apps/worker`
+   - **Start Command:** `npm start --workspace=apps/worker`
+4. Add the environment variables below under the Environment Variables section.
 
 ```env
 SUPABASE_URL=https://your-project.supabase.co
