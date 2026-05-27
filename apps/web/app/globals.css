@@ -1827,9 +1827,9 @@ p {
 
 .share-url-input {
   flex: 1;
-  background: var(--arcade-dark-soft) !important;
-  color: var(--arcade-cream) !important;
-  border-color: var(--arcade-dark-soft) !important;
+  background: var(--arcade-cream) !important;
+  color: var(--arcade-ink) !important;
+  border-color: var(--arcade-cream) !important;
   font-size: 14px !important;
 }
 
