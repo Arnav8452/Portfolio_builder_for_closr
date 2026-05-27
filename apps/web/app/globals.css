@@ -1935,7 +1935,7 @@ p {
   .queued-link { padding: 8px; }
   .queued-link span { font-size: 12px; }
 
-  /* Pixel borders — reduce shadow offset on mobile */
+  /* Pixel borders ΓÇö reduce shadow offset on mobile */
   .pixel-border,
   .router-card,
   .panel,
