@@ -15,6 +15,7 @@ import {
   Copy,
   Twitter,
   Linkedin,
+  Instagram,
   LogOut,
   AlertCircle,
   RefreshCw,
@@ -50,6 +51,7 @@ const PLATFORM_ICON: Record<string, LucideIcon> = {
   twitter: Twitter,
   x: Twitter,
   linkedin: Linkedin,
+  instagram: Instagram,
 };
 
 function statusConfig(status: string) {
@@ -303,6 +305,15 @@ export function CreatorDashboard({ portfolio, missingProviders = [] }: { portfol
                 onClick={() => signIn("linkedin", { callbackUrl: "/api/auth/sync-oauth" })}
               >
                 <Linkedin size={14} /> Connect LinkedIn
+              </button>
+            )}
+            {missingProviders.includes("instagram") && (
+              <button
+                className="secondary-action"
+                type="button"
+                onClick={() => { window.location.href = "/api/auth/meta"; }}
+              >
+                <Instagram size={14} /> Connect Instagram
               </button>
             )}
           </div>

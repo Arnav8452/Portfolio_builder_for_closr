@@ -23,7 +23,7 @@ export default async function CreatorsPage() {
   // Phase 2: Routing fork — check for existing portfolio
   const userId = (session.user as any).id;
   let portfolio: ExistingPortfolio | null = null;
-  let missingProviders: string[] = ["github", "youtube", "twitch", "linkedin"];
+  let missingProviders: string[] = ["github", "youtube", "twitch", "linkedin", "instagram"];
 
   try {
     const supabase = getSupabaseAdmin();
