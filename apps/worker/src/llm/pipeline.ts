@@ -4,9 +4,10 @@ import { creatorIdentityZodSchema, creatorIdentityJsonSchema } from "./schema.js
 import { createHash } from 'crypto';
 
 const MODELS = [
-  "gemini-2.5-flash",
+  // Groq supports: llama/mixtral/gemma. Cerebras: llama3*. Gemini: gemini-*.
+  // gemini-2.5-flash ONLY works on Gemini adapter — cascading to others = total failure.
+  // llama-3.1-8b-instant works on Groq (primary) with OpenRouter as fallback.
   "llama-3.1-8b-instant",
-  "gemini-2.5-flash",
   "llama-3.1-8b-instant"
 ];
 
@@ -167,8 +168,8 @@ export async function executeWithRepair(
     if (attempt === 1) {
       console.warn(`[LLM] Schema validation failed via gateway, trying repair prompt on model ${modelName}...`);
       const repairPrompt = `The previous JSON you output was invalid or failed validation. Please fix it.\n\nOriginal text:\n${rawText}\n\nFailed output:\n${jsonString}\n\nValidation errors:\n${String(err)}`;
-      // Use gemini for repairs since it has higher rate limits than Groq's llama
-      const repairModel = "gemini-2.5-flash"; 
+      // Use llama for repairs — gemini model IDs cause cascading failures on non-Gemini providers
+      const repairModel = "llama-3.1-8b-instant"; 
       return executeWithRepair(repairPrompt, schemaString, repairModel, attempt + 1);
     }
     throw new Error(`Failed to parse/validate LLM output after repair. Errors: ${String(err)}`);

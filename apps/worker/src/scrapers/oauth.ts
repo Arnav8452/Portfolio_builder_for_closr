@@ -152,7 +152,8 @@ async function fetchGithubProfile(url: string, creatorId?: string): Promise<Oaut
       source: "github_api",
       profile,
       repos: repos.slice(0, 10),
-      contributions
+      contributions,
+      readme: profileReadme,
     },
   };
 }
