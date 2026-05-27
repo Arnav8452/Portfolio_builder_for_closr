@@ -123,6 +123,118 @@ function GithubCard({ payload }: { payload: any }) {
   );
 }
 
+// Custom Renderer for YouTube
+function YoutubeCard({ payload }: { payload: any }) {
+  const profile = payload.profile || {};
+  const engagement = payload.engagement?.[0] || [];
+  
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+        {engagement[0] !== undefined && (
+          <div style={{ border: "2px solid var(--arcade-red)", padding: "12px", minWidth: "120px" }}>
+            <div style={{ fontSize: "10px", color: "var(--arcade-red)", marginBottom: "4px" }}>LIFETIME VIEWS</div>
+            <div style={{ fontSize: "20px", color: "white", fontFamily: "'Press Start 2P', monospace" }}>{engagement[0].toLocaleString()}</div>
+          </div>
+        )}
+        {engagement[1] !== undefined && (
+          <div style={{ border: "2px solid var(--arcade-red)", padding: "12px", minWidth: "120px" }}>
+            <div style={{ fontSize: "10px", color: "var(--arcade-red)", marginBottom: "4px" }}>WATCH MINUTES</div>
+            <div style={{ fontSize: "20px", color: "white", fontFamily: "'Press Start 2P', monospace" }}>{engagement[1].toLocaleString()}</div>
+          </div>
+        )}
+      </div>
+      <GenericStats data={profile} />
+    </div>
+  );
+}
+
+// Custom Renderer for Instagram
+function InstagramCard({ payload }: { payload: any }) {
+  const profile = payload.profile || {};
+  
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      {profile.biography && (
+        <p style={{ margin: 0, fontSize: "14px", color: "var(--arcade-cream)", lineHeight: 1.6, borderLeft: "4px solid #E4405F", paddingLeft: "12px" }}>
+          {profile.biography}
+        </p>
+      )}
+      
+      <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+        {profile.followers_count !== undefined && (
+          <div style={{ border: "2px solid #E4405F", padding: "12px", minWidth: "120px" }}>
+            <div style={{ fontSize: "10px", color: "#E4405F", marginBottom: "4px" }}>FOLLOWERS</div>
+            <div style={{ fontSize: "20px", color: "white", fontFamily: "'Press Start 2P', monospace" }}>{profile.followers_count.toLocaleString()}</div>
+          </div>
+        )}
+        {profile.media_count !== undefined && (
+          <div style={{ border: "2px solid #E4405F", padding: "12px", minWidth: "120px" }}>
+            <div style={{ fontSize: "10px", color: "#E4405F", marginBottom: "4px" }}>POSTS</div>
+            <div style={{ fontSize: "20px", color: "white", fontFamily: "'Press Start 2P', monospace" }}>{profile.media_count.toLocaleString()}</div>
+          </div>
+        )}
+      </div>
+      <GenericStats data={profile} />
+    </div>
+  );
+}
+
+// Custom Renderer for LinkedIn
+function LinkedinCard({ payload }: { payload: any }) {
+  const profile = payload.profile || {};
+  
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      {profile.headline && (
+        <p style={{ margin: 0, fontSize: "14px", color: "var(--arcade-cream)", lineHeight: 1.6, borderLeft: "4px solid #0077B5", paddingLeft: "12px", fontWeight: "bold" }}>
+          {profile.headline}
+        </p>
+      )}
+      {profile.summary && (
+        <p style={{ margin: 0, fontSize: "14px", color: "var(--muted)", lineHeight: 1.6 }}>
+          {profile.summary}
+        </p>
+      )}
+      
+      <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+        {profile.connections !== undefined && (
+          <div style={{ border: "2px solid #0077B5", padding: "12px", minWidth: "120px" }}>
+            <div style={{ fontSize: "10px", color: "#0077B5", marginBottom: "4px" }}>CONNECTIONS</div>
+            <div style={{ fontSize: "20px", color: "white", fontFamily: "'Press Start 2P', monospace" }}>{profile.connections}</div>
+          </div>
+        )}
+      </div>
+      <GenericStats data={profile} />
+    </div>
+  );
+}
+
+// Custom Renderer for Twitch
+function TwitchCard({ payload }: { payload: any }) {
+  const profile = payload.profile || {};
+  
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
+      {profile.description && (
+        <p style={{ margin: 0, fontSize: "14px", color: "var(--arcade-cream)", lineHeight: 1.6, borderLeft: "4px solid var(--arcade-purple)", paddingLeft: "12px" }}>
+          {profile.description}
+        </p>
+      )}
+      
+      <div style={{ display: "flex", gap: "16px", flexWrap: "wrap" }}>
+        {profile.view_count !== undefined && (
+          <div style={{ border: "2px solid var(--arcade-purple)", padding: "12px", minWidth: "120px" }}>
+            <div style={{ fontSize: "10px", color: "var(--arcade-purple)", marginBottom: "4px" }}>TOTAL VIEWS</div>
+            <div style={{ fontSize: "20px", color: "white", fontFamily: "'Press Start 2P', monospace" }}>{profile.view_count.toLocaleString()}</div>
+          </div>
+        )}
+      </div>
+      <GenericStats data={profile} />
+    </div>
+  );
+}
+
 export function RetroPlatformData({ metrics }: RetroPlatformDataProps) {
   if (!metrics || metrics.length === 0) return null;
 
@@ -146,13 +258,22 @@ export function RetroPlatformData({ metrics }: RetroPlatformDataProps) {
 
       <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
         {metrics.map((metric, idx) => {
-          const isTwitter = metric.platform.toLowerCase() === "x" || metric.platform.toLowerCase() === "twitter";
-          const isGithub = metric.platform.toLowerCase() === "github";
+          const p = metric.platform.toLowerCase();
+          const isTwitter = p === "x" || p === "twitter";
+          const isGithub = p === "github";
+          const isYoutube = p === "youtube";
+          const isInstagram = p === "instagram";
+          const isLinkedin = p === "linkedin";
+          const isTwitch = p === "twitch";
           
           let Icon = Terminal;
           let color = "var(--arcade-green)";
           if (isTwitter) { Icon = Twitter; color = "var(--arcade-blue)"; }
           if (isGithub) { Icon = Github; color = "white"; }
+          if (isYoutube) { color = "var(--arcade-red)"; }
+          if (isInstagram) { color = "#E4405F"; }
+          if (isLinkedin) { color = "#0077B5"; }
+          if (isTwitch) { color = "var(--arcade-purple)"; }
 
           return (
             <div key={idx} className="pixel-border" style={{ backgroundColor: "var(--arcade-dark)", padding: "32px", border: `2px solid ${color}` }}>
@@ -168,6 +289,14 @@ export function RetroPlatformData({ metrics }: RetroPlatformDataProps) {
                 <TwitterCard payload={metric.raw_payload} />
               ) : isGithub ? (
                 <GithubCard payload={metric.raw_payload} />
+              ) : isYoutube ? (
+                <YoutubeCard payload={metric.raw_payload} />
+              ) : isInstagram ? (
+                <InstagramCard payload={metric.raw_payload} />
+              ) : isLinkedin ? (
+                <LinkedinCard payload={metric.raw_payload} />
+              ) : isTwitch ? (
+                <TwitchCard payload={metric.raw_payload} />
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
                   <GenericStats data={metric.raw_payload?.profile || metric.raw_payload} />
