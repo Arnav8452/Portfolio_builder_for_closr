@@ -1,13 +1,13 @@
 # Backend Integration Test Results
 
 **Target:** https://portfolio-builder-for-closr.onrender.com
-**Time:** 2026-05-27T17:45:07.052Z
+**Time:** 2026-05-27T18:39:33.580Z
 
 ```
 ╔══════════════════════════════════════════════════════════════════════╗
 ║  CLOSR BACKEND INTEGRATION TEST SUITE                              ║
 ║  Target: https://portfolio-builder-for-closr.onrender.com                    ║
-║  Time:   2026-05-27T17:44:42.366Z                          ║
+║  Time:   2026-05-27T18:39:10.565Z                          ║
 ╚══════════════════════════════════════════════════════════════════════╝
 
 ══════════════════════════════════════════════════════════════════════
@@ -27,14 +27,14 @@
   Wrong-secret status: 403
   ✅ PASS: Wrong-secret request rejected
   Auth-ok status: 200
-  Response preview: {"id":"chatcmpl-204ce4cf-711a-4249-bb52-787b48d9855c","object":"chat.completion","created":1779903884,"model":"llama-3.1-8b-instant","choices":[{"index":0,"message":{"role":"assistant","content":"Hello, how are you today?"},"logprobs":null,"finish_reason":"stop"}],"usage":{"queue_time":0.106603513,"
+  Response preview: {"id":"chatcmpl-4fa1fca8-7b13-4fc0-980d-168a758c8ffe","object":"chat.completion","created":1779907153,"model":"llama-3.1-8b-instant","choices":[{"index":0,"message":{"role":"assistant","content":"Hello, how are you today?"},"logprobs":null,"finish_reason":"stop"}],"usage":{"queue_time":0.06434275,"p
   ✅ PASS: Authenticated request succeeds with LLM response
 
 ══════════════════════════════════════════════════════════════════════
   TEST 3: GitHub Scraper (OAuth API)
 ══════════════════════════════════════════════════════════════════════
 
-  rawText length: 10578 chars
+  rawText length: 1237 chars
   rawText preview (first 500):
 Name: Arnav Chandra
 
@@ -44,31 +44,32 @@ Company:
 
 Followers: 3
 
-Total Commits: 265
+Total Commits: 0
 
-Top Languages: Python: 435682 bytes, TypeScript: 351014 bytes, JavaScript: 198586 bytes, CSS: 59918 bytes, HTML: 48800 bytes, PLpgSQL: 32841 bytes, PowerShell: 3304 bytes, Solidity: 1272 bytes, Dockerfile: 1157 bytes
+Top Languages: 
 
 Recent Repositories:
 Portfolio_builder_for_closr: Tool 2 for closr ecosystem - Live Portfolio builder for Creators
 Arnav8452: 
-chain
+chain-seat: ChainSeat is a blockchain-powered ticketing platform designed to eliminate fraud and scalping.
+entity_resolution_graph_osint: An autonomous, entirely localized, AI-driven Open Source Intelligence 
   payload.source: github_api
   payload.profile.name: Arnav Chandra
   payload.profile.login: Arnav8452
   payload.profile.public_repos: 13
   payload.profile.followers: 3
   payload.repos count: 10
-  payload.contributions exists: true
-  payload.readme length: 9120 chars
+  payload.contributions exists: false
+  payload.readme length: 0 chars
   payload.readme preview (first 300):
-<img src="https://capsule-render.vercel.app/api?type=waving&amp;color=gradient&amp;customColorList=2,12,20&amp;height=200&amp;section=header&amp;text=Arnav%20Chandra&amp;fontSize=57&amp;textAlignY=40&amp;desc=Builder%20%E2%80%94%20AI%20and%20Data%20Systems&amp;descSize=15&amp;fontColor=ffffff&amp;de
+(empty)
   ✅ PASS: rawText has substantial content
   ✅ PASS: Profile name extracted: Arnav Chandra
   ✅ PASS: Public repos: 13
   ✅ PASS: 10 repos fetched
-  ✅ PASS: Contributions data present
-  ✅ PASS: README content included in rawText
-  ✅ PASS: README stored in payload (9120 chars)
+  ❌ FAIL: Contributions — Missing GraphQL contribution data
+  ❌ FAIL: README in rawText — Profile README section missing from rawText sent to LLM
+  ⚠️  WARN: README in payload — Empty or missing
 
 ══════════════════════════════════════════════════════════════════════
   TEST 4: LinkedIn Scraper (Jina Fallback)
@@ -93,17 +94,15 @@ Markdown Content:
   TEST 5: Semantic Chunking (cleanScrapedContent)
 ══════════════════════════════════════════════════════════════════════
 
-  Combined raw input length: 10819 chars
-  Produced 2 chunks
-  Chunk 1: 5962 chars
-    Preview: [GITHUB] Name: Arnav Chandra Bio: An ECE student in BITS Pilani Goa campus, interested in system design and AI. Company: Followers: 3 Total Commits: 2...
-  Chunk 2: 173 chars
-    Preview: com/in/arnav-chandra-051813325 Warning: Target URL returned error 999 Warning: This page maybe not yet fully loaded, consider explicitly specify a tim...
-  ✅ PASS: Produced 2 chunks
+  Combined raw input length: 1478 chars
+  Produced 1 chunks
+  Chunk 1: 1460 chars
+    Preview: [GITHUB] Name: Arnav Chandra Bio: An ECE student in BITS Pilani Goa campus, interested in system design and AI. Company: Followers: 3 Total Commits: 0...
+  ✅ PASS: Produced 1 chunks
   ✅ PASS: All chunks under 6000 char limit
   ✅ PASS: GitHub content preserved in chunks
-  Dedup ratio: 56.7% of original
-  ✅ PASS: Deduplication working (56.7% of original)
+  Dedup ratio: 98.8% of original
+  ✅ PASS: Deduplication working (98.8% of original)
 
 ══════════════════════════════════════════════════════════════════════
   TEST 6: Metrics Extraction (extractMetricsFromText)
@@ -116,105 +115,63 @@ Markdown Content:
   TEST 7: LLM Analysis via Live Gateway
 ══════════════════════════════════════════════════════════════════════
 
-  Sending chunk of 5962 chars to LLM
+  Sending chunk of 1460 chars to LLM
   Gateway URL: https://portfolio-builder-for-closr.onrender.com/v1/chat/completions
   Gateway status: 200
-  Duration: 3050ms
+  Duration: 1573ms
   Provider used: groq
   Model used: llama-3.1-8b-instant
-  Input tokens: 1784
-  Output tokens: 553
+  Input tokens: 629
+  Output tokens: 616
   Raw LLM output (first 500):
 {
   "name": "Arnav Chandra",
    "bio": "An ECE student in BITS Pilani Goa campus, interested in system design and AI.",
    "achievements": [
       {
-         "title": "Built a production-grade, OpenAI-compatible AI gateway",
-         "description": "Freeloader — AI Inference Resilience Gateway"
+         "title": "Creator of ChainSeat: A Blockchain-Powered Ticketing Platform",
+         "description": "Eliminated fraud and scalping in ticketing systems."
       },
       {
-         "title": "Engineered a fully autonomous B2B lead generation pipeline",
-         "description": "Closr — Autonomous B2B Lead Generation Engine"
-      },
-      {
-         "title": 
+         "title": "Developer of Freeloader: An OpenAI-Compatible AI Gateway",
+         "description": "Maximized free-tier LLM usage with intelligent request cascading and e
 
   Parsed keys: name, bio, achievements, radar_scores, timeline_events, bio_summary
-  ❌ FAIL: Zod validation — timeline_events.0.title: Invalid input: expected string, received undefined; timeline_events.0.description: Invalid input: expected string, received undefined; timeline_events.1.title: Invalid input: expected string, received undefined; timeline_events.1.description: Invalid input: expected string, received undefined; timeline_events.2.title: Invalid input: expected string, received undefined; timeline_events.2.description: Invalid input: expected string, received undefined; timeline_events.3.title: Invalid input: expected string, received undefined; timeline_events.3.description: Invalid input: expected string, received undefined; timeline_events.4.title: Invalid input: expected string, received undefined; timeline_events.4.description: Invalid input: expected string, received undefined; timeline_events.5.title: Invalid input: expected string, received undefined; timeline_events.5.description: Invalid input: expected string, received undefined; timeline_events.6.title: Invalid input: expected string, received undefined; timeline_events.6.description: Invalid input: expected string, received undefined
-  Full parsed object:
-{
-  "name": "Arnav Chandra",
-  "bio": "An ECE student in BITS Pilani Goa campus, interested in system design and AI.",
-  "achievements": [
-    {
-      "title": "Built a production-grade, OpenAI-compatible AI gateway",
-      "description": "Freeloader — AI Inference Resilience Gateway"
-    },
-    {
-      "title": "Engineered a fully autonomous B2B lead generation pipeline",
-      "description": "Closr — Autonomous B2B Lead Generation Engine"
-    },
-    {
-      "title": "Developed an identity verification pipeline for the creator economy",
-      "description": "Closr — Verified Creator Portfolio Builder"
-    },
-    {
-      "title": "Created a Palantir-grade intelligence pipeline for entity resolution",
-      "description": "Entity Resolution OSINT Platform"
-    },
-    {
-      "title": "Designed a secure event ticketing ecosystem",
-      "description": "ChainSeat — Fraud-Proof Ticketing System"
-    }
-  ],
-  "radar_scores": {
-    "impact": 85,
-    "consistency": 90,
-    "quality": 92,
-    "depth": 88,
-    "breadth": 80,
-    "community": 78
-  },
-  "timeline_events": [
-    {
-      "date": "University at Buffalo (2+2)",
-      "event": "Education"
-    },
-    {
-      "date": "BITS Pilani, Goa",
-      "event": "Education"
-    },
-    {
-      "date": "Built Freeloader — AI Inference Resilience Gateway",
-      "event": "Project"
-    },
-    {
-      "date": "Engineered Closr — Autonomous B2B Lead Generation Engine",
-      "event": "Project"
-    },
-    {
-      "date": "Developed Closr — Verified Creator Portfolio Builder",
-      "event": "Project"
-    },
-    {
-      "date": "Created Entity Resolution OSINT Platform",
-      "event": "Project"
-    },
-    {
-      "date": "Designed ChainSeat — Fraud-Proof Ticketing System",
-      "event": "Project"
-    }
-  ],
-  "bio_summary": "Arnav Chandra is a BITS Pilani Goa campus ECE student with a passion for system design and AI. He has built a range of innovative projects, including a production-grade AI gateway, a fully autonomous B2B lead generation pipeline, and a secure event ticketing ecosystem. With a strong focus on creating systems that save time, compute, and money, Arnav is a talented developer making a significant impact in the creator economy."
-}
+  ✅ PASS: Zod schema validation passed
+
+  ─── VALIDATED IDENTITY ───
+  primary_niche: other
+  audience_size_tier: micro
+  confidence: 0
+  bio_summary: Arnav Chandra is a talented ECE student at BITS Pilani Goa campus, with a passion for system design and AI. He has developed several innovative projects, including ChainSeat, Freeloader, and TradingAg...
+  technical_skills: []
+  brand_tone: []
+  content_format: []
+  past_topics: []
+  achievements (5):
+    • Creator of ChainSeat: A Blockchain-Powered Ticketing Platform: Eliminated fraud and scalping in ticketing systems.
+    • Developer of Freeloader: An OpenAI-Compatible AI Gateway: Maximized free-tier LLM usage with intelligent request cascading and enterprise-grade API reliabilit
+    • Contributor to TradingAgents: A Multi-Agents LLM Financial Trading Framework: Developed a framework for financial trading using multi-agents and LLMs.
+    • Creator of Lead Generator for Closr Ecosystem: Tool 1 of the Closr ecosystem for lead generation.
+    • Developer of Portfolio Builder for Closr Ecosystem: Tool 2 for closr ecosystem - Live Portfolio builder for Creators.
+  radar_scores: {"impact":80,"consistency":70,"quality":85,"depth":75,"breadth":80,"community":60}
+  timeline_events (4):
+    • 2023-01-01: Started as an ECE student in BITS Pilani Goa campus
+    • 2023-06-01: Created ChainSeat: A Blockchain-Powered Ticketing Platform
+    • 2023-09-01: Developed Freeloader: An OpenAI-Compatible AI Gateway
+    • 2023-12-01: Contributed to TradingAgents: A Multi-Agents LLM Financial Trading Framework
+  ✅ PASS: bio_summary is a meaningful string
+  ⚠️  WARN: technical_skills — Only 0 skills
+  ✅ PASS: 5 achievements extracted
+  ⚠️  WARN: confidence — Low confidence: 0
+  ✅ PASS: Radar scores are differentiated (not all 50)
 
 ══════════════════════════════════════════════════════════════════════
   TEST SUMMARY
 ══════════════════════════════════════════════════════════════════════
 
-  ✅ PASSED: 15
-  ❌ FAILED: 1
-  ⚠️  WARNS:  2
-  TOTAL:    18
+  ✅ PASSED: 16
+  ❌ FAILED: 2
+  ⚠️  WARNS:  5
+  TOTAL:    23
 ```

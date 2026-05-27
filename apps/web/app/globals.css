@@ -2020,5 +2020,6 @@ p {
   .stat-card .stat-value { font-size: 24px; }
   .glass-panel h2 { font-size: 8px; }
 }
-. h o v e r - l i f t   {   t r a n s i t i o n :   t r a n s f o r m   0 . 1 s   e a s e ;   }   . h o v e r - l i f t : h o v e r   {   t r a n s f o r m :   t r a n s l a t e Y ( - 4 p x ) ;   }  
- 
+
+.hover-lift { transition: transform 0.1s ease; }
+.hover-lift:hover { transform: translateY(-4px); }
