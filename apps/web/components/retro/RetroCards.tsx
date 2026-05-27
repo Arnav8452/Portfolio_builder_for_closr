@@ -62,7 +62,7 @@ export function RetroCards({ achievements }: RetroCardsProps) {
             <h3 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "12px", margin: 0, textTransform: "uppercase", lineHeight: 1.5 }}>
               {item.title}
             </h3>
-            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "12px", margin: 0, lineHeight: 1.5, fontWeight: 500 }}>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "12px", margin: 0, lineHeight: 1.5, fontWeight: 500, color: "inherit" }}>
               {item.description}
             </p>
           </div>
