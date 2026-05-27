@@ -6,6 +6,7 @@ import { RetroCards } from "@/components/retro/RetroCards";
 import { RetroRadar } from "@/components/retro/RetroRadar";
 import { RetroStats } from "@/components/retro/RetroStats";
 import { RetroNumbers } from "@/components/retro/RetroNumbers";
+import { RetroMarkdown } from "@/components/retro/RetroMarkdown";
 
 type PlatformMetric = {
   platform: string;
@@ -112,24 +113,41 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
         .sort((a, b) => b.value - a.value);
     }
 
-    const ghProfile = githubMetrics.raw_payload?.profile;
+    const ghProfile = githubMetrics?.raw_payload?.profile;
     // Only show GitHub numbers if there's actual profile data with non-zero values
     if (ghProfile && (ghProfile.public_repos > 0 || ghProfile.followers > 0)) {
-      statsNumbers = [
-        { label: "OWNED REPOS", subLabel: "NON-FORK", value: ghProfile.public_repos || 0 },
+      statsNumbers.push(
+        { label: "OWNED REPOS", subLabel: "GITHUB", value: ghProfile.public_repos || 0 },
         { label: "COMMITS", subLabel: "LAST 12 MONTHS", value: githubMetrics.raw_payload?.contributions?.contributionsCollection?.totalCommitContributions || 0 },
-        { label: "FOLLOWERS", subLabel: "COMMUNITY", value: ghProfile.followers || 0 },
-        { label: "JOINED GITHUB", subLabel: "ACCOUNT CREATED", value: ghProfile.created_at ? new Date(ghProfile.created_at).toLocaleDateString(undefined, { month: 'short', year: 'numeric' }) : "N/A" }
-      ];
+        { label: "FOLLOWERS", subLabel: "GITHUB", value: ghProfile.followers || 0 }
+      );
     }
-  } else if (youtubeMetrics?.raw_payload?.engagement) {
+  } 
+  
+  if (youtubeMetrics?.raw_payload?.engagement) {
     const watchData = youtubeMetrics.raw_payload.engagement[0] || [];
     if (watchData.length > 0) {
-      statsNumbers = [
-        { label: "VIEWS", subLabel: "TOTAL LIFETIME", value: watchData[0] ? watchData[0].toLocaleString() : 0 },
-        { label: "WATCH TIME", subLabel: "MINUTES", value: watchData[1] ? watchData[1].toLocaleString() : 0 },
-        { label: "AVG DURATION", subLabel: "SECONDS", value: watchData[2] ? watchData[2].toLocaleString() : 0 }
-      ];
+      statsNumbers.push(
+        { label: "YT VIEWS", subLabel: "LIFETIME", value: watchData[0] ? watchData[0].toLocaleString() : 0 },
+        { label: "YT WATCH", subLabel: "MINUTES", value: watchData[1] ? watchData[1].toLocaleString() : 0 }
+      );
+    }
+  }
+  
+  if (twitchMetrics?.raw_payload?.profile) {
+    const twitchProfile = twitchMetrics.raw_payload.profile;
+    statsNumbers.push(
+      { label: "TWITCH VIEWS", subLabel: "TOTAL", value: twitchProfile.view_count ? twitchProfile.view_count.toLocaleString() : 0 }
+    );
+  }
+  
+  if (instagramMetrics?.raw_payload?.profile) {
+    const igProfile = instagramMetrics.raw_payload.profile;
+    if (igProfile.followers_count !== undefined) {
+      statsNumbers.push(
+        { label: "IG FOLLOWERS", subLabel: "COMMUNITY", value: igProfile.followers_count ? igProfile.followers_count.toLocaleString() : 0 },
+        { label: "IG POSTS", subLabel: "MEDIA", value: igProfile.media_count ? igProfile.media_count.toLocaleString() : 0 }
+      );
     }
   }
 
@@ -167,6 +185,15 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
 
       {/* 5. Numbers — only if we have real stats to show */}
       {statsNumbers.length > 0 && <RetroNumbers stats={statsNumbers} />}
+
+      {/* 6. GitHub README Markdown */}
+      {githubMetrics?.raw_payload?.readme && (
+        <RetroMarkdown 
+          content={githubMetrics.raw_payload.readme} 
+          title="GITHUB README" 
+          number="05" 
+        />
+      )}
       
       {/* Footer Padding */}
       <div style={{ height: "64px", backgroundColor: "var(--arcade-cream)" }} />
