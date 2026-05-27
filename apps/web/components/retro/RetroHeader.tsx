@@ -22,24 +22,6 @@ export function RetroHeader({ profile, displayImage, overallScore }: RetroHeader
 
   return (
     <div style={{ width: "100%" }}>
-      {/* Top Black Bar */}
-      <div 
-        style={{
-          backgroundColor: "var(--arcade-ink)",
-          color: "var(--arcade-green)",
-          padding: "8px 24px",
-          display: "flex",
-          justifyContent: "space-between",
-          fontFamily: "'Press Start 2P', monospace",
-          fontSize: "8px",
-          letterSpacing: "1px",
-          textTransform: "uppercase"
-        }}
-      >
-        <span>THIS TOOL WAS BUILT BY AN AI AGENT FROM ZORAL</span>
-        <span style={{ color: "var(--arcade-cream)" }}>REPLACE ANY WORKER WITH AI &rarr;</span>
-      </div>
-
       {/* Subheader */}
       <div 
         style={{
@@ -70,10 +52,10 @@ export function RetroHeader({ profile, displayImage, overallScore }: RetroHeader
         </button>
       </div>
 
-      {/* Main Hero (Green) */}
+      {/* Main Hero */}
       <div 
         style={{
-          backgroundColor: "var(--arcade-green)",
+          backgroundColor: "var(--arcade-cream-soft)",
           borderBottom: "2px solid var(--arcade-ink)",
           padding: "48px 24px",
           display: "flex",
@@ -91,52 +73,16 @@ export function RetroHeader({ profile, displayImage, overallScore }: RetroHeader
             </div>
           )}
           <div style={{ color: "var(--arcade-ink)", maxWidth: "400px" }}>
-            <div style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "10px", marginBottom: "8px" }}>
-              #{(Math.random() * 1000).toFixed(0)} - TOP {(Math.random() * 5).toFixed(1)}%
-            </div>
-            <h1 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "28px", margin: "0 0 8px 0", textTransform: "uppercase" }}>
+            <h1 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "28px", margin: "0 0 16px 0", textTransform: "uppercase" }}>
               {profile.display_name}
             </h1>
-            <p style={{ fontFamily: "'Inter', sans-serif", fontWeight: 600, fontSize: "14px", margin: "0 0 4px 0" }}>
-              {profile.display_name}
-            </p>
-            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "12px", margin: 0, opacity: 0.8 }}>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "14px", margin: "0 0 8px 0", fontWeight: 600 }}>
               {profile.primary_niche ? `Niche: ${profile.primary_niche.replace('_', ' ')}` : "Uncategorized Creator"}
             </p>
-          </div>
-        </div>
-
-        {/* Center Grade */}
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "12px" }}>
-          <div 
-            className="pixel-border"
-            style={{
-              width: "64px",
-              height: "64px",
-              borderRadius: "50%",
-              backgroundColor: "transparent",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontFamily: "'Press Start 2P', monospace",
-              fontSize: "24px",
-              color: "var(--arcade-ink)"
-            }}
-          >
-            {overallScore >= 80 ? 'A' : overallScore >= 60 ? 'B' : overallScore >= 40 ? 'C' : 'D'}
-          </div>
-          <div style={{ textAlign: "center", fontFamily: "'Press Start 2P', monospace", color: "var(--arcade-ink)" }}>
-            <div style={{ fontSize: "12px", marginBottom: "4px" }}>{gradeText}</div>
-            <div style={{ fontSize: "8px", opacity: 0.7 }}>GREEN ROOM</div>
-          </div>
-        </div>
-
-        {/* Right Score */}
-        <div style={{ textAlign: "right", fontFamily: "'Press Start 2P', monospace", color: "var(--arcade-ink)" }}>
-          <div style={{ fontSize: "10px", marginBottom: "8px" }}>OVERALL</div>
-          <div style={{ fontSize: "48px", display: "flex", alignItems: "baseline", gap: "12px" }}>
-            {overallScore.toFixed(1)}
-            <span style={{ fontSize: "14px" }}>/ 100</span>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "14px", margin: 0, opacity: 0.9, lineHeight: 1.6 }}>
+              {/* @ts-ignore - bio_summary exists on the profile object but might not be in the exact type def */}
+              {profile.bio_summary || "No summary was produced for this creator."}
+            </p>
           </div>
         </div>
       </div>
