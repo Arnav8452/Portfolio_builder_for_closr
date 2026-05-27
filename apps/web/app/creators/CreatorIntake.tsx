@@ -765,19 +765,24 @@ export function CreatorIntake({ existingPortfolio }: { existingPortfolio?: Exist
   function renderProcessing() {
     return (
       <section className="creator-stage compact fade-in">
-        <div className="processing-head">
-          <div className="processing-icon">
-            <Loader2 size={32} className="spin" />
+        <div className="processing-head" style={{ border: '3px solid var(--arcade-ink)', background: 'var(--arcade-cream)', padding: '24px', boxShadow: '4px 4px 0 0 var(--arcade-ink)' }}>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '12px', fontFamily: "'Press Start 2P', monospace", fontSize: '10px', textTransform: 'uppercase' }}>
+            <span>&#9656; FETCHING YOUR PROFILE...</span>
+            <span style={{ color: 'var(--muted)' }}>{Math.floor(progress)}% / 100%</span>
           </div>
-          <h2>Building verified portfolio</h2>
-          <p>Feel free to close this tab. We will email you when your portfolio is fully verified and live.</p>
+
+          <div className="progress-shell" style={{ height: '24px', border: '3px solid var(--arcade-ink)', background: 'var(--line)', marginBottom: '12px', borderRadius: '0' }}>
+            <div className="progress-bar" style={{ width: `${progress}%`, height: '100%', background: 'var(--arcade-red)', transition: 'width 300ms ease' }} />
+          </div>
+
+          <div style={{ fontFamily: "'VT323', monospace", fontSize: '18px', color: 'var(--muted)' }}>
+            &gt; {logs.length > 0 ? logs[logs.length - 1].message : 'initializing queue protocol...'}
+          </div>
+
         </div>
 
-        <div className="progress-shell">
-          <div className="progress-bar" style={{ width: `${progress}%` }} />
-        </div>
-
-        <div className="terminal-panel">
+        <div className="terminal-panel" style={{ marginTop: '24px' }}>
           <div className="terminal-header">
             <span />
             <span />
