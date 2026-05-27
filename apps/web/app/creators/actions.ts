@@ -53,6 +53,7 @@ export async function submitCreatorProfile(formData: FormData) {
       display_name: displayName,
       root_platform: root,
       root_handle: normalizedRootUrl.split("/").filter(Boolean).at(-1)?.replace("@", "") ?? null,
+      avatar_url: finalUserImage,
       onboarding_status: "queued",
     })
     .select("id")
