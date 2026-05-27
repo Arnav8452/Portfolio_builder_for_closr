@@ -76,6 +76,13 @@ async function fetchGithubProfile(url: string, creatorId?: string): Promise<Oaut
           totalPullRequestContributions
           totalIssueContributions
         }
+        repository(name: $login) {
+          object(expression: "HEAD:README.md") {
+            ... on Blob {
+              text
+            }
+          }
+        }
         repositories(first: 30, isFork: false, ownerAffiliations: [OWNER], orderBy: { field: STARGAZERS, direction: DESC }) {
           nodes {
             name
@@ -96,10 +103,16 @@ async function fetchGithubProfile(url: string, creatorId?: string): Promise<Oaut
   
   let contributions = null;
   let languagesText = "";
+  let profileReadme = "";
   if (gqlRes.ok) {
     const body = await gqlRes.json() as any;
     if (body.data?.user) {
       contributions = body.data.user;
+      
+      if (contributions.repository?.object?.text) {
+        profileReadme = contributions.repository.object.text;
+      }
+      
       const byLang = new Map<string, number>();
       for (const r of contributions?.repositories?.nodes || []) {
         for (const e of r?.languages?.edges || []) {
@@ -124,6 +137,7 @@ async function fetchGithubProfile(url: string, creatorId?: string): Promise<Oaut
     `Followers: ${profile.followers}`,
     `Total Commits: ${contributions?.contributionsCollection?.totalCommitContributions || 0}`,
     `Top Languages: ${languagesText}`,
+    profileReadme ? `Profile README:\n${profileReadme}` : "",
     `Recent Repositories:\n${repoText}`
   ].filter(Boolean).join("\n\n");
 
