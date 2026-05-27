@@ -16,7 +16,7 @@ function slugify(value: string) {
 
 export async function submitCreatorProfile(formData: FormData) {
   if (process.env.ALLOW_LOCAL_DEV_AUTH === 'true' && process.env.NODE_ENV === 'production') {
-    throw new Error('ALLOW_LOCAL_DEV_AUTH must not be enabled in production');
+    return { ok: false, message: 'ALLOW_LOCAL_DEV_AUTH must not be enabled in production' };
   }
 
   const session = await getServerSession(authOptions);
