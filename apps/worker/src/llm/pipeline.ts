@@ -17,7 +17,7 @@ export async function executeWithRepair(
   const GATEWAY_SECRET = env.aiGatewaySecret;
 
   const startTime = Date.now();
-  const systemPrompt = `You are an expert OSINT data analyst evaluating a creator's verified social telemetry. Extract a comprehensive, highly-detailed creator identity following this JSON schema exactly: ${schemaString}. Do not lose data. Deep dive into the text, extract specific numbers, and synthesize a rich bio_summary that highlights their most impressive metrics and achievements.`;
+  const systemPrompt = `You are an expert OSINT data analyst evaluating a creator's verified social telemetry. Extract a comprehensive, highly-detailed creator identity following this JSON schema exactly: ${schemaString}. Do not lose data. Deep dive into the text, extract specific numbers, and synthesize a rich bio_summary that highlights their most impressive metrics and achievements. CRITICAL: bio_summary MUST be a single plain string, NOT an object or array.`;
 
   const response = await fetch(GATEWAY_URL, {
     method: "POST",
@@ -55,6 +55,16 @@ export async function executeWithRepair(
 
   try {
     const rawParsed = JSON.parse(jsonString);
+    
+    // Sometimes smaller models return an object for bio_summary despite the schema. Flatten it.
+    if (rawParsed && typeof rawParsed.bio_summary === 'object' && rawParsed.bio_summary !== null) {
+      if (Array.isArray(rawParsed.bio_summary)) {
+        rawParsed.bio_summary = rawParsed.bio_summary.join(" ");
+      } else {
+        rawParsed.bio_summary = Object.values(rawParsed.bio_summary).join(" ");
+      }
+    }
+
     const parsed = creatorIdentityZodSchema.parse(rawParsed);
     return {
       parsed,
