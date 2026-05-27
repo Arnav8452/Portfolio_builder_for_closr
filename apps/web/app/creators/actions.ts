@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getServerSession } from "next-auth";
+import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { detectPlatform, normalizeUrl } from "@/lib/platforms";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
