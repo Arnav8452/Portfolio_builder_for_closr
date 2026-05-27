@@ -8,5 +8,5 @@
       "@closr/database/*": ["../../packages/database/*"]
     }
   },
-  "include": ["src/**/*.ts", "scripts/**/*.ts"]
+  "include": ["src/**/*.ts"]
 }
