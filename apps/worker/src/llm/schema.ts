@@ -16,7 +16,6 @@ const arrayField = (maxString: number, maxItems: number) =>
   z
     .array(z.string().max(maxString))
     .max(maxItems)
-    .catch([])
     .optional()
     .default([])
     .transform(dedupeArray);
@@ -40,20 +39,20 @@ export const creatorIdentityZodSchema = z.object({
     "photography_video",
     "lifestyle",
     "other",
-  ] as const).catch("other").optional().default("other"),
-  technical_skills: arrayField(32, 15),
-  brand_tone: arrayField(32, 8),
-  content_format: arrayField(32, 8),
+  ] as const).optional().default("other"),
+  technical_skills: arrayField(64, 25),
+  brand_tone: arrayField(64, 15),
+  content_format: arrayField(64, 15),
   audience_size_tier: z.enum([
     "micro",
     "emerging",
     "mid_market",
     "large",
     "enterprise"
-  ] as const).catch("micro").optional().default("micro"),
-  past_topics: arrayField(32, 15),
-  bio_summary: z.string().max(320).catch("Pending summary.").optional().default("Pending summary."),
-  confidence: z.number().min(0).max(1).catch(0).optional().default(0),
+  ] as const).optional().default("micro"),
+  past_topics: arrayField(64, 25),
+  bio_summary: z.string().max(1000).optional().default("Pending summary."),
+  confidence: z.number().min(0).max(1).optional().default(0),
 });
 
 export type ParsedCreatorIdentity = z.infer<typeof creatorIdentityZodSchema>;
