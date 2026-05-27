@@ -47,10 +47,10 @@ async function main() {
 
   // 3. Initialize AI Gateway Pipeline
   const providers = [];
+  providers.push(new OpenRouterAdapter());
+  providers.push(new GroqAdapter());
   providers.push(new GeminiAdapter());
   providers.push(new CerebrasAdapter());
-  providers.push(new GroqAdapter());
-  providers.push(new OpenRouterAdapter());
   
   const pipeline = new PipelineOrchestrator(providers);
 

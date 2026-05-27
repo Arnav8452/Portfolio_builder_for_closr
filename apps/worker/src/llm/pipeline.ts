@@ -26,7 +26,7 @@ async function executeWithRepair(
     body: JSON.stringify({
       model: "gpt-4o-mini", // Virtualized by Freeloader
       messages: [
-        { role: "system", content: `Extract creator identity following this JSON schema exactly: ${schemaString}` },
+        { role: "system", content: `You are an expert OSINT data analyst evaluating a creator's verified social telemetry. Extract a comprehensive, highly-detailed creator identity following this JSON schema exactly: ${schemaString}. Do not lose data. Deep dive into the text, extract specific numbers, and synthesize a rich bio_summary that highlights their most impressive metrics and achievements.` },
         { role: "user", content: rawText }
       ],
       response_format: { type: "json_object" },
