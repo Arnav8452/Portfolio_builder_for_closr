@@ -12,9 +12,9 @@ const dedupeArray = (arr: string[]) => {
   });
 };
 
-const arrayField = (maxString: number, maxItems: number) =>
+const arrayField = (maxItems: number) =>
   z
-    .array(z.string().max(maxString))
+    .array(z.string())
     .max(maxItems)
     .optional()
     .default([])
@@ -40,9 +40,9 @@ export const creatorIdentityZodSchema = z.object({
     "lifestyle",
     "other",
   ] as const).optional().default("other"),
-  technical_skills: arrayField(64, 25),
-  brand_tone: arrayField(64, 15),
-  content_format: arrayField(64, 15),
+  technical_skills: arrayField(25),
+  brand_tone: arrayField(15),
+  content_format: arrayField(15),
   audience_size_tier: z.enum([
     "micro",
     "emerging",
@@ -50,8 +50,8 @@ export const creatorIdentityZodSchema = z.object({
     "large",
     "enterprise"
   ] as const).optional().default("micro"),
-  past_topics: arrayField(64, 25),
-  bio_summary: z.string().max(1000).optional().default("Pending summary."),
+  past_topics: arrayField(25),
+  bio_summary: z.string().optional().default("Pending summary."),
   confidence: z.number().min(0).max(1).optional().default(0),
 });
 

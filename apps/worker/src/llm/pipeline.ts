@@ -44,9 +44,11 @@ async function executeWithRepair(
   
   let jsonString = data.choices[0]?.message?.content || "{}";
   
-  // Strip markdown fences
-  if (jsonString.startsWith("\`\`\`")) {
-    jsonString = jsonString.replace(/^\`\`\`(json)?\n/, "").replace(/\n\`\`\`$/, "");
+  // Robustly extract JSON object from conversational text or markdown blocks
+  const firstBrace = jsonString.indexOf('{');
+  const lastBrace = jsonString.lastIndexOf('}');
+  if (firstBrace !== -1 && lastBrace !== -1 && lastBrace >= firstBrace) {
+    jsonString = jsonString.slice(firstBrace, lastBrace + 1);
   }
 
   try {
