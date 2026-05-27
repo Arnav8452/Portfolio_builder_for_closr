@@ -4,9 +4,9 @@ import { creatorIdentityZodSchema, creatorIdentityJsonSchema } from "./schema.js
 import { createHash } from 'crypto';
 
 const MODELS = [
-  "llama-3.3-70b-versatile",
   "gemini-2.5-flash",
-  "qwen-2.5-coder-32b",
+  "llama-3.1-8b-instant",
+  "gemini-2.5-flash",
   "llama-3.1-8b-instant"
 ];
 
@@ -167,8 +167,8 @@ export async function executeWithRepair(
     if (attempt === 1) {
       console.warn(`[LLM] Schema validation failed via gateway, trying repair prompt on model ${modelName}...`);
       const repairPrompt = `The previous JSON you output was invalid or failed validation. Please fix it.\n\nOriginal text:\n${rawText}\n\nFailed output:\n${jsonString}\n\nValidation errors:\n${String(err)}`;
-      // Always rotate to the heaviest, most reliable model for repair if possible, or stick to assigned
-      const repairModel = "llama-3.3-70b-versatile"; 
+      // Use gemini for repairs since it has higher rate limits than Groq's llama
+      const repairModel = "gemini-2.5-flash"; 
       return executeWithRepair(repairPrompt, schemaString, repairModel, attempt + 1);
     }
     throw new Error(`Failed to parse/validate LLM output after repair. Errors: ${String(err)}`);
