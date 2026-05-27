@@ -55,9 +55,11 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
   const twitchMetrics = profile.platform_metrics?.find((m) => m.platform === "twitch");
 
   const displayImage = 
-    profile.owner_image || 
+    (profile.root_platform === "github" ? githubMetrics?.raw_payload?.profile?.avatar_url : null) ||
+    (profile.root_platform === "twitch" ? twitchMetrics?.raw_payload?.profile?.profile_image_url : null) ||
     githubMetrics?.raw_payload?.profile?.avatar_url ||
     twitchMetrics?.raw_payload?.profile?.profile_image_url ||
+    profile.owner_image || 
     null;
 
   return (
