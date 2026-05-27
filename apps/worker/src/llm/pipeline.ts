@@ -12,8 +12,8 @@ async function executeWithRepair(
   schemaString: string,
   attempt = 1
 ): Promise<LLMResponse> {
-  const GATEWAY_URL = env.aiGatewayUrl || "http://localhost:3000/v1/chat/completions";
-  const GATEWAY_SECRET = env.aiGatewaySecret || "dev-secret";
+  const GATEWAY_URL = env.aiGatewayUrl;
+  const GATEWAY_SECRET = env.aiGatewaySecret;
 
   const startTime = Date.now();
 
