@@ -22,7 +22,7 @@ export const env = {
   analysisBatchSize: optionalNumber(process.env.ANALYSIS_BATCH_SIZE, 1),
   pollSeconds: optionalNumber(process.env.WORKER_POLL_SECONDS, 15),
   llmProvider: process.env.LLM_PROVIDER ?? "freeloader",
-  aiGatewayUrl: (process.env.AI_GATEWAY_URL ?? `http://localhost:${optionalNumber(process.env.PORT, 8080)}/v1/chat/completions`).replace(/\/$/, ""),
+  aiGatewayUrl: (process.env.AI_GATEWAY_URL ?? `http://127.0.0.1:${optionalNumber(process.env.PORT, 8080)}/v1/chat/completions`).replace(/\/$/, ""),
   aiGatewaySecret: process.env.GATEWAY_SECRET ?? "dev-secret",
   deepseekApiKey: process.env.DEEPSEEK_API_KEY ?? "",
   deepseekBaseUrl: (process.env.DEEPSEEK_BASE_URL ?? "https://api.deepseek.com/v1").replace(/\/$/, ""),
