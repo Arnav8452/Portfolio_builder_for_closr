@@ -20,7 +20,7 @@ export const env = {
   port: optionalNumber(process.env.PORT, 8080),
   scrapingBatchSize: optionalNumber(process.env.SCRAPING_BATCH_SIZE, 5),
   analysisBatchSize: optionalNumber(process.env.ANALYSIS_BATCH_SIZE, 1),
-  pollSeconds: optionalNumber(process.env.WORKER_POLL_SECONDS, 5),
+  pollSeconds: optionalNumber(process.env.WORKER_POLL_SECONDS, 15),
   llmProvider: process.env.LLM_PROVIDER ?? "freeloader",
   aiGatewayUrl: (process.env.AI_GATEWAY_URL ?? `http://localhost:${optionalNumber(process.env.PORT, 8080)}/v1/chat/completions`).replace(/\/$/, ""),
   aiGatewaySecret: process.env.GATEWAY_SECRET ?? "dev-secret",
