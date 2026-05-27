@@ -239,14 +239,13 @@ export function RetroPlatformData({ metrics }: RetroPlatformDataProps) {
   if (!metrics || metrics.length === 0) return null;
 
   return (
-    <div style={{ padding: "48px 24px", backgroundColor: "var(--arcade-cream)", borderTop: "2px solid var(--arcade-ink)" }}>
+    <div style={{ display: "flex", flexDirection: "column", gap: "32px", width: "100%" }}>
       <h2 
         style={{ 
           fontFamily: "'Press Start 2P', monospace", 
           fontSize: "16px", 
           color: "var(--arcade-ink)",
           textTransform: "uppercase",
-          marginBottom: "32px",
           display: "flex",
           gap: "16px",
           alignItems: "center"
@@ -256,7 +255,7 @@ export function RetroPlatformData({ metrics }: RetroPlatformDataProps) {
         <LayoutGrid size={20} />
       </h2>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "32px" }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(400px, 1fr))", gap: "32px" }}>
         {metrics.map((metric, idx) => {
           const p = metric.platform.toLowerCase();
           const isTwitter = p === "x" || p === "twitter";
@@ -268,15 +267,17 @@ export function RetroPlatformData({ metrics }: RetroPlatformDataProps) {
           
           let Icon = Terminal;
           let color = "var(--arcade-green)";
-          if (isTwitter) { Icon = Twitter; color = "var(--arcade-blue)"; }
-          if (isGithub) { Icon = Github; color = "white"; }
-          if (isYoutube) { color = "var(--arcade-red)"; }
-          if (isInstagram) { color = "#E4405F"; }
-          if (isLinkedin) { color = "#0077B5"; }
-          if (isTwitch) { color = "var(--arcade-purple)"; }
+          let bgColor = "var(--arcade-dark)";
+          
+          if (isTwitter) { Icon = Twitter; color = "var(--arcade-blue)"; bgColor = "rgba(37, 99, 235, 0.05)"; }
+          if (isGithub) { Icon = Github; color = "white"; bgColor = "rgba(255, 255, 255, 0.05)"; }
+          if (isYoutube) { color = "var(--arcade-red)"; bgColor = "rgba(255, 51, 51, 0.05)"; }
+          if (isInstagram) { color = "#E4405F"; bgColor = "rgba(228, 64, 95, 0.05)"; }
+          if (isLinkedin) { color = "#0077B5"; bgColor = "rgba(0, 119, 181, 0.05)"; }
+          if (isTwitch) { color = "var(--arcade-purple)"; bgColor = "rgba(147, 51, 234, 0.05)"; }
 
           return (
-            <div key={idx} className="pixel-border" style={{ backgroundColor: "var(--arcade-dark)", padding: "32px", border: `2px solid ${color}` }}>
+            <div key={idx} className="pixel-border" style={{ backgroundColor: bgColor, padding: "32px", border: `3px solid ${color}`, height: "100%", boxShadow: `0 0 15px ${color}40` }}>
               
               <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "24px", borderBottom: `1px solid ${color}40`, paddingBottom: "16px" }}>
                 <Icon size={24} color={color} />

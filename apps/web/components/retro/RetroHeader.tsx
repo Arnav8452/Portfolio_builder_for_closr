@@ -23,40 +23,37 @@ export function RetroHeader({ profile, displayImage, overallScore }: RetroHeader
   else if (overallScore >= 40) gradeText = "AVERAGE";
 
   return (
-    <div style={{ width: "100%" }}>
-
-      {/* Main Hero */}
-      <div 
-        style={{
-          backgroundColor: "var(--arcade-cream-soft)",
-          borderBottom: "2px solid var(--arcade-ink)",
-          padding: "48px 24px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          flexWrap: "wrap",
-          gap: "24px"
-        }}
-      >
-        {/* Left Profile */}
-        <div style={{ display: "flex", gap: "24px", alignItems: "center" }}>
-          {displayImage && (
-            <div className="pixel-border" style={{ width: 120, height: 120, backgroundColor: "var(--arcade-ink)" }}>
-              <img src={displayImage} alt={profile.display_name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-            </div>
-          )}
-          <div style={{ color: "var(--arcade-ink)", maxWidth: "400px" }}>
-            <h1 style={{ color: "var(--arcade-ink)", fontFamily: "'Press Start 2P', monospace", fontSize: "28px", margin: "0 0 16px 0", textTransform: "uppercase" }}>
-              {profile.display_name}
-            </h1>
-            <p style={{ color: "var(--arcade-ink)", fontFamily: "'Inter', sans-serif", fontSize: "14px", margin: "0 0 8px 0", fontWeight: 600 }}>
-              {profile.primary_niche ? `Niche: ${profile.primary_niche.replace('_', ' ')}` : "Uncategorized Creator"}
-            </p>
-            <p style={{ color: "var(--arcade-ink)", fontFamily: "'Inter', sans-serif", fontSize: "14px", margin: 0, opacity: 0.9, lineHeight: 1.6 }}>
-              {profile.bio_summary || "No summary was produced for this creator."}
-            </p>
+    <div className="pixel-border" 
+      style={{
+        backgroundColor: "var(--arcade-dark)",
+        padding: "48px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+        flexWrap: "wrap",
+        gap: "32px",
+        height: "100%"
+      }}
+    >
+      {/* Left Profile */}
+      <div style={{ display: "flex", gap: "24px", alignItems: "center" }}>
+        {displayImage && (
+          <div className="pixel-border" style={{ width: 120, height: 120, backgroundColor: "var(--arcade-cream)" }}>
+            <img src={displayImage} alt={profile.display_name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
+        )}
+        <div style={{ color: "var(--arcade-cream)", maxWidth: "400px" }}>
+          <h1 style={{ color: "var(--arcade-cream)", fontFamily: "'Press Start 2P', monospace", fontSize: "28px", margin: "0 0 16px 0", textTransform: "uppercase" }}>
+            {profile.display_name}
+          </h1>
+          <p style={{ color: "var(--arcade-cream)", fontFamily: "'Inter', sans-serif", fontSize: "14px", margin: "0 0 8px 0", fontWeight: 600 }}>
+            {profile.primary_niche ? `Niche: ${profile.primary_niche.replace('_', ' ')}` : "Uncategorized Creator"}
+          </p>
+          <p style={{ color: "var(--arcade-cream)", fontFamily: "'Inter', sans-serif", fontSize: "14px", margin: 0, opacity: 0.9, lineHeight: 1.6 }}>
+            {profile.bio_summary || "No summary was produced for this creator."}
+          </p>
         </div>
+      </div>
 
         {/* Right Social Links */}
         {profile.verified_links && profile.verified_links.length > 0 && (
@@ -95,7 +92,6 @@ export function RetroHeader({ profile, displayImage, overallScore }: RetroHeader
             })}
           </div>
         )}
-      </div>
     </div>
   );
 }

@@ -185,14 +185,16 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
 
   return (
     <main style={{ minHeight: "100vh", backgroundColor: "var(--arcade-cream)" }}>
-      {/* 1. Main Header */}
-      <RetroHeader 
-        profile={profile} 
-        displayImage={displayImage} 
-        overallScore={overallScore} 
-      />
-
       <div className="bento-grid">
+        {/* 1. Main Header */}
+        <div style={{ gridColumn: "1 / -1" }}>
+          <RetroHeader 
+            profile={profile} 
+            displayImage={displayImage} 
+            overallScore={overallScore} 
+          />
+        </div>
+
         {/* Left Column */}
         <div style={{ display: "flex", flexDirection: "column", gap: "64px" }}>
           {/* 3. Category Breakdown (Radar Chart) */}
@@ -210,12 +212,14 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
           {/* 2. Roasts / Achievements Cards */}
           <RetroCards achievements={profile.extra_analysis?.achievements} />
         </div>
-      </div>
 
-      {/* 6. Platform Data Dumps */}
-      {profile.platform_metrics && profile.platform_metrics.length > 0 && (
-        <RetroPlatformData metrics={profile.platform_metrics} />
-      )}
+        {/* 6. Platform Data Dumps */}
+        {profile.platform_metrics && profile.platform_metrics.length > 0 && (
+          <div style={{ gridColumn: "1 / -1" }}>
+            <RetroPlatformData metrics={profile.platform_metrics} />
+          </div>
+        )}
+      </div>
       
       {/* Footer Padding */}
       <div style={{ height: "64px", backgroundColor: "var(--arcade-cream)" }} />
