@@ -26,7 +26,6 @@ export async function submitCreatorProfile(formData: FormData) {
   
   const finalUserId = userId ?? "local-dev-uuid";
   const finalUserEmail = userEmail ?? "local-dev@closr.test";
-  const finalUserImage = session?.user?.image ?? null;
   const displayName = String(formData.get("displayName") ?? "").trim();
   const rootPlatform = String(formData.get("rootPlatform") ?? "github");
   const rootUrl = String(formData.get("rootUrl") ?? "").trim();
@@ -54,7 +53,6 @@ export async function submitCreatorProfile(formData: FormData) {
       display_name: displayName,
       root_platform: root,
       root_handle: normalizedRootUrl.split("/").filter(Boolean).at(-1)?.replace("@", "") ?? null,
-      avatar_url: finalUserImage,
       onboarding_status: "queued",
     })
     .select("id")
