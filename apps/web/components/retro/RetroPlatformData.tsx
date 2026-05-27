@@ -27,7 +27,7 @@ function GenericStats({ data }: { data: any }) {
       {entries.map(([k, v]) => (
         <div key={k} style={{ padding: "12px", border: "1px dashed var(--muted)", display: "flex", flexDirection: "column", gap: "4px" }}>
           <span style={{ fontSize: "10px", color: "var(--muted-2)", textTransform: "uppercase" }}>{k.replace(/_/g, " ")}</span>
-          <span style={{ fontSize: "14px", color: "var(--arcade-cream)", fontWeight: 600 }}>{String(v)}</span>
+          <span style={{ fontSize: "14px", color: "var(--arcade-ink)", fontWeight: 600 }}>{String(v)}</span>
         </div>
       ))}
     </div>
@@ -43,7 +43,7 @@ function TwitterCard({ payload }: { payload: any }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       {profile.description && (
-        <p style={{ margin: 0, fontSize: "14px", color: "var(--arcade-cream)", lineHeight: 1.6, borderLeft: "4px solid var(--arcade-blue)", paddingLeft: "12px" }}>
+        <p style={{ margin: 0, fontSize: "14px", color: "var(--arcade-ink)", lineHeight: 1.6, borderLeft: "4px solid var(--arcade-blue)", paddingLeft: "12px" }}>
           {profile.description}
         </p>
       )}
@@ -52,13 +52,13 @@ function TwitterCard({ payload }: { payload: any }) {
         {profile.followers !== undefined && (
           <div style={{ border: "2px solid var(--arcade-blue)", padding: "12px", minWidth: "120px" }}>
             <div style={{ fontSize: "10px", color: "var(--arcade-blue)", marginBottom: "4px" }}>FOLLOWERS</div>
-            <div style={{ fontSize: "20px", color: "white", fontFamily: "'Press Start 2P', monospace" }}>{profile.followers}</div>
+            <div style={{ fontSize: "20px", color: "var(--arcade-ink)", fontFamily: "'Press Start 2P', monospace" }}>{profile.followers}</div>
           </div>
         )}
         {profile.following !== undefined && (
           <div style={{ border: "2px solid var(--arcade-blue)", padding: "12px", minWidth: "120px" }}>
             <div style={{ fontSize: "10px", color: "var(--arcade-blue)", marginBottom: "4px" }}>FOLLOWING</div>
-            <div style={{ fontSize: "20px", color: "white", fontFamily: "'Press Start 2P', monospace" }}>{profile.following}</div>
+            <div style={{ fontSize: "20px", color: "var(--arcade-ink)", fontFamily: "'Press Start 2P', monospace" }}>{profile.following}</div>
           </div>
         )}
       </div>
@@ -71,7 +71,7 @@ function TwitterCard({ payload }: { payload: any }) {
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
             {tweets.slice(0, 4).map((t: any, i: number) => t.text && (
               <div key={i} style={{ padding: "16px", backgroundColor: "rgba(59, 107, 181, 0.1)", border: "1px solid var(--arcade-blue)", borderRadius: "4px" }}>
-                <p style={{ margin: 0, fontSize: "14px", color: "var(--arcade-cream)", lineHeight: 1.5 }}>{t.text}</p>
+                <p style={{ margin: 0, fontSize: "14px", color: "var(--arcade-ink)", lineHeight: 1.5 }}>{t.text}</p>
                 <div style={{ display: "flex", gap: "16px", marginTop: "12px", color: "var(--muted)", fontSize: "12px" }}>
                   <span>❤️ {t.likes || 0}</span>
                   <span>🔄 {t.retweets || 0}</span>
@@ -93,13 +93,13 @@ function GithubCard({ payload }: { payload: any }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       {profile.bio && (
-        <p style={{ margin: 0, fontSize: "14px", color: "var(--arcade-cream)", lineHeight: 1.6, borderLeft: "4px solid var(--arcade-cream)", paddingLeft: "12px" }}>
+        <p style={{ margin: 0, fontSize: "14px", color: "var(--arcade-ink)", lineHeight: 1.6, borderLeft: "4px solid var(--arcade-ink)", paddingLeft: "12px" }}>
           {profile.bio}
         </p>
       )}
 
       <div>
-        <h4 style={{ color: "var(--arcade-cream)", fontSize: "12px", fontFamily: "'Press Start 2P', monospace", marginBottom: "16px" }}>TOP REPOSITORIES</h4>
+        <h4 style={{ color: "var(--arcade-ink)", fontSize: "12px", fontFamily: "'Press Start 2P', monospace", marginBottom: "16px" }}>TOP REPOSITORIES</h4>
         {repos.length === 0 ? (
           <div style={{ color: "var(--muted)", fontSize: "14px" }}>No repositories found.</div>
         ) : (
@@ -108,7 +108,7 @@ function GithubCard({ payload }: { payload: any }) {
               const mainLang = repo.languages?.edges?.[0]?.node?.name || "Unknown";
               return (
                 <div key={i} style={{ padding: "16px", border: "1px solid var(--muted-2)" }}>
-                  <div style={{ fontWeight: "bold", color: "white", marginBottom: "8px", fontSize: "14px", wordBreak: "break-all" }}>{repo.name}</div>
+                  <div style={{ fontWeight: "bold", color: "var(--arcade-ink)", marginBottom: "8px", fontSize: "14px", wordBreak: "break-all" }}>{repo.name}</div>
                   <div style={{ display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "var(--muted)" }}>
                     <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "var(--arcade-green)" }} />
                     {mainLang}
@@ -134,13 +134,13 @@ function YoutubeCard({ payload }: { payload: any }) {
         {engagement[0] !== undefined && (
           <div style={{ border: "2px solid var(--arcade-red)", padding: "12px", minWidth: "120px" }}>
             <div style={{ fontSize: "10px", color: "var(--arcade-red)", marginBottom: "4px" }}>LIFETIME VIEWS</div>
-            <div style={{ fontSize: "20px", color: "white", fontFamily: "'Press Start 2P', monospace" }}>{engagement[0].toLocaleString()}</div>
+            <div style={{ fontSize: "20px", color: "var(--arcade-ink)", fontFamily: "'Press Start 2P', monospace" }}>{engagement[0].toLocaleString()}</div>
           </div>
         )}
         {engagement[1] !== undefined && (
           <div style={{ border: "2px solid var(--arcade-red)", padding: "12px", minWidth: "120px" }}>
             <div style={{ fontSize: "10px", color: "var(--arcade-red)", marginBottom: "4px" }}>WATCH MINUTES</div>
-            <div style={{ fontSize: "20px", color: "white", fontFamily: "'Press Start 2P', monospace" }}>{engagement[1].toLocaleString()}</div>
+            <div style={{ fontSize: "20px", color: "var(--arcade-ink)", fontFamily: "'Press Start 2P', monospace" }}>{engagement[1].toLocaleString()}</div>
           </div>
         )}
       </div>
@@ -156,7 +156,7 @@ function InstagramCard({ payload }: { payload: any }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       {profile.biography && (
-        <p style={{ margin: 0, fontSize: "14px", color: "var(--arcade-cream)", lineHeight: 1.6, borderLeft: "4px solid #E4405F", paddingLeft: "12px" }}>
+        <p style={{ margin: 0, fontSize: "14px", color: "var(--arcade-ink)", lineHeight: 1.6, borderLeft: "4px solid #E4405F", paddingLeft: "12px" }}>
           {profile.biography}
         </p>
       )}
@@ -165,13 +165,13 @@ function InstagramCard({ payload }: { payload: any }) {
         {profile.followers_count !== undefined && (
           <div style={{ border: "2px solid #E4405F", padding: "12px", minWidth: "120px" }}>
             <div style={{ fontSize: "10px", color: "#E4405F", marginBottom: "4px" }}>FOLLOWERS</div>
-            <div style={{ fontSize: "20px", color: "white", fontFamily: "'Press Start 2P', monospace" }}>{profile.followers_count.toLocaleString()}</div>
+            <div style={{ fontSize: "20px", color: "var(--arcade-ink)", fontFamily: "'Press Start 2P', monospace" }}>{profile.followers_count.toLocaleString()}</div>
           </div>
         )}
         {profile.media_count !== undefined && (
           <div style={{ border: "2px solid #E4405F", padding: "12px", minWidth: "120px" }}>
             <div style={{ fontSize: "10px", color: "#E4405F", marginBottom: "4px" }}>POSTS</div>
-            <div style={{ fontSize: "20px", color: "white", fontFamily: "'Press Start 2P', monospace" }}>{profile.media_count.toLocaleString()}</div>
+            <div style={{ fontSize: "20px", color: "var(--arcade-ink)", fontFamily: "'Press Start 2P', monospace" }}>{profile.media_count.toLocaleString()}</div>
           </div>
         )}
       </div>
@@ -187,7 +187,7 @@ function LinkedinCard({ payload }: { payload: any }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       {profile.headline && (
-        <p style={{ margin: 0, fontSize: "14px", color: "var(--arcade-cream)", lineHeight: 1.6, borderLeft: "4px solid #0077B5", paddingLeft: "12px", fontWeight: "bold" }}>
+        <p style={{ margin: 0, fontSize: "14px", color: "var(--arcade-ink)", lineHeight: 1.6, borderLeft: "4px solid #0077B5", paddingLeft: "12px", fontWeight: "bold" }}>
           {profile.headline}
         </p>
       )}
@@ -201,7 +201,7 @@ function LinkedinCard({ payload }: { payload: any }) {
         {profile.connections !== undefined && (
           <div style={{ border: "2px solid #0077B5", padding: "12px", minWidth: "120px" }}>
             <div style={{ fontSize: "10px", color: "#0077B5", marginBottom: "4px" }}>CONNECTIONS</div>
-            <div style={{ fontSize: "20px", color: "white", fontFamily: "'Press Start 2P', monospace" }}>{profile.connections}</div>
+            <div style={{ fontSize: "20px", color: "var(--arcade-ink)", fontFamily: "'Press Start 2P', monospace" }}>{profile.connections}</div>
           </div>
         )}
       </div>
@@ -217,7 +217,7 @@ function TwitchCard({ payload }: { payload: any }) {
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
       {profile.description && (
-        <p style={{ margin: 0, fontSize: "14px", color: "var(--arcade-cream)", lineHeight: 1.6, borderLeft: "4px solid var(--arcade-purple)", paddingLeft: "12px" }}>
+        <p style={{ margin: 0, fontSize: "14px", color: "var(--arcade-ink)", lineHeight: 1.6, borderLeft: "4px solid var(--arcade-purple)", paddingLeft: "12px" }}>
           {profile.description}
         </p>
       )}
@@ -226,7 +226,7 @@ function TwitchCard({ payload }: { payload: any }) {
         {profile.view_count !== undefined && (
           <div style={{ border: "2px solid var(--arcade-purple)", padding: "12px", minWidth: "120px" }}>
             <div style={{ fontSize: "10px", color: "var(--arcade-purple)", marginBottom: "4px" }}>TOTAL VIEWS</div>
-            <div style={{ fontSize: "20px", color: "white", fontFamily: "'Press Start 2P', monospace" }}>{profile.view_count.toLocaleString()}</div>
+            <div style={{ fontSize: "20px", color: "var(--arcade-ink)", fontFamily: "'Press Start 2P', monospace" }}>{profile.view_count.toLocaleString()}</div>
           </div>
         )}
       </div>
