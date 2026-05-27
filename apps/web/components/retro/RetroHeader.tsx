@@ -22,35 +22,6 @@ export function RetroHeader({ profile, displayImage, overallScore }: RetroHeader
 
   return (
     <div style={{ width: "100%" }}>
-      {/* Subheader */}
-      <div 
-        style={{
-          backgroundColor: "var(--arcade-cream)",
-          borderBottom: "2px solid var(--arcade-ink)",
-          padding: "16px 24px",
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center"
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "16px", fontFamily: "'Press Start 2P', monospace", fontSize: "14px", textTransform: "uppercase" }}>
-          <span>&larr;</span>
-          <span>RATE MY {profile.root_platform.toUpperCase()}</span>
-        </div>
-        <button 
-          className="pixel-btn"
-          style={{
-            backgroundColor: "var(--arcade-blue)",
-            color: "var(--arcade-cream)",
-            padding: "8px 16px",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px"
-          }}
-        >
-          SHARE ON X <ExternalLink size={12} />
-        </button>
-      </div>
 
       {/* Main Hero */}
       <div 

@@ -855,9 +855,9 @@ export function CreatorIntake({ existingPortfolio }: { existingPortfolio?: Exist
             <span>{initialsFor(displayName)}</span>
             <ShieldCheck size={22} />
           </div>
-          <div className="result-copy">
+          <div className="result-copy" style={{ color: "var(--arcade-ink)" }}>
             <div className="eyebrow">{isSuccess ? "Queued portfolio" : "Queue write failed"}</div>
-            <h1>{displayName}</h1>
+            <h1 style={{ color: "var(--arcade-ink)" }}>{displayName}</h1>
             <p>
               {isSuccess
                 ? "The creator graph is now in Supabase. Scraping and analysis workers can promote claimed links into verified data."
@@ -875,13 +875,10 @@ export function CreatorIntake({ existingPortfolio }: { existingPortfolio?: Exist
           <div className="result-actions">
             {isSuccess && submitResult.slug ? (
               <a className="primary-action compact-action" href={`/p/${submitResult.slug}`}>
-                Open portfolio
+                VIEW LIVE PORTFOLIO
                 <ArrowRight size={18} />
               </a>
             ) : null}
-            <button className="secondary-action compact-action" type="button" onClick={resetFlow}>
-              Build another
-            </button>
           </div>
         </div>
 
