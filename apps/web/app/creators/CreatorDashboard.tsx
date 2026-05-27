@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { signOut, signIn } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   ExternalLink,
   Edit3,
@@ -17,9 +17,12 @@ import {
   Linkedin,
   LogOut,
   AlertCircle,
+  RefreshCw,
+  Trash2,
   type LucideIcon,
 } from "lucide-react";
 import { CreatorIntake } from "./CreatorIntake";
+import { deleteCreatorProfile } from "./actions";
 
 type PortfolioLink = {
   platform: string;
@@ -77,7 +80,10 @@ export function CreatorDashboard({ portfolio, missingProviders = [] }: { portfol
   const [mode, setMode] = useState<"dashboard" | "edit">("dashboard");
   const [copied, setCopied] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const searchParams = useSearchParams();
+  const router = useRouter();
 
   useEffect(() => {
     const err = searchParams?.get("error");
@@ -123,24 +129,55 @@ export function CreatorDashboard({ portfolio, missingProviders = [] }: { portfol
     );
   }
 
+  async function handleDelete() {
+    if (!window.confirm("Are you sure you want to permanently delete your verified creator portfolio? This action cannot be undone.")) {
+      return;
+    }
+    setIsDeleting(true);
+    const result = await deleteCreatorProfile(portfolio.id);
+    if (!result.ok) {
+      setErrorMsg(result.message || "Failed to delete portfolio.");
+      setIsDeleting(false);
+    } else {
+      router.refresh();
+    }
+  }
+
+  function handleRefresh() {
+    setIsRefreshing(true);
+    router.refresh();
+    setTimeout(() => setIsRefreshing(false), 1000);
+  }
+
   return (
-    <div className="creator-shell fade-in">
+    <div className="creator-stage compact fade-in" style={{ padding: "48px 24px", display: "flex", flexDirection: "column", gap: "24px" }}>
       {/* Header bar */}
-      <div className="dashboard-header">
+      <div className="dashboard-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
           <h1>Your Portfolio</h1>
           <p className="dashboard-subtitle">
             Manage your verified creator identity
           </p>
         </div>
-        <button
-          className="secondary-action"
-          type="button"
-          onClick={() => signOut()}
-          style={{ gap: "6px" }}
-        >
-          <LogOut size={14} /> Sign Out
-        </button>
+        <div style={{ display: "flex", gap: "12px" }}>
+          <button
+            className="secondary-action"
+            type="button"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            style={{ gap: "6px" }}
+          >
+            <RefreshCw size={14} className={isRefreshing ? "spin" : ""} /> Refresh
+          </button>
+          <button
+            className="secondary-action"
+            type="button"
+            onClick={() => signOut()}
+            style={{ gap: "6px" }}
+          >
+            <LogOut size={14} /> Sign Out
+          </button>
+        </div>
       </div>
 
       {/* Error Message */}
@@ -194,12 +231,13 @@ export function CreatorDashboard({ portfolio, missingProviders = [] }: { portfol
         </div>
 
         {/* Action row */}
-        <div className="dash-actions">
+        <div className="dash-actions" style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
           <a
             className="primary-action"
             href={liveUrl}
             target="_blank"
             rel="noopener noreferrer"
+            style={{ flex: 1 }}
           >
             <ExternalLink size={16} /> View Live
           </a>
@@ -207,8 +245,18 @@ export function CreatorDashboard({ portfolio, missingProviders = [] }: { portfol
             className="primary-action edit-action"
             type="button"
             onClick={() => setMode("edit")}
+            style={{ flex: 1 }}
           >
             <Edit3 size={16} /> Edit Portfolio
+          </button>
+          <button
+            className="secondary-action"
+            type="button"
+            onClick={handleDelete}
+            disabled={isDeleting}
+            style={{ borderColor: "var(--arcade-red)", color: "var(--arcade-red)" }}
+          >
+            <Trash2 size={16} /> {isDeleting ? "Deleting..." : "Delete"}
           </button>
         </div>
       </div>
