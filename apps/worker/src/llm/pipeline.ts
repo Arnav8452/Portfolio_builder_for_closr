@@ -4,9 +4,10 @@ import { creatorIdentityZodSchema, creatorIdentityJsonSchema } from "./schema.js
 import { createHash } from 'crypto';
 
 const MODELS = [
-  "llama-3.1-8b-instant", 
-  "llama-3.3-70b-versatile", 
-  "gemma2-9b-it"
+  "llama-3.3-70b-versatile",
+  "gemini-2.5-flash",
+  "qwen-2.5-coder-32b",
+  "llama-3.1-8b-instant"
 ];
 
 export async function extractCreatorIdentity(rawText: string): Promise<LLMResponse> {
@@ -133,7 +134,11 @@ export async function executeWithRepair(
   }
 
   try {
-    const rawParsed = JSON.parse(jsonString);
+    let rawParsed = JSON.parse(jsonString);
+    
+    if (rawParsed && rawParsed.CreatorIdentity) {
+      rawParsed = rawParsed.CreatorIdentity;
+    }
     
     // Sometimes smaller models return an object for bio_summary despite the schema. Flatten it.
     if (rawParsed && typeof rawParsed.bio_summary === 'object' && rawParsed.bio_summary !== null) {
