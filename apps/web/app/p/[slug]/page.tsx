@@ -204,14 +204,7 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
       {/* 5. Numbers — only if we have real stats to show */}
       {statsNumbers.length > 0 && <RetroNumbers stats={statsNumbers} />}
 
-      {/* 6. GitHub README Markdown */}
-      {githubMetrics?.raw_payload?.readme && (
-        <RetroMarkdown 
-          content={githubMetrics.raw_payload.readme} 
-          title="GITHUB README" 
-          number="05" 
-        />
-      )}
+
       
       {/* Footer Padding */}
       <div style={{ height: "64px", backgroundColor: "var(--arcade-cream)" }} />
