@@ -6,11 +6,11 @@
   --arcade-ink: #111111;
   --arcade-dark: #1f1f1f;
   --arcade-dark-soft: #2a2a2a;
-  --arcade-red: #FF3333;
-  --arcade-blue: #2563EB;
-  --arcade-green: #16A34A;
-  --arcade-yellow: #F59E0B;
-  --arcade-purple: #9333EA;
+  --arcade-red: #E8333A;
+  --arcade-blue: #3B82F6;
+  --arcade-green: #7FFF00;
+  --arcade-yellow: #F5A623;
+  --arcade-purple: #9B59B6;
   --bg: var(--arcade-cream);
   --surface: var(--arcade-cream-soft);
   --surface-2: #e6dcc6;
