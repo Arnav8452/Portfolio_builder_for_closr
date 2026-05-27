@@ -97,8 +97,12 @@ async function processScrapingJob(job: ScrapingJob) {
 }
 
 async function scrape(job: ScrapingJob): Promise<ScrapeResult> {
-  if (job.platform === "youtube" || job.platform === "github" || job.platform === "twitch" || job.platform === "instagram") {
-    return fetchOauthPlatform(job.platform, job.url, job.creator_id);
+  if (job.platform === "youtube" || job.platform === "github" || job.platform === "twitch" || job.platform === "instagram" || job.platform === "linkedin") {
+    try {
+      return await fetchOauthPlatform(job.platform, job.url, job.creator_id);
+    } catch (err) {
+      console.warn(`OAuth fetch failed for ${job.platform}, falling back to default scrapers:`, err);
+    }
   }
 
   if (job.platform === "substack" || job.platform === "medium") {
