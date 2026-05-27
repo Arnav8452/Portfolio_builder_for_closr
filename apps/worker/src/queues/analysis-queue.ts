@@ -36,6 +36,47 @@ async function processAnalysisJob(job: AnalysisJob) {
     const mergedFormat = [...new Set([...(existing?.content_format ?? []), ...(identity.content_format ?? [])])];
     const mergedTopics = [...new Set([...(existing?.past_topics ?? []), ...(identity.past_topics ?? [])])];
 
+    // Smart merge bio_summary
+    const isNewBioPoor = !identity.bio_summary || identity.bio_summary.includes("Insufficient data") || identity.bio_summary === "Pending summary.";
+    const mergedBioSummary = isNewBioPoor && existing?.bio_summary && !existing.bio_summary.includes("Insufficient data") && existing.bio_summary !== "Pending summary."
+      ? existing.bio_summary
+      : identity.bio_summary ?? existing?.bio_summary;
+
+    // Smart merge data cards (achievements, timeline, radar)
+    const existingRaw = existing?.raw_model_output || {};
+    
+    // Merge achievements
+    const existingAchievements = Array.isArray(existingRaw.achievements) ? existingRaw.achievements : [];
+    const newAchievements = Array.isArray(identity.achievements) ? identity.achievements : [];
+    const mergedAchievements = [...existingAchievements, ...newAchievements].reduce((acc, curr) => {
+      if (!acc.find((a: any) => a.title === curr.title)) acc.push(curr);
+      return acc;
+    }, []);
+
+    // Merge timeline events
+    const existingTimeline = Array.isArray(existingRaw.timeline_events) ? existingRaw.timeline_events : [];
+    const newTimeline = Array.isArray(identity.timeline_events) ? identity.timeline_events : [];
+    const mergedTimeline = [...existingTimeline, ...newTimeline].reduce((acc, curr) => {
+      if (!acc.find((a: any) => a.title === curr.title)) acc.push(curr);
+      return acc;
+    }, []);
+
+    // Merge radar scores
+    const confidenceIsHigher = (identity.confidence ?? 0) > (existing?.extraction_confidence ?? 0);
+    const mergedRadar = confidenceIsHigher && identity.radar_scores && Object.keys(identity.radar_scores).length > 0
+      ? identity.radar_scores 
+      : existingRaw.radar_scores || identity.radar_scores;
+
+    const finalRawModelOutput = {
+      ...existingRaw,
+      ...identity,
+      achievements: mergedAchievements,
+      timeline_events: mergedTimeline,
+      radar_scores: mergedRadar,
+      raw: result.raw_model_output,
+      source_payload: job.payload
+    };
+
     await upsertRow("creator_identities", {
       creator_id: job.creator_id,
       primary_niche: identity.primary_niche ?? existing?.primary_niche,
@@ -44,7 +85,7 @@ async function processAnalysisJob(job: AnalysisJob) {
       content_format: mergedFormat,
       audience_size_tier: identity.audience_size_tier ?? existing?.audience_size_tier,
       past_topics: mergedTopics,
-      bio_summary: identity.bio_summary ?? existing?.bio_summary,
+      bio_summary: mergedBioSummary,
       extraction_confidence: Math.max(identity.confidence ?? 0, existing?.extraction_confidence ?? 0),
       llm_provider: result.provider,
       llm_model: result.model,
@@ -55,7 +96,7 @@ async function processAnalysisJob(job: AnalysisJob) {
       input_tokens: result.input_tokens,
       output_tokens: result.output_tokens,
       estimated_cost_usd: result.estimated_cost_usd,
-      raw_model_output: { ...identity, raw: result.raw_model_output, source_payload: job.payload },
+      raw_model_output: finalRawModelOutput,
       updated_at: new Date().toISOString(),
     }, "creator_id");
 

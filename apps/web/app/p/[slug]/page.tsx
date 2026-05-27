@@ -1,5 +1,8 @@
 import { notFound } from "next/navigation";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
+
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 import { Activity } from "lucide-react";
 import { RetroHeader } from "@/components/retro/RetroHeader";
 import { RetroCards } from "@/components/retro/RetroCards";
