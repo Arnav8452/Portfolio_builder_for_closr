@@ -55,7 +55,7 @@ async function processAnalysisJob(job: AnalysisJob) {
       input_tokens: result.input_tokens,
       output_tokens: result.output_tokens,
       estimated_cost_usd: result.estimated_cost_usd,
-      raw_model_output: { raw: result.raw_model_output, source_payload: job.payload },
+      raw_model_output: { ...identity, raw: result.raw_model_output, source_payload: job.payload },
       updated_at: new Date().toISOString(),
     }, "creator_id");
 
