@@ -192,19 +192,27 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
         overallScore={overallScore} 
       />
 
-      {/* 2. Roasts / Achievements Cards */}
-      <RetroCards achievements={profile.extra_analysis?.achievements} />
+      <div className="bento-grid">
+        {/* Left Column */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "64px" }}>
+          {/* 3. Category Breakdown (Radar Chart) */}
+          <RetroRadar scores={profile.extra_analysis?.radar_scores} />
 
-      {/* 3. Category Breakdown (Radar Chart) */}
-      <RetroRadar scores={profile.extra_analysis?.radar_scores} />
+          {/* 4. Stats (Heatmap & Pie) */}
+          {languages.length > 0 && <RetroStats languages={languages} />}
 
-      {/* 4. Stats (Heatmap & Pie) — only if we have language data */}
-      {languages.length > 0 && <RetroStats languages={languages} />}
+          {/* 5. Numbers */}
+          {statsNumbers.length > 0 && <RetroNumbers stats={statsNumbers} />}
+        </div>
 
-      {/* 5. Numbers — only if we have real stats to show */}
-      {statsNumbers.length > 0 && <RetroNumbers stats={statsNumbers} />}
+        {/* Right Column */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "64px" }}>
+          {/* 2. Roasts / Achievements Cards */}
+          <RetroCards achievements={profile.extra_analysis?.achievements} />
+        </div>
+      </div>
 
-      {/* 6. Raw Platform Data Dumps */}
+      {/* 6. Platform Data Dumps */}
       {profile.platform_metrics && profile.platform_metrics.length > 0 && (
         <RetroPlatformData metrics={profile.platform_metrics} />
       )}

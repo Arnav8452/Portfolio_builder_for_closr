@@ -22,7 +22,7 @@ export function RetroCards({ achievements }: RetroCardsProps) {
   if (!achievements || achievements.length === 0) return null;
 
   return (
-    <div style={{ padding: "48px 24px", backgroundColor: "var(--arcade-cream)" }}>
+    <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>
       <h2 
         style={{ 
           fontFamily: "'Press Start 2P', monospace", 

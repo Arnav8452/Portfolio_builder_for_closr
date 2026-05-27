@@ -1,16 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Inter:wght@400;600;700;800&display=swap');
 
 :root {
-  --arcade-cream: #f5eedc;
-  --arcade-cream-soft: #ede4cd;
-  --arcade-ink: #2d2520;
-  --arcade-dark: #231e1a;
-  --arcade-dark-soft: #352e28;
-  --arcade-red: #c4372b;
-  --arcade-blue: #3b6bb5;
-  --arcade-green: #2d7a45;
-  --arcade-yellow: #d4a017;
-  --arcade-purple: #8b45a6;
+  --arcade-cream: #fbf5e6;
+  --arcade-cream-soft: #f2ebd9;
+  --arcade-ink: #111111;
+  --arcade-dark: #1f1f1f;
+  --arcade-dark-soft: #2a2a2a;
+  --arcade-red: #FF3333;
+  --arcade-blue: #2563EB;
+  --arcade-green: #16A34A;
+  --arcade-yellow: #F59E0B;
+  --arcade-purple: #9333EA;
   --bg: var(--arcade-cream);
   --surface: var(--arcade-cream-soft);
   --surface-2: #e6dcc6;
@@ -2023,3 +2023,6 @@ p {
 
 .hover-lift { transition: transform 0.1s ease; }
 .hover-lift:hover { transform: translateY(-4px); }
+
+.bento-grid { display: grid; grid-template-columns: 1fr; gap: 32px; padding: 48px 24px; }
+@media (min-width: 1024px) { .bento-grid { grid-template-columns: 1.5fr 1fr; } }
