@@ -68,6 +68,21 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     .single();
 
   if (error || !data) notFound();
+
+  // The production DB view 'public_creator_profiles' is currently missing the 'extra_analysis' column.
+  // We manually fetch it from 'creator_identities' to ensure data cards render.
+  if (!data.extra_analysis) {
+    const { data: ciData } = await getSupabaseAdmin()
+      .from("creator_identities")
+      .select("raw_model_output")
+      .eq("creator_id", data.id)
+      .single();
+      
+    if (ciData?.raw_model_output) {
+      data.extra_analysis = ciData.raw_model_output;
+    }
+  }
+
   return <ProfileView profile={data as PublicProfile} />;
 }
 
