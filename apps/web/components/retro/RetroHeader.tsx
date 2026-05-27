@@ -77,7 +77,7 @@ export function RetroHeader({ profile, displayImage, overallScore }: RetroHeader
                   href={link.url} 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="pixel-border"
+                  className="pixel-border hover-lift"
                   style={{
                     display: "flex",
                     alignItems: "center",
@@ -86,10 +86,7 @@ export function RetroHeader({ profile, displayImage, overallScore }: RetroHeader
                     height: "48px",
                     backgroundColor: "var(--arcade-ink)",
                     color: "var(--arcade-cream)",
-                    transition: "transform 0.1s ease",
                   }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = "translateY(-4px)"}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = "translateY(0)"}
                   title={`View on ${link.platform}`}
                 >
                   <Icon size={24} />
