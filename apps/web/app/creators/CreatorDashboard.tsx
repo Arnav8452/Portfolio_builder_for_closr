@@ -296,6 +296,15 @@ export function CreatorDashboard({ portfolio, missingProviders = [] }: { portfol
                 <Twitch size={14} /> Connect Twitch
               </button>
             )}
+            {missingProviders.includes("linkedin") && (
+              <button
+                className="secondary-action"
+                type="button"
+                onClick={() => signIn("linkedin", { callbackUrl: "/api/auth/sync-oauth" })}
+              >
+                <Linkedin size={14} /> Connect LinkedIn
+              </button>
+            )}
           </div>
         </div>
       )}

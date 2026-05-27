@@ -1,7 +1,7 @@
 "use client";
 
 import { signIn, signOut, useSession } from "next-auth/react";
-import { Github, LogOut, Twitch } from "lucide-react";
+import { Github, LogOut, Twitch, Linkedin } from "lucide-react";
 
 export function AuthButtons() {
   const { data: session, status } = useSession();
@@ -28,6 +28,9 @@ export function AuthButtons() {
       </button>
       <button className="button secondary" type="button" onClick={() => signIn("twitch")}>
         <Twitch size={16} /> Twitch
+      </button>
+      <button className="button secondary" type="button" onClick={() => signIn("linkedin")}>
+        <Linkedin size={16} /> LinkedIn
       </button>
     </div>
   );
