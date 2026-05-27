@@ -10,7 +10,7 @@ type SupabaseError = {
 
 async function readJson<T>(response: Response): Promise<T> {
   const text = await response.text();
-  if (!text) return undefined as T;
+  if (!text) return [] as unknown as T;
   return JSON.parse(text) as T;
 }
 

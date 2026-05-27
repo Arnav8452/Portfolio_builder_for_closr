@@ -1,13 +1,14 @@
 import { env } from "../env.js";
 import type { LLMResponse } from "./types.js";
 import { creatorIdentityZodSchema, creatorIdentityJsonSchema } from "./schema.js";
+import { createHash } from 'crypto';
 
 export async function extractCreatorIdentity(rawText: string): Promise<LLMResponse> {
   const schemaString = JSON.stringify(creatorIdentityJsonSchema);
   return executeWithRepair(rawText, schemaString);
 }
 
-async function executeWithRepair(
+export async function executeWithRepair(
   rawText: string,
   schemaString: string,
   attempt = 1
@@ -16,6 +17,7 @@ async function executeWithRepair(
   const GATEWAY_SECRET = env.aiGatewaySecret;
 
   const startTime = Date.now();
+  const systemPrompt = `You are an expert OSINT data analyst evaluating a creator's verified social telemetry. Extract a comprehensive, highly-detailed creator identity following this JSON schema exactly: ${schemaString}. Do not lose data. Deep dive into the text, extract specific numbers, and synthesize a rich bio_summary that highlights their most impressive metrics and achievements.`;
 
   const response = await fetch(GATEWAY_URL, {
     method: "POST",
@@ -26,7 +28,7 @@ async function executeWithRepair(
     body: JSON.stringify({
       model: "gpt-4o-mini", // Virtualized by Freeloader
       messages: [
-        { role: "system", content: `You are an expert OSINT data analyst evaluating a creator's verified social telemetry. Extract a comprehensive, highly-detailed creator identity following this JSON schema exactly: ${schemaString}. Do not lose data. Deep dive into the text, extract specific numbers, and synthesize a rich bio_summary that highlights their most impressive metrics and achievements.` },
+        { role: "system", content: systemPrompt },
         { role: "user", content: rawText }
       ],
       response_format: { type: "json_object" },
@@ -60,7 +62,7 @@ async function executeWithRepair(
       provider: data.provider_used || "freeloader",
       model: data.model || "unknown",
       prompt_version: "v2-gateway",
-      prompt_hash: "hash-placeholder",
+      prompt_hash: createHash("sha256").update(systemPrompt).digest("hex").slice(0, 16),
       request_id: data.id || "req-id",
       duration_ms,
       input_tokens: data.usage?.prompt_tokens,

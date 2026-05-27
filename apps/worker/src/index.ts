@@ -15,8 +15,8 @@ if (env.sentryDsn) {
   Sentry.init({
     dsn: env.sentryDsn,
     integrations: [nodeProfilingIntegration()],
-    tracesSampleRate: 1.0,
-    profilesSampleRate: 1.0,
+    tracesSampleRate: 0.2,
+    profilesSampleRate: 0.2,
   });
   console.log("[worker] Sentry initialized");
 }
@@ -57,8 +57,8 @@ async function main() {
   // 4. Start Express Server (Monolith mode: Health Check + AI Gateway)
   const app = express();
   app.use(helmet());
-  app.use(cors());
-  app.use(express.json());
+  app.use(cors({ origin: ['https://closr-monorepo.vercel.app', 'http://localhost:3000'] }));
+  app.use(express.json({ limit: '50kb' }));
 
   app.get("/health", (req: Request, res: Response) => {
     res.status(200).json({ status: "ok" });
@@ -100,8 +100,9 @@ async function main() {
   }
 
   console.log("[worker] Exited successfully.");
-  server.close();
-  process.exit(0);
+  server.close(() => {
+    process.exit(0);
+  });
 }
 
 void main();

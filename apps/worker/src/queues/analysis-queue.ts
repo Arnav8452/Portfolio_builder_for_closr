@@ -70,8 +70,11 @@ async function processAnalysisJob(job: AnalysisJob) {
     });
   } catch (error) {
     await updateRow<AnalysisJob[]>("analysis_queue", job.id, {
-      status: job.attempts + 1 >= job.max_attempts ? "failed" : "pending",
-      error_log: [...(Array.isArray(job.error_log) ? job.error_log : []), { message: String(error) }],
+      status: job.attempts >= job.max_attempts ? "failed" : "pending",
+      error_log: [...(Array.isArray(job.error_log) ? job.error_log : []), serializeError(error)],
     });
   }
 }
+
+function serializeError(error: unknown): any { if (error instanceof Error) { return { message: error.message, stack: error.stack }; } return { message: String(error) }; }
+

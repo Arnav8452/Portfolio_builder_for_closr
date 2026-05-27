@@ -4,6 +4,7 @@ config({ path: resolve(process.cwd(), "../web/.env") });
 
 // Mock AI Gateway URL to localhost since we are running locally
 process.env.AI_GATEWAY_URL = "https://portfolio-builder-for-closr.onrender.com/v1/chat/completions";
+process.env.SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
 
 import { getRow } from "../src/supabase-rest.js";
 import { extractCreatorIdentity } from "../src/llm/pipeline.js";

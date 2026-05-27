@@ -1,7 +1,7 @@
 export type Json = string | number | boolean | null | {
     [key: string]: Json | undefined;
 } | Json[];
-export declare const platforms: readonly ["youtube", "github", "twitch", "substack", "medium", "twitter", "x", "pinterest", "website", "other"];
+export declare const platforms: readonly ["youtube", "github", "twitch", "substack", "medium", "twitter", "x", "pinterest", "website", "instagram", "other"];
 export type CreatorPlatform = (typeof platforms)[number];
 export type QueueStatus = "pending" | "processing" | "completed" | "failed";
 export type ChallengeStatus = "pending" | "verified" | "expired" | "failed";
@@ -130,6 +130,28 @@ export type Database = {
                     message: string;
                     payload: Json;
                     created_at: string;
+                };
+            };
+            external_api_tokens: {
+                Row: {
+                    id: string;
+                    creator_id: string;
+                    provider: string;
+                    access_token: string;
+                    expires_at: string | null;
+                    created_at: string;
+                    updated_at: string;
+                };
+            };
+            social_cache: {
+                Row: {
+                    id: string;
+                    creator_id: string;
+                    platform: string;
+                    handle: string | null;
+                    profile_data: Json;
+                    recent_media: Json;
+                    synced_at: string;
                 };
             };
         };

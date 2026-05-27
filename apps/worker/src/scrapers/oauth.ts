@@ -173,8 +173,8 @@ async function getValidYouTubeToken(creatorId: string): Promise<string | null> {
     if (!tokenRecord.refresh_token) return null;
     
     const params = new URLSearchParams({
-      client_id: process.env.GOOGLE_ID ?? "",
-      client_secret: process.env.GOOGLE_SECRET ?? "",
+      client_id: env.googleId ?? "",
+      client_secret: env.googleSecret ?? "",
       refresh_token: tokenRecord.refresh_token,
       grant_type: "refresh_token",
     });
@@ -226,8 +226,16 @@ async function fetchYouTubeAnalytics(url: string, creatorId: string): Promise<Oa
     trafficRes.ok ? trafficRes.json() : Promise.resolve(null),
   ]);
 
+  const rawText = [
+    `YouTube Analytics for ${url}`,
+    (demo as any)?.rows?.length ? `Demographics: ${JSON.stringify((demo as any).rows)}` : '',
+    (geo as any)?.rows?.length ? `Top Countries: ${JSON.stringify((geo as any).rows)}` : '',
+    (watch as any)?.rows?.length ? `Engagement: total views=${(watch as any).rows[0]?.[0]}, minutes watched=${(watch as any).rows[0]?.[1]}, avg duration=${(watch as any).rows[0]?.[2]}` : '',
+    (traffic as any)?.rows?.length ? `Traffic Sources: ${JSON.stringify((traffic as any).rows)}` : '',
+  ].filter(Boolean).join('\n\n');
+
   return {
-    rawText: `YouTube Analytics Data Extracted for ${url}`,
+    rawText,
     payload: {
       source: "youtube_analytics_api",
       demographics: (demo as any)?.rows ?? [],

@@ -1,8 +1,9 @@
 import { Request, Response, NextFunction } from 'express';
+import { env } from '../env.js';
 
 export function authenticate(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
-  const expectedSecret = process.env.GATEWAY_SECRET || 'dev-secret';
+  const expectedSecret = env.aiGatewaySecret;
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
     return res.status(401).json({ error: 'Unauthorized: Missing Bearer Token' });

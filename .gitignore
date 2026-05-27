@@ -1,4 +1,6 @@
 .env
+.env.*
+!.env.example
 .env.local
 .env.*.local
 node_modules/
@@ -12,6 +14,17 @@ __pycache__/
 .venv/
 .pytest_cache/
 api_quotas.json
+
+# Debug/test scripts
+payload.json
+query.sql
+test-action.ts
+check_db.ts
+check-queues.ts
+test-llm.*
+test-render.*
+check_inserts.mjs
+test_next_auth.mjs
 
 # API Files
 Render_apis.md

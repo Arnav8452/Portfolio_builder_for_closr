@@ -15,6 +15,10 @@ function slugify(value: string) {
 }
 
 export async function submitCreatorProfile(formData: FormData) {
+  if (process.env.ALLOW_LOCAL_DEV_AUTH === 'true' && process.env.NODE_ENV === 'production') {
+    throw new Error('ALLOW_LOCAL_DEV_AUTH must not be enabled in production');
+  }
+
   const session = await getServerSession(authOptions);
   const allowLocalDev = process.env.ALLOW_LOCAL_DEV_AUTH === "true";
   const userId = (session?.user as any)?.id;
@@ -26,7 +30,7 @@ export async function submitCreatorProfile(formData: FormData) {
   
   const finalUserId = userId ?? "local-dev-uuid";
   const finalUserEmail = userEmail ?? "local-dev@closr.test";
-  const displayName = String(formData.get("displayName") ?? "").trim();
+  const displayName = (formData.get('displayName') as string || '').trim().replace(/<[^>]*>/g, '').slice(0, 100);
   const rootPlatform = String(formData.get("rootPlatform") ?? "github");
   const rootUrl = String(formData.get("rootUrl") ?? "").trim();
   const secondaryLinks = formData.getAll("secondaryLinks").map(String).map((v) => v.trim()).filter(Boolean);
@@ -140,7 +144,7 @@ export async function updateCreatorProfile(formData: FormData) {
 
   const supabase = getSupabaseAdmin();
   const creatorId = String(formData.get("creatorId") ?? "");
-  const displayName = String(formData.get("displayName") ?? "").trim();
+  const displayName = (formData.get('displayName') as string || '').trim().replace(/<[^>]*>/g, '').slice(0, 100);
   const rootPlatform = String(formData.get("rootPlatform") ?? "github");
   const rootUrl = String(formData.get("rootUrl") ?? "").trim();
   const secondaryLinks = formData.getAll("secondaryLinks").map(String).map((v) => v.trim()).filter(Boolean);
