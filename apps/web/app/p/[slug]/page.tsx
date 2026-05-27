@@ -9,7 +9,7 @@ import { RetroCards } from "@/components/retro/RetroCards";
 import { RetroRadar } from "@/components/retro/RetroRadar";
 import { RetroStats } from "@/components/retro/RetroStats";
 import { RetroNumbers } from "@/components/retro/RetroNumbers";
-import { RetroMarkdown } from "@/components/retro/RetroMarkdown";
+import { RetroPlatformData } from "@/components/retro/RetroPlatformData";
 
 type PlatformMetric = {
   platform: string;
@@ -204,7 +204,10 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
       {/* 5. Numbers — only if we have real stats to show */}
       {statsNumbers.length > 0 && <RetroNumbers stats={statsNumbers} />}
 
-
+      {/* 6. Raw Platform Data Dumps */}
+      {profile.platform_metrics && profile.platform_metrics.length > 0 && (
+        <RetroPlatformData metrics={profile.platform_metrics} />
+      )}
       
       {/* Footer Padding */}
       <div style={{ height: "64px", backgroundColor: "var(--arcade-cream)" }} />
