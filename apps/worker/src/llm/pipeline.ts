@@ -4,11 +4,11 @@ import { creatorIdentityZodSchema, creatorIdentityJsonSchema } from "./schema.js
 import { createHash } from 'crypto';
 
 const MODELS = [
-  // Groq supports: llama/mixtral/gemma. Cerebras: llama3*. Gemini: gemini-*.
-  // gemini-2.5-flash ONLY works on Gemini adapter — cascading to others = total failure.
-  // llama-3.1-8b-instant works on Groq (primary) with OpenRouter as fallback.
-  "llama-3.1-8b-instant",
-  "llama-3.1-8b-instant"
+  // Use generic model names (e.g., gpt-4o-mini) so that Freeloader's ModelRegistry
+  // can properly translate it to the correct provider-specific model IDs (e.g., 
+  // gemini-2.5-flash for Gemini, llama-3.1-8b-instant for Groq).
+  "gpt-4o-mini",
+  "gpt-4o-mini"
 ];
 
 export async function extractCreatorIdentity(rawText: string): Promise<LLMResponse> {
@@ -168,8 +168,8 @@ export async function executeWithRepair(
     if (attempt === 1) {
       console.warn(`[LLM] Schema validation failed via gateway, trying repair prompt on model ${modelName}...`);
       const repairPrompt = `The previous JSON you output was invalid or failed validation. Please fix it.\n\nOriginal text:\n${rawText}\n\nFailed output:\n${jsonString}\n\nValidation errors:\n${String(err)}`;
-      // Use llama for repairs — gemini model IDs cause cascading failures on non-Gemini providers
-      const repairModel = "llama-3.1-8b-instant"; 
+      // Use gpt-4o-mini to trigger Freeloader's provider-specific mapping
+      const repairModel = "gpt-4o-mini"; 
       return executeWithRepair(repairPrompt, schemaString, repairModel, attempt + 1);
     }
     throw new Error(`Failed to parse/validate LLM output after repair. Errors: ${String(err)}`);
