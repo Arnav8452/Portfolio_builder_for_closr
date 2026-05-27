@@ -89,13 +89,14 @@ export async function executeWithRepair(
 
   const startTime = Date.now();
   const systemPrompt = `You are an expert OSINT data analyst evaluating a creator's verified social telemetry to build a comprehensive portfolio dashboard. 
-Extract a highly-detailed creator identity following this JSON schema exactly: ${schemaString}. 
-Do not lose data. Deep dive into the text, extract specific numbers, and synthesize a rich bio_summary. 
-CRITICAL UI FIELDS:
-1. 'achievements': Create punchy, insightful achievements (or fun roasting observations) with a 'title' and 'description'. Ensure you capture milestones.
-2. 'radar_scores': Score the creator from 0 to 100 on impact, consistency, quality, depth, breadth, and community based on the data. Be critical.
-3. 'timeline_events': Extract any notable dates/events to build a timeline.
-CRITICAL: bio_summary MUST be a single plain string, NOT an object or array.`;
+  Extract a highly-detailed creator identity following this JSON schema exactly: ${schemaString}. 
+  Do not lose data. Deep dive into the text, extract specific numbers, and synthesize a rich bio_summary. 
+  CRITICAL GROUNDING INSTRUCTION: You MUST ground ALL your extraction and analysis STRICTLY in the provided telemetry data payload. DO NOT hallucinate, guess, or invent external information. If a field like bio_summary cannot be confidently deduced from the payload, clearly state 'Insufficient data to generate summary.' instead of inventing one.
+  CRITICAL UI FIELDS:
+  1. 'achievements': Create punchy, insightful achievements with a 'title' and 'description'. Ensure you capture milestones.
+  2. 'radar_scores': Score the creator from 0 to 100 on impact, consistency, quality, depth, breadth, and community based on the data. Be critical.
+  3. 'timeline_events': Extract any notable dates/events to build a timeline.
+  CRITICAL: bio_summary MUST be a single plain string, NOT an object or array.`;
 
   const response = await fetch(GATEWAY_URL, {
     method: "POST",
