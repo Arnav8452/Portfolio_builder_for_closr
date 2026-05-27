@@ -64,8 +64,13 @@ export function upsertRow<T>(table: string, payload: Record<string, Json | undef
   });
 }
 
-export function getRow<T>(table: string, query: string) {
+export function getRow<T>(table: string, query: string, schema?: string) {
+  const headers: Record<string, string> = {};
+  if (schema) {
+    headers["Accept-Profile"] = schema;
+  }
   return supabaseFetch<T>(`/rest/v1/${table}?${query}`, {
     method: "GET",
+    headers,
   });
 }

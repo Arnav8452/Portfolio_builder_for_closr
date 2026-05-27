@@ -43,7 +43,7 @@ async function fetchGithubProfile(url: string, creatorId?: string): Promise<Oaut
   if (creatorId) {
     const creators = await getRow<any>("creators", `id=eq.${creatorId}&select=owner_user_id`);
     if (creators && creators.length > 0) {
-      const accounts = await getRow<any>("accounts", `userId=eq.${creators[0].owner_user_id}&provider=eq.github`);
+      const accounts = await getRow<any>("accounts", `%22userId%22=eq.${creators[0].owner_user_id}&provider=eq.github`, "next_auth");
       if (accounts && accounts.length > 0) {
         dbToken = accounts[0].access_token;
       }
@@ -164,7 +164,7 @@ async function getValidYouTubeToken(creatorId: string): Promise<string | null> {
   if (!creators || creators.length === 0) return null;
   const userId = creators[0].owner_user_id;
 
-  const accounts = await getRow<any>("accounts", `userId=eq.${userId}&provider=eq.youtube`);
+  const accounts = await getRow<any>("accounts", `%22userId%22=eq.${userId}&provider=eq.youtube`, "next_auth");
   if (!accounts || accounts.length === 0) return null;
   const tokenRecord = accounts[0];
 
@@ -299,7 +299,7 @@ async function fetchTwitchProfile(url: string, creatorId: string): Promise<Oauth
   if (!creators || creators.length === 0) throw new Error("Creator not found");
   const userId = creators[0].owner_user_id;
 
-  const accounts = await getRow<any>("accounts", `userId=eq.${userId}&provider=eq.twitch`);
+  const accounts = await getRow<any>("accounts", `%22userId%22=eq.${userId}&provider=eq.twitch`, "next_auth");
   if (!accounts || accounts.length === 0) {
     throw new Error("Missing Twitch OAuth token. Creator must connect Twitch.");
   }
