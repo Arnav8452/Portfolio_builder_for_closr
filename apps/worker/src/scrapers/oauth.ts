@@ -27,6 +27,11 @@ export async function fetchOauthPlatform(platform: CreatorPlatform, url: string,
     return fetchInstagramStats(url, creatorId);
   }
 
+  if (platform === "linkedin") {
+    if (!creatorId) throw new Error("creatorId required for LinkedIn API.");
+    return fetchLinkedinProfile(url, creatorId);
+  }
+
   return {
     rawText: "",
     payload: { source: "oauth", unsupported_platform: platform },
@@ -340,5 +345,38 @@ async function fetchTwitchProfile(url: string, creatorId: string): Promise<Oauth
       profile: user,
       channel: channel || null,
     }
+  };
+}
+
+async function fetchLinkedinProfile(url: string, creatorId: string): Promise<OauthScrapeResult> {
+  const creators = await getRow<any>("creators", `id=eq.${creatorId}&select=owner_user_id`);
+  if (!creators || creators.length === 0) throw new Error("Creator not found");
+  const userId = creators[0].owner_user_id;
+
+  const accounts = await getRow<any>("accounts", `%22userId%22=eq.${userId}&provider=eq.linkedin`, "next_auth");
+  if (!accounts || accounts.length === 0) {
+    throw new Error("Missing LinkedIn OAuth token. Creator must connect LinkedIn.");
+  }
+  const token = accounts[0].access_token;
+
+  const response = await fetch("https://api.linkedin.com/v2/userinfo", {
+    headers: { Authorization: `Bearer ${token}` }
+  });
+
+  if (!response.ok) {
+    throw new Error(`LinkedIn API failed: ${response.status} ${await response.text()}`);
+  }
+
+  const profile = await response.json() as any;
+
+  const rawText = [
+    profile.name ? `Name: ${profile.name}` : "",
+    profile.email ? `Email: ${profile.email}` : "",
+    profile.locale?.country ? `Locale: ${profile.locale.country}` : "",
+  ].filter(Boolean).join("\n\n");
+
+  return {
+    rawText,
+    payload: { source: "linkedin_oauth", profile },
   };
 }
