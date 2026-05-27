@@ -97,7 +97,7 @@ export async function executeWithRepair(
   CRITICAL UI FIELDS:
   1. 'achievements': Create punchy, insightful achievements with a 'title' and 'description'. Ensure you capture milestones.
   2. 'radar_scores': Score the creator from 0 to 100 on impact, consistency, quality, depth, breadth, and community based on the data. Be critical.
-  3. 'timeline_events': Extract any notable dates/events to build a timeline.
+  3. 'timeline_events': Extract any notable dates/events to build a timeline. Each event MUST have a 'date', a 'title', and a 'description'.
   CRITICAL: bio_summary MUST be a single plain string, NOT an object or array.`;
 
   const response = await fetch(GATEWAY_URL, {

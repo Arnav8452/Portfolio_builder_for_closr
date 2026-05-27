@@ -279,7 +279,7 @@ async function testLLMAnalysis(chunkedText: string) {
   CRITICAL UI FIELDS:
   1. 'achievements': Create punchy, insightful achievements with a 'title' and 'description'.
   2. 'radar_scores': Score the creator from 0 to 100 on impact, consistency, quality, depth, breadth, and community.
-  3. 'timeline_events': Extract any notable dates/events to build a timeline.`;
+  3. 'timeline_events': Extract any notable dates/events to build a timeline. Each event MUST have a 'date', a 'title', and a 'description'.`;
 
   // Parse chunks to send only the first (most meaningful) chunk
   let chunks: string[];

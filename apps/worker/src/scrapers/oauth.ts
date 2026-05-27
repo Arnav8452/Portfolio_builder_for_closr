@@ -55,13 +55,36 @@ async function fetchGithubProfile(url: string, creatorId?: string): Promise<Oaut
     }
   }
 
-  const token = dbToken || env.githubToken;
-  const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+  let token = dbToken || env.githubToken;
+  let headers = token ? { Authorization: `Bearer ${token}` } : undefined;
 
-  const [profileResponse, reposResponse] = await Promise.all([
+  let [profileResponse, reposResponse] = await Promise.all([
     fetch(`https://api.github.com/users/${username}`, { headers }),
     fetch(`https://api.github.com/users/${username}/repos?per_page=20&sort=updated`, { headers }),
   ]);
+
+  if (!profileResponse.ok && (profileResponse.status === 401 || profileResponse.status === 403)) {
+    // 1) Fallback to the app-level env token if dbToken failed
+    if (token === dbToken && env.githubToken) {
+      console.warn(`[GitHub Scraper] User token 401/403 for ${username}, falling back to env token`);
+      token = env.githubToken;
+      headers = { Authorization: `Bearer ${token}` };
+      [profileResponse, reposResponse] = await Promise.all([
+        fetch(`https://api.github.com/users/${username}`, { headers }),
+        fetch(`https://api.github.com/users/${username}/repos?per_page=20&sort=updated`, { headers }),
+      ]);
+    }
+    
+    // 2) If it STILL fails with 401/403 (or there was no dbToken to begin with), fallback to unauthenticated
+    if (!profileResponse.ok && (profileResponse.status === 401 || profileResponse.status === 403) && headers !== undefined) {
+      console.warn(`[GitHub Scraper] Token 401/403 for ${username}, falling back to unauthenticated fetch`);
+      headers = undefined;
+      [profileResponse, reposResponse] = await Promise.all([
+        fetch(`https://api.github.com/users/${username}`, { headers }),
+        fetch(`https://api.github.com/users/${username}/repos?per_page=20&sort=updated`, { headers }),
+      ]);
+    }
+  }
 
   if (!profileResponse.ok) {
     throw new Error(`GitHub profile fetch failed for ${username}: ${profileResponse.status}`);
