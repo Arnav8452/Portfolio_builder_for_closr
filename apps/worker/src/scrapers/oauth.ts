@@ -9,7 +9,7 @@ type OauthScrapeResult = {
 
 export async function fetchOauthPlatform(platform: CreatorPlatform, url: string, creatorId?: string): Promise<OauthScrapeResult> {
   if (platform === "github") {
-    return fetchGithubProfile(url);
+    return fetchGithubProfile(url, creatorId);
   }
 
   if (platform === "youtube") {
@@ -33,13 +33,26 @@ export async function fetchOauthPlatform(platform: CreatorPlatform, url: string,
   };
 }
 
-async function fetchGithubProfile(url: string): Promise<OauthScrapeResult> {
+async function fetchGithubProfile(url: string, creatorId?: string): Promise<OauthScrapeResult> {
   const username = new URL(url).pathname.split("/").filter(Boolean)[0];
   if (!username) {
     throw new Error(`Cannot derive GitHub username from ${url}`);
   }
 
-  const headers = env.githubToken ? { Authorization: `Bearer ${env.githubToken}` } : undefined;
+  let dbToken: string | undefined;
+  if (creatorId) {
+    const creators = await getRow<any>("creators", `id=eq.${creatorId}&select=owner_user_id`);
+    if (creators && creators.length > 0) {
+      const accounts = await getRow<any>("accounts", `userId=eq.${creators[0].owner_user_id}&provider=eq.github`);
+      if (accounts && accounts.length > 0) {
+        dbToken = accounts[0].access_token;
+      }
+    }
+  }
+
+  const token = dbToken || env.githubToken;
+  const headers = token ? { Authorization: `Bearer ${token}` } : undefined;
+
   const [profileResponse, reposResponse] = await Promise.all([
     fetch(`https://api.github.com/users/${username}`, { headers }),
     fetch(`https://api.github.com/users/${username}/repos?per_page=20&sort=updated`, { headers }),
@@ -51,16 +64,76 @@ async function fetchGithubProfile(url: string): Promise<OauthScrapeResult> {
 
   const profile = await profileResponse.json() as Record<string, Json>;
   const repos = reposResponse.ok ? await reposResponse.json() as Array<Record<string, Json>> : [];
+  
+  // RateMyGithub GraphQL Query
+  const query = `
+    query($login: String!) {
+      user(login: $login) {
+        createdAt
+        contributionsCollection {
+          contributionCalendar { totalContributions }
+          totalCommitContributions
+          totalPullRequestContributions
+          totalIssueContributions
+        }
+        repositories(first: 30, isFork: false, ownerAffiliations: [OWNER], orderBy: { field: STARGAZERS, direction: DESC }) {
+          nodes {
+            name
+            languages(first: 10, orderBy: { field: SIZE, direction: DESC }) {
+              edges { size node { name } }
+            }
+          }
+        }
+      }
+    }
+  `;
+  
+  const gqlRes = await fetch("https://api.github.com/graphql", {
+    method: "POST",
+    headers: { ...(headers || {}), "content-type": "application/json" },
+    body: JSON.stringify({ query, variables: { login: username } }),
+  });
+  
+  let contributions = null;
+  let languagesText = "";
+  if (gqlRes.ok) {
+    const body = await gqlRes.json() as any;
+    if (body.data?.user) {
+      contributions = body.data.user;
+      const byLang = new Map<string, number>();
+      for (const r of contributions?.repositories?.nodes || []) {
+        for (const e of r?.languages?.edges || []) {
+          byLang.set(e.node.name, (byLang.get(e.node.name) ?? 0) + e.size);
+        }
+      }
+      languagesText = Array.from(byLang.entries())
+        .sort((a, b) => b[1] - a[1])
+        .map(([lang, bytes]) => `${lang}: ${bytes} bytes`)
+        .join(", ");
+    }
+  }
+
   const repoText = repos
     .map((repo) => `${repo.name ?? "repo"}: ${repo.description ?? ""}`)
     .join("\n");
 
+  const rawText = [
+    `Name: ${profile.name || profile.login}`,
+    `Bio: ${profile.bio || ""}`,
+    `Company: ${profile.company || ""}`,
+    `Followers: ${profile.followers}`,
+    `Total Commits: ${contributions?.contributionsCollection?.totalCommitContributions || 0}`,
+    `Top Languages: ${languagesText}`,
+    `Recent Repositories:\n${repoText}`
+  ].filter(Boolean).join("\n\n");
+
   return {
-    rawText: [profile.bio, profile.company, repoText].filter(Boolean).join("\n\n"),
+    rawText,
     payload: {
       source: "github_api",
       profile,
       repos: repos.slice(0, 10),
+      contributions
     },
   };
 }
