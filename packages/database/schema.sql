@@ -407,6 +407,7 @@ SELECT
     ci.audience_size_tier,
     ci.past_topics,
     ci.bio_summary,
+    ci.raw_model_output AS extra_analysis,
     ci.extraction_confidence AS confidence,
     u.image AS owner_image,
     (

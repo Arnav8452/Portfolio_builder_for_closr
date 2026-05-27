@@ -1,4 +1,6 @@
 import type { Database, Json } from "@closr/database/types";
+import { JSDOM } from "jsdom";
+import { Readability } from "@mozilla/readability";
 import { env } from "../env.js";
 import { insertRow, rpc, updateRow, upsertRow } from "../supabase-rest.js";
 import { parseRssFeed, scrapeRssSource } from "../scrapers/rss.js";
@@ -115,10 +117,44 @@ async function scrape(job: ScrapingJob): Promise<ScrapeResult> {
     return scrapeWithPlaywright(job.platform, job.url);
   }
 
+  // For LinkedIn or general websites, try Jina Reader first
+  try {
+    const jinaRes = await fetch(`https://r.jina.ai/${job.url}`, {
+      headers: { "X-Return-Format": "markdown" }
+    });
+    if (jinaRes.ok) {
+      const markdown = await jinaRes.text();
+      return {
+        rawText: markdown,
+        payload: { source: "jina", status: jinaRes.status }
+      };
+    }
+  } catch (err) {
+    console.warn(`Jina Reader failed for ${job.url}`, err);
+  }
+
+  // Readability Fallback
   const response = await fetch(job.url);
-  const text = await response.text();
+  const html = await response.text();
+  
+  try {
+    const doc = new JSDOM(html, { url: job.url });
+    const reader = new Readability(doc.window.document);
+    const article = reader.parse();
+    
+    if (article && article.textContent) {
+      return {
+        rawText: article.textContent,
+        payload: { source: "readability", status: response.status, title: article.title }
+      };
+    }
+  } catch (err) {
+    console.warn(`Readability fallback failed for ${job.url}`, err);
+  }
+
+  // Ultimate fallback: regex stripping
   return {
-    rawText: text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").slice(0, 20000),
+    rawText: html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").slice(0, 20000),
     payload: { source: "website", status: response.status },
   };
 }

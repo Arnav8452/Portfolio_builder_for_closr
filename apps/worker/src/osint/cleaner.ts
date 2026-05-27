@@ -19,11 +19,13 @@ export function cleanScrapedContent(rawText: string): string {
   // 3. Remove excessive whitespace, newlines, and tabs
   cleaned = cleaned.replace(/\s+/g, " ");
 
-  // 4. Deduplicate sentences/lines roughly
-  // We'll split by common delimiters and use a Set
+  // 4. Split into chunks by basic delimiters (paragraphs or strong punctuation)
   const segments = cleaned.split(/([.!?|]+)/);
   const seen = new Set<string>();
-  const semanticBlocks: string[] = [];
+  
+  const chunks: string[] = [];
+  let currentChunk = "";
+  const CHUNK_MAX_LENGTH = 6000; // Roughly 1500 tokens
   
   for (let i = 0; i < segments.length; i += 2) {
     const text = segments[i]?.trim();
@@ -33,14 +35,21 @@ export function cleanScrapedContent(rawText: string): string {
       const normalized = text.toLowerCase();
       if (!seen.has(normalized)) {
         seen.add(normalized);
-        semanticBlocks.push(text + delimiter);
+        const block = text + delimiter + " ";
+        
+        if (currentChunk.length + block.length > CHUNK_MAX_LENGTH && currentChunk.length > 0) {
+          chunks.push(currentChunk.trim());
+          currentChunk = "";
+        }
+        currentChunk += block;
       }
     }
   }
 
-  // 5. Compress / Truncate noise
-  // We target 2 - 8 KB for semantic payload to save tokens.
-  // 8000 characters is a good target.
-  const compressed = semanticBlocks.join(" ");
-  return compressed.slice(0, 8000).trim();
+  if (currentChunk.trim()) {
+    chunks.push(currentChunk.trim());
+  }
+
+  // Return JSON string of chunks so the database can store it in the text column
+  return JSON.stringify(chunks);
 }

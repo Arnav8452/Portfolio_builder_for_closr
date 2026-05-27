@@ -137,8 +137,8 @@ async function fetchGithubProfile(url: string, creatorId?: string): Promise<Oaut
     `Followers: ${profile.followers}`,
     `Total Commits: ${contributions?.contributionsCollection?.totalCommitContributions || 0}`,
     `Top Languages: ${languagesText}`,
+    `Recent Repositories:\n${repoText}`,
     profileReadme ? `Profile README:\n${profileReadme}` : "",
-    `Recent Repositories:\n${repoText}`
   ].filter(Boolean).join("\n\n");
 
   return {

@@ -11,7 +11,7 @@ export async function fetchTwitterProfileData(handle: string) {
   const run = await client.actor("apidojo/twitter-scraper-lite").call({
     searchTerms: [],
     twitterHandles: [handle],
-    maxItems: 30, // get profile + some recent tweets
+    maxItems: 1, // get just the author profile attached to one tweet
     sort: "Latest"
   });
 

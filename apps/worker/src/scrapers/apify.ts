@@ -22,7 +22,7 @@ export async function scrapeTwitterWithApify(url: string): Promise<ScrapeResult>
   const endpoint = `https://api.apify.com/v2/acts/apidojo~tweet-scraper/run-sync-get-dataset-items?token=${env.apifyToken}`;
   const requestBody = {
     twitterHandles: [username],
-    maxItems: 5,
+    maxItems: 1,
   };
 
   const response = await fetch(endpoint, {

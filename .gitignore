@@ -29,3 +29,6 @@ test_next_auth.mjs
 # API Files
 Render_apis.md
 vercel_apis.md
+
+.turbo
+test-*.js

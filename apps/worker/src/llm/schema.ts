@@ -53,6 +53,25 @@ export const creatorIdentityZodSchema = z.object({
   past_topics: arrayField(25),
   bio_summary: z.string().optional().default("Pending summary."),
   confidence: z.number().min(0).max(1).optional().default(0),
+  
+  // Retro UI dynamic fields
+  achievements: z.array(z.object({
+    title: z.string(),
+    description: z.string()
+  })).optional().default([]),
+  radar_scores: z.object({
+    impact: z.number().min(0).max(100).optional().default(50),
+    consistency: z.number().min(0).max(100).optional().default(50),
+    quality: z.number().min(0).max(100).optional().default(50),
+    depth: z.number().min(0).max(100).optional().default(50),
+    breadth: z.number().min(0).max(100).optional().default(50),
+    community: z.number().min(0).max(100).optional().default(50)
+  }).optional(),
+  timeline_events: z.array(z.object({
+    date: z.string(),
+    title: z.string(),
+    description: z.string()
+  })).optional().default([])
 });
 
 export type ParsedCreatorIdentity = z.infer<typeof creatorIdentityZodSchema>;
