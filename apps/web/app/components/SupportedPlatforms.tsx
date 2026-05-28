@@ -61,7 +61,7 @@ export function SupportedPlatforms() {
               <p style={{ fontSize: "14px", color: "var(--muted)", marginBottom: 0 }}>{tier.description}</p>
             </div>
             
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(120px, 1fr))", gap: "12px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(90px, 1fr))", gap: "12px" }}>
               {tier.items.map((item) => {
                 const Icon = item.icon;
                 return (

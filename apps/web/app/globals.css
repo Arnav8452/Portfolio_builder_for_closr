@@ -2026,3 +2026,125 @@ p {
 
 .bento-grid { display: grid; grid-template-columns: 1fr; gap: 32px; padding: 48px 24px; }
 @media (min-width: 1024px) { .bento-grid { grid-template-columns: 1.5fr 1fr; } }
+
+/* ========================================= */
+/* --- SYSTEM MOBILE OPTIMIZATION PATCH --- */
+/* ========================================= */
+
+.mobile-nav-toggle {
+  display: none;
+}
+
+.mobile-nav-menu {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  /* Hide desktop nav, show mobile hamburger */
+  .desktop-nav {
+    display: none !important;
+  }
+  
+  .topbar {
+    position: relative;
+  }
+  
+  .mobile-nav-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: transparent;
+    border: 2px solid var(--arcade-cream);
+    color: var(--arcade-cream);
+    cursor: pointer;
+    box-shadow: 2px 2px 0 0 var(--arcade-cream);
+  }
+  
+  .mobile-nav-toggle:active {
+    transform: translate(2px, 2px);
+    box-shadow: 0 0 0 0 transparent;
+  }
+  
+  .mobile-nav-menu {
+    position: absolute;
+    top: 52px;
+    left: 0;
+    right: 0;
+    background: var(--arcade-ink);
+    border-bottom: 3px solid var(--arcade-cream-soft);
+    display: flex;
+    flex-direction: column;
+    padding: 16px;
+    gap: 16px;
+    box-shadow: 0 10px 15px -3px rgba(0,0,0,0.5);
+    z-index: 50;
+  }
+  
+  .mobile-nav-menu a {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    color: var(--arcade-cream);
+    text-transform: uppercase;
+    text-decoration: none;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+  }
+
+  /* Optimize layout paddings to save screen space */
+  .creator-shell {
+    padding: 24px 12px;
+  }
+
+  .premium-page {
+    padding: 24px 12px;
+  }
+
+  .bento-grid {
+    padding: 24px 12px;
+    gap: 16px;
+  }
+  
+  /* Optimize Grid Columns for tight spaces */
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(100px, 1fr));
+  }
+
+  /* Make intake submission full width */
+  .link-submit-row {
+    display: flex;
+    flex-direction: column;
+  }
+  .link-submit-row .add-button {
+    width: 100%;
+  }
+  
+  /* Make primary dashboard actions stack nicely */
+  .dash-actions {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+  .dash-actions .primary-action, .dash-actions .secondary-action {
+    width: 100%;
+  }
+  
+  .portfolio-dash-card {
+    padding: 16px;
+  }
+  
+  .dash-card-identity {
+    flex-direction: row;
+    align-items: center;
+  }
+}
+
+/* Fluid Typography that scales automatically */
+h1 {
+  font-size: clamp(16px, 5vw, 32px);
+}
+
+.hero-input {
+  font-size: clamp(16px, 4vw, 24px);
+}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { Providers } from "./providers";
+import { MobileNav } from "./components/MobileNav";
 
 export const metadata: Metadata = {
   title: "Closr Verified Portfolio Builder",
@@ -17,11 +18,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <span className="brand-mark">C</span>
               <span>Closr</span>
             </a>
-            <nav className="nav">
+            <nav className="nav desktop-nav">
               <span>Creator Portal</span>
               <a href="/p/demo">Profile</a>
               <span className="system-status" title="Systems operational" />
             </nav>
+            <MobileNav />
           </header>
           <Providers>{children}</Providers>
           <footer className="site-footer">
