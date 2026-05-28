@@ -152,12 +152,17 @@ export function CreatorDashboard({ portfolio, missingProviders = [], hasLinkedin
       return;
     }
     setIsDeleting(true);
-    const result = await deleteCreatorProfile(portfolio.id);
-    if (!result.ok) {
-      setErrorMsg(result.message || "Failed to delete portfolio.");
+    try {
+      const result = await deleteCreatorProfile(portfolio.id);
+      if (!result.ok) {
+        setErrorMsg(result.message || "Failed to delete portfolio.");
+        setIsDeleting(false);
+      } else {
+        router.refresh();
+      }
+    } catch (e: any) {
+      setErrorMsg(e.message || "Network error. Please try again.");
       setIsDeleting(false);
-    } else {
-      router.refresh();
     }
   }
 

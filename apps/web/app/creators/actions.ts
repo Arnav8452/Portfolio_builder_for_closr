@@ -246,26 +246,29 @@ export async function deleteCreatorProfile(creatorId: string) {
   const supabase = getSupabaseAdmin();
 
   // Verify ownership
-  const { data: existing } = await supabase
+  const { data: existing, error: findError } = await supabase
     .from("creators")
     .select("id")
     .eq("id", creatorId)
-    .eq("owner_user_id", userId)
+    .eq("owner_user_id", String(userId))
     .single();
+
+  if (findError) {
+    console.error("deleteCreatorProfile find error:", findError, { creatorId, userId });
+  }
 
   if (!existing) return { ok: false, message: "Portfolio not found or not owned by you." };
 
-  // Delete the creator profile (this will cascade delete links and queues if foreign keys are set up correctly, 
-  // or we can manually delete them first). Supabase usually has cascade on creator_id.
   const { error } = await supabase
     .from("creators")
     .delete()
     .eq("id", creatorId);
 
   if (error) {
+    console.error("deleteCreatorProfile delete error:", error);
     return { ok: false, message: error.message };
   }
 
-  revalidatePath("/creators");
+  revalidatePath("/", "layout");
   return { ok: true };
 }
