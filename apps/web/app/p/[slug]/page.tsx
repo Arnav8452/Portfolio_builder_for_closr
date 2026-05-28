@@ -184,7 +184,15 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
   }
 
   return (
-    <main style={{ minHeight: "100vh", backgroundColor: "var(--arcade-cream)" }}>
+    <main style={{ 
+      minHeight: "100vh", 
+      backgroundColor: "var(--arcade-cream)",
+      "--arcade-red": "#E8333A",
+      "--arcade-blue": "#3B82F6",
+      "--arcade-green": "#7FFF00",
+      "--arcade-yellow": "#F5A623",
+      "--arcade-purple": "#9B59B6",
+    } as React.CSSProperties}>
       <div className="bento-grid">
         {/* 1. Main Header */}
         <div style={{ gridColumn: "1 / -1" }}>
