@@ -67,7 +67,26 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     .eq("slug", slug)
     .single();
 
-  if (error || !data) notFound();
+  if (error || !data) {
+    const { data: creator } = await getSupabaseAdmin()
+      .from("creators")
+      .select("id, slug, onboarding_status")
+      .eq("slug", slug)
+      .single();
+
+    if (creator && (creator.onboarding_status === "queued" || creator.onboarding_status === "processing")) {
+      return (
+        <main style={{ minHeight: "100vh", backgroundColor: "var(--arcade-cream)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <div className="pixel-border" style={{ textAlign: "center", padding: "48px 24px", backgroundColor: "var(--arcade-cream-soft)" }}>
+            <Activity size={48} style={{ color: "var(--arcade-ink)", margin: "0 auto 16px" }} />
+            <h2 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "16px", color: "var(--arcade-ink)" }}>DATA COLLECTION IN PROGRESS</h2>
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "14px", marginTop: "16px", color: "var(--muted-2)" }}>The Oracle workers are currently parsing the external data platforms.</p>
+          </div>
+        </main>
+      );
+    }
+    notFound();
+  }
 
   // The production DB view 'public_creator_profiles' is currently missing the 'extra_analysis' column.
   // We manually fetch it from 'creator_identities' to ensure data cards render.
