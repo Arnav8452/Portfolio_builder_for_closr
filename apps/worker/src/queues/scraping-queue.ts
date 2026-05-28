@@ -6,7 +6,8 @@ import { insertRow, rpc, updateRow, upsertRow } from "../supabase-rest.js";
 import { parseRssFeed, scrapeRssSource } from "../scrapers/rss.js";
 import { fetchOauthPlatform } from "../scrapers/oauth.js";
 import { scrapeWithPlaywright } from "../scrapers/playwright.js";
-import { scrapeTwitterWithApify } from "../scrapers/apify.js";
+import { scrapeTwitter } from "../scrapers/twitter.js";
+import { scrapeLinkedinWithDork } from "../scrapers/linkedin-dork.js";
 import { parseBioLinks } from "../osint/bio-parser.js";
 import { cleanScrapedContent } from "../osint/cleaner.js";
 import { extractMetricsFromText } from "../osint/metrics.js";
@@ -114,14 +115,22 @@ async function scrape(job: ScrapingJob): Promise<ScrapeResult> {
   }
 
   if (job.platform === "twitter" || job.platform === "x") {
-    return scrapeTwitterWithApify(job.url);
+    return scrapeTwitter(job.url);
   }
 
   if (job.platform === "pinterest") {
     return scrapeWithPlaywright(job.platform, job.url);
   }
 
-  // For LinkedIn or general websites, try Jina Reader first
+  if (job.platform === "linkedin") {
+    try {
+      return await scrapeLinkedinWithDork(job.url);
+    } catch (err) {
+      console.warn(`LinkedIn Dork failed for ${job.url}, falling back to Jina/Readability`, err);
+    }
+  }
+
+  // For general websites, try Jina Reader first
   try {
     const jinaRes = await fetch(`https://r.jina.ai/${job.url}`, {
       headers: { "X-Return-Format": "markdown" }
