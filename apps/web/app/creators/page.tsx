@@ -59,16 +59,18 @@ export default async function CreatorsPage() {
     // Supabase not configured or no data — show builder
   }
 
+  const hasLinkedinOauth = Boolean(process.env.LINKEDIN_CLIENT_ID && process.env.LINKEDIN_CLIENT_SECRET);
+
   return (
     <main className="creator-page flex flex-col min-h-screen">
       <CreatorHeader user={session.user as any} />
       <div className="flex-grow">
         {portfolio ? (
           <Suspense fallback={<div className="p-8 text-center"><Loader2 className="spin inline mr-2" size={16} /> Loading dashboard...</div>}>
-            <CreatorDashboard portfolio={portfolio} missingProviders={missingProviders} />
+            <CreatorDashboard portfolio={portfolio} missingProviders={missingProviders} hasLinkedinOauth={hasLinkedinOauth} />
           </Suspense>
         ) : (
-          <CreatorIntake />
+          <CreatorIntake hasLinkedinOauth={hasLinkedinOauth} />
         )}
       </div>
     </main>

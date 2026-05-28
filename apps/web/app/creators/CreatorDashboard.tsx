@@ -78,7 +78,7 @@ function timeSince(dateStr: string) {
   return `${days}d ago`;
 }
 
-export function CreatorDashboard({ portfolio, missingProviders = [] }: { portfolio: ExistingPortfolio, missingProviders?: string[] }) {
+export function CreatorDashboard({ portfolio, missingProviders = [], hasLinkedinOauth = false }: { portfolio: ExistingPortfolio, missingProviders?: string[], hasLinkedinOauth?: boolean }) {
   const [mode, setMode] = useState<"dashboard" | "edit">("dashboard");
   const [copied, setCopied] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -298,7 +298,7 @@ export function CreatorDashboard({ portfolio, missingProviders = [] }: { portfol
                 <Twitch size={14} /> Connect Twitch
               </button>
             )}
-            {missingProviders.includes("linkedin") && (
+            {missingProviders.includes("linkedin") && hasLinkedinOauth && (
               <button
                 className="secondary-action"
                 type="button"

@@ -153,7 +153,7 @@ function initialsFor(name: string) {
   return parts.slice(0, 2).map((part) => part[0]?.toUpperCase()).join("");
 }
 
-function parseUrlForPlatform(input: string): PlatformDetection {
+function parseUrlForPlatform(input: string, hasLinkedinOauth = false): PlatformDetection {
   const normalized = withProtocol(input).toLowerCase();
 
   try {
@@ -236,7 +236,7 @@ function parseUrlForPlatform(input: string): PlatformDetection {
     }
 
     if (hostname.includes("linkedin.com")) {
-      return {
+      return hasLinkedinOauth ? {
         id: "linkedin",
         formValue: "linkedin",
         name: "LinkedIn",
@@ -244,6 +244,14 @@ function parseUrlForPlatform(input: string): PlatformDetection {
         type: "oauth",
         trust: "OAuth L3",
         provider: "linkedin",
+        accent: "social",
+      } : {
+        id: "linkedin",
+        formValue: "linkedin",
+        name: "LinkedIn",
+        icon: Linkedin,
+        type: "bio",
+        trust: "Bio L2",
         accent: "social",
       };
     }
@@ -303,7 +311,7 @@ function createLog(message: string, tone: LogTone = "info"): LogEntry {
   };
 }
 
-export function CreatorIntake({ existingPortfolio }: { existingPortfolio?: ExistingPortfolio }) {
+export function CreatorIntake({ existingPortfolio, hasLinkedinOauth = false }: { existingPortfolio?: ExistingPortfolio, hasLinkedinOauth?: boolean }) {
   const isEditing = Boolean(existingPortfolio);
   const { data: session, status } = useSession();
 
@@ -317,7 +325,7 @@ export function CreatorIntake({ existingPortfolio }: { existingPortfolio?: Exist
 
   const initialRootNode: RootNode | null = existingPortfolio && existingRootLink
     ? {
-        ...parseUrlForPlatform(existingRootLink.url),
+        ...parseUrlForPlatform(existingRootLink.url, hasLinkedinOauth),
         url: existingRootLink.url,
         username: existingPortfolio.root_handle ?? handleFromUrl(existingRootLink.url),
       }
@@ -327,7 +335,7 @@ export function CreatorIntake({ existingPortfolio }: { existingPortfolio?: Exist
   const [rootNode, setRootNode] = useState<RootNode | null>(initialRootNode);
   const [mainLinkInput, setMainLinkInput] = useState(existingRootLink?.url ?? "");
   const [detectedPlatform, setDetectedPlatform] = useState<PlatformDetection | null>(
-    initialRootNode ? parseUrlForPlatform(initialRootNode.url) : null,
+    initialRootNode ? parseUrlForPlatform(initialRootNode.url, hasLinkedinOauth) : null,
   );
   const [showDnsInstructions, setShowDnsInstructions] = useState(false);
   const [challengeCode, setChallengeCode] = useState("");
@@ -345,8 +353,8 @@ export function CreatorIntake({ existingPortfolio }: { existingPortfolio?: Exist
 
   const isAuthenticated = status === "authenticated" && Boolean(session?.user);
   const secondaryCards = useMemo(
-    () => secondaryLinks.map((link) => ({ link, platform: parseUrlForPlatform(link) })),
-    [secondaryLinks],
+    () => secondaryLinks.map((link) => ({ link, platform: parseUrlForPlatform(link, hasLinkedinOauth) })),
+    [secondaryLinks, hasLinkedinOauth],
   );
 
   useEffect(() => {
@@ -366,7 +374,7 @@ export function CreatorIntake({ existingPortfolio }: { existingPortfolio?: Exist
           
           // JSON.stringify strips functions (like Lucide icons), so we must re-attach it
           // to prevent React from throwing "Element type is invalid" when rendering <Icon />
-          const detection = parseUrlForPlatform(parsed.url);
+          const detection = parseUrlForPlatform(parsed.url, hasLinkedinOauth);
           const reconstructedNode: RootNode = {
             ...parsed,
             icon: detection.icon,
@@ -387,7 +395,7 @@ export function CreatorIntake({ existingPortfolio }: { existingPortfolio?: Exist
     event.preventDefault();
     if (!mainLinkInput.trim()) return;
 
-    const platformData = parseUrlForPlatform(mainLinkInput);
+    const platformData = parseUrlForPlatform(mainLinkInput, hasLinkedinOauth);
     setDetectedPlatform(platformData);
     setChallengeCode(platformData.type === "domain" ? "closr-verification=8f2a" : "closr-8f2a");
     setShowDnsInstructions(false);
@@ -636,6 +644,11 @@ export function CreatorIntake({ existingPortfolio }: { existingPortfolio?: Exist
 
           {detectedPlatform.type === "bio" ? (
             <div className="instruction-card">
+              {detectedPlatform.id === "linkedin" && !hasLinkedinOauth && (
+                <div style={{ marginBottom: "16px", padding: "12px", background: "var(--arcade-cream)", border: "2px solid var(--arcade-yellow)", fontSize: "14px", lineHeight: "1.5" }}>
+                  <strong>Note:</strong> LinkedIn OAuth is not configured on this server. We will verify your profile using our free DuckDuckGo Dork scraper instead.
+                </div>
+              )}
               <div className="instruction-row">
                 <span className="step-index">1</span>
                 <div>
