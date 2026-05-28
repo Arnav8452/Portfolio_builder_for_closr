@@ -100,6 +100,17 @@ export function CreatorDashboard({ portfolio, missingProviders = [], hasLinkedin
     return <CreatorIntake existingPortfolio={portfolio} />;
   }
 
+  const isProcessing = portfolio.onboarding_status === "queued" || portfolio.onboarding_status === "processing" || portfolio.onboarding_status === "scraped";
+
+  useEffect(() => {
+    if (isProcessing) {
+      const interval = setInterval(() => {
+        router.refresh();
+      }, 5000);
+      return () => clearInterval(interval);
+    }
+  }, [isProcessing, router]);
+
   const status = statusConfig(portfolio.onboarding_status);
   const RootIcon = PLATFORM_ICON[portfolio.root_platform] ?? Github;
   const liveUrl = `/p/${portfolio.slug}`;
@@ -234,15 +245,25 @@ export function CreatorDashboard({ portfolio, missingProviders = [], hasLinkedin
 
         {/* Action row */}
         <div className="dash-actions" style={{ display: "flex", gap: "12px", flexWrap: "wrap" }}>
-          <a
-            className="primary-action"
-            href={liveUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={{ flex: 1 }}
-          >
-            <ExternalLink size={16} /> View Live
-          </a>
+          {isProcessing ? (
+            <button
+              className="primary-action"
+              disabled
+              style={{ flex: 1, opacity: 0.5, cursor: "not-allowed" }}
+            >
+              <Loader2 size={16} className="spin" /> Building...
+            </button>
+          ) : (
+            <a
+              className="primary-action"
+              href={liveUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              style={{ flex: 1 }}
+            >
+              <ExternalLink size={16} /> View Live
+            </a>
+          )}
           <button
             className="primary-action edit-action"
             type="button"

@@ -10,6 +10,7 @@ import { RetroRadar } from "@/components/retro/RetroRadar";
 import { RetroStats } from "@/components/retro/RetroStats";
 import { RetroNumbers } from "@/components/retro/RetroNumbers";
 import { RetroPlatformData } from "@/components/retro/RetroPlatformData";
+import { AutoRefresh } from "@/components/AutoRefresh";
 
 type PlatformMetric = {
   platform: string;
@@ -82,6 +83,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
             <h2 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "16px", color: "var(--arcade-ink)" }}>DATA COLLECTION IN PROGRESS</h2>
             <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "14px", marginTop: "16px", color: "var(--muted-2)" }}>The Oracle workers are currently parsing the external data platforms.</p>
           </div>
+          <AutoRefresh />
         </main>
       );
     }
@@ -198,6 +200,7 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
           <h2 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "16px", color: "var(--arcade-ink)" }}>DATA COLLECTION IN PROGRESS</h2>
           <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "14px", marginTop: "16px", color: "var(--muted-2)" }}>The Oracle workers are currently parsing the external data platforms.</p>
         </div>
+        <AutoRefresh />
       </main>
     );
   }
