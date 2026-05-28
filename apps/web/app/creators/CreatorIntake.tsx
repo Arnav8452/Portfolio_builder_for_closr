@@ -39,7 +39,7 @@ import type { ExistingPortfolio } from "./CreatorDashboard";
 
 type Step = "honeypot" | "router" | "input" | "processing" | "challenge" | "result";
 type PlatformKind = "oauth" | "bio" | "domain";
-type ProviderId = "google" | "youtube" | "github" | "twitch" | "meta";
+type ProviderId = "google" | "youtube" | "github" | "twitch" | "meta" | "linkedin";
 type LogTone = "system" | "info" | "warning" | "success" | "error";
 
 type PlatformDetection = {
@@ -238,11 +238,12 @@ function parseUrlForPlatform(input: string): PlatformDetection {
     if (hostname.includes("linkedin.com")) {
       return {
         id: "linkedin",
-        formValue: "other",
+        formValue: "linkedin",
         name: "LinkedIn",
         icon: Linkedin,
-        type: "bio",
-        trust: "Bio L2",
+        type: "oauth",
+        trust: "OAuth L3",
+        provider: "linkedin",
         accent: "social",
       };
     }
