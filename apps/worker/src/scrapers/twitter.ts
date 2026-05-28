@@ -11,7 +11,12 @@ async function scrapeWithNitter(username: string): Promise<ScrapeResult> {
   const nitterInstances = [
     "https://nitter.net",
     "https://nitter.cz",
-    "https://nitter.privacydev.net"
+    "https://nitter.poast.org",
+    "https://nitter.soopy.moe",
+    "https://nitter.uni-sonia.com",
+    "https://nitter.catsarch.com",
+    "https://nitter.esmailelbob.xyz",
+    "https://nitter.projectsegfau.lt"
   ];
   
   let lastErr;
