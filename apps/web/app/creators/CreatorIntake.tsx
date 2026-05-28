@@ -629,8 +629,8 @@ export function CreatorIntake({ existingPortfolio, hasLinkedinOauth = false }: {
                   <div className="instruction-row">
                     <span className="step-index">!</span>
                     <p>
-                      <strong>Important:</strong> Your Instagram account must be set to "Professional" or "Creator" 
-                      (free in the IG app) and linked to a Facebook Page to connect.
+                      <strong>Important:</strong> You must log in via a linked Meta/Facebook account. Your Instagram account must be set to "Professional" or "Creator" 
+                      (free in the IG app) and connected to a Facebook Page.
                     </p>
                   </div>
                 </div>

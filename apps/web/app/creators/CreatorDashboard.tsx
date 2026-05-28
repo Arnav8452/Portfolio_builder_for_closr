@@ -308,14 +308,21 @@ export function CreatorDashboard({ portfolio, missingProviders = [], hasLinkedin
               </button>
             )}
             {missingProviders.includes("instagram") && (
-              <button
-                className="secondary-action"
-                type="button"
-                onClick={() => { window.location.href = "/api/auth/meta"; }}
-              >
-                <Instagram size={14} /> Connect Instagram
-              </button>
+              <div style={{ display: "flex", flexDirection: "column", gap: "4px", flex: "1 1 auto" }}>
+                <button
+                  className="secondary-action"
+                  type="button"
+                  onClick={() => { window.location.href = "/api/auth/meta"; }}
+                >
+                  <Instagram size={14} /> Connect Instagram
+                </button>
+                <span style={{ fontSize: "10px", color: "var(--muted)", textAlign: "center" }}>*Requires FB Page & Pro Acct</span>
+              </div>
             )}
+          </div>
+          
+          <div className="dashboard-subtitle" style={{ fontSize: "11px", marginTop: "12px", borderTop: "1px dashed var(--arcade-ink)", paddingTop: "12px" }}>
+            <strong>Note:</strong> Connecting YouTube requires selecting a Brand Account if your channel is linked to one. Connecting Instagram requires authenticating via the Meta (Facebook) account linked to your Professional Instagram Profile.
           </div>
         </div>
       )}

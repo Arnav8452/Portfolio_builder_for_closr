@@ -5,7 +5,7 @@ type PlatformTier = {
   id: string;
   title: string;
   description: string;
-  items: { name: string; icon: React.FC<any>; color: string }[];
+  items: { name: string; icon: React.FC<any>; color: string; note?: string }[];
 };
 
 const TIERS: PlatformTier[] = [
@@ -14,10 +14,11 @@ const TIERS: PlatformTier[] = [
     title: "01 · OAuth Data",
     description: "Absolute Trust. Deep analytics directly from the source.",
     items: [
-      { name: "YouTube", icon: Youtube, color: "var(--arcade-red)" },
+      { name: "YouTube", icon: Youtube, color: "var(--arcade-red)", note: "Brand Acct recommended" },
       { name: "GitHub", icon: Github, color: "var(--arcade-cream)" },
       { name: "Twitch", icon: Twitch, color: "var(--arcade-purple)" },
       { name: "X / Twitter", icon: Twitter, color: "var(--arcade-blue)" },
+      { name: "Instagram", icon: Instagram, color: "var(--arcade-red)", note: "Requires FB Page & Pro Acct" },
     ],
   },
   {
@@ -37,7 +38,6 @@ const TIERS: PlatformTier[] = [
     description: "Variable Trust. Headless browsing fallback for closed platforms.",
     items: [
       { name: "LinkedIn", icon: Linkedin, color: "var(--arcade-blue)" },
-      { name: "Instagram", icon: Instagram, color: "var(--arcade-red)" },
       { name: "Patreon", icon: Activity, color: "var(--arcade-red)" },
     ],
   },
@@ -70,6 +70,11 @@ export function SupportedPlatforms() {
                     <span style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "8px", color: "var(--arcade-ink)", textAlign: "center", textTransform: "uppercase" }}>
                       {item.name}
                     </span>
+                    {item.note && (
+                      <span style={{ fontFamily: "'VT323', monospace", fontSize: "12px", color: "var(--muted)", textAlign: "center", marginTop: "8px", lineHeight: 1.1 }}>
+                        *{item.note}
+                      </span>
+                    )}
                   </div>
                 );
               })}
