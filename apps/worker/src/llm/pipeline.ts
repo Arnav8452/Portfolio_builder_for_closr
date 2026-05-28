@@ -59,8 +59,12 @@ export async function extractCreatorIdentity(rawText: string): Promise<LLMRespon
         content_format: Array.from(new Set([...(p1.content_format || []), ...(p2.content_format || [])])),
         audience_size_tier: p1.audience_size_tier || p2.audience_size_tier,
         past_topics: Array.from(new Set([...(p1.past_topics || []), ...(p2.past_topics || [])])),
-        achievements: [...(p1.achievements || []), ...(p2.achievements || [])].filter((v, i, a) => a.findIndex(t => t.title === v.title) === i),
-        timeline_events: [...(p1.timeline_events || []), ...(p2.timeline_events || [])].filter((v, i, a) => a.findIndex(t => t.title === v.title) === i),
+        achievements: [...(p1.achievements || []), ...(p2.achievements || [])].filter((v, i, a) => 
+          a.findIndex(t => t.title.toLowerCase().replace(/[^a-z0-9]/g, '') === v.title.toLowerCase().replace(/[^a-z0-9]/g, '')) === i
+        ),
+        timeline_events: [...(p1.timeline_events || []), ...(p2.timeline_events || [])].filter((v, i, a) => 
+          a.findIndex(t => t.title.toLowerCase().replace(/[^a-z0-9]/g, '') === v.title.toLowerCase().replace(/[^a-z0-9]/g, '')) === i
+        ),
         radar_scores: {
           impact: Math.max(p1.radar_scores?.impact || 50, p2.radar_scores?.impact || 50),
           consistency: Math.max(p1.radar_scores?.consistency || 50, p2.radar_scores?.consistency || 50),
@@ -95,7 +99,7 @@ export async function executeWithRepair(
   Do not lose data. Deep dive into the text, extract specific numbers, and synthesize a rich bio_summary. 
   CRITICAL GROUNDING INSTRUCTION: You MUST ground ALL your extraction and analysis STRICTLY in the provided telemetry data payload. DO NOT hallucinate, guess, or invent external information. If a field like bio_summary cannot be confidently deduced from the payload, clearly state 'Insufficient data to generate summary.' instead of inventing one.
   CRITICAL UI FIELDS:
-  1. 'achievements': Create punchy, insightful achievements with a 'title' and 'description'. Ensure you capture milestones.
+  1. 'achievements': Extract concrete, verifiable achievements (e.g. awards, major projects, specific metrics). DO NOT infer or invent generic achievements like "Hackathon Hero" or "Open Source Contributor" unless explicitly stated. Use the EXACT project name or metric as the 'title' so duplicate achievements can be merged later. If no verifiable achievements exist in this chunk, return an empty array [].
   2. 'radar_scores': Score the creator from 0 to 100 on impact, consistency, quality, depth, breadth, and community based on the data. Be critical.
   3. 'timeline_events': Extract any notable dates/events to build a timeline. Each event MUST have a 'date', a 'title', and a 'description'.
   CRITICAL: bio_summary MUST be a single plain string, NOT an object or array.
