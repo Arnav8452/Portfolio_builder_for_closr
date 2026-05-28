@@ -26,7 +26,7 @@ export function RetroHeader({ profile, displayImage, overallScore }: RetroHeader
     <div className="pixel-border" 
       style={{
         backgroundColor: "var(--arcade-dark)",
-        padding: "48px",
+        padding: "clamp(24px, 5vw, 48px)",
         display: "flex",
         justifyContent: "space-between",
         alignItems: "flex-start",
@@ -57,10 +57,10 @@ export function RetroHeader({ profile, displayImage, overallScore }: RetroHeader
         display: "flex", 
         flexDirection: "column", 
         gap: "12px", 
-        padding: "24px",
+        padding: "clamp(16px, 4vw, 24px)",
         backgroundColor: "var(--arcade-ink)", 
         border: "2px solid var(--arcade-cream)",
-        minWidth: "300px",
+        minWidth: "280px",
         flex: "1 1 300px"
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed var(--arcade-cream)", paddingBottom: "8px" }}>
