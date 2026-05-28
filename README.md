@@ -13,10 +13,26 @@ The system is decoupled to ensure high reliability, zero-proxy scalability, and 
 - They paste secondary social links (Twitter, Instagram, Substack, LinkedIn, etc.).
 - The Next.js frontend writes the creator profile to Supabase and pushes the links to a PostgreSQL-backed `scraping_queue`.
 
-### 2. Zero-Proxy Social Ingestion (Meta & Apify)
-To guarantee stability without relying on fragile local scrapers or proxies:
-- **Instagram**: An integrated Meta OAuth flow exchanges user logins for Long-Lived Access Tokens, storing them in `external_api_tokens`. The Official Meta Graph API securely extracts media and stats.
-- **Twitter**: The platform uses `apify-client` to route Twitter handles through managed infrastructure (`apidojo/twitter-scraper-lite`).
+### 2. Supported Platforms & Zero-Proxy Social Ingestion
+To guarantee stability while keeping operations completely free and scalable:
+
+#### A. OAuth Integrated (Gold Standard)
+*These platforms use official APIs via user-connected OAuth tokens for robust, legal data extraction.*
+- **GitHub**: Pulls profile info, repositories, top languages, and contribution history via the official REST and GraphQL APIs.
+- **YouTube**: Pulls channel analytics, demographics, engagement, and geo-data via the YouTube Analytics API.
+- **Twitch**: Pulls channel streaming data and total views via the Twitch Helix API.
+- **Instagram**: Integrated Meta OAuth exchanges logins for Long-Lived Access Tokens to extract media and stats via the official Meta Graph API.
+- **LinkedIn**: Basic verified data pulled via LinkedIn's official OAuth scope.
+
+#### B. Lightweight OSINT Scrapers (100% Free)
+*Used for unconnected profiles, avoiding expensive proxies or fragile headless browsers.*
+- **Twitter / X**: Safely fetches timelines using **Nitter** open-source RSS instances to parse bio and recent tweets for free. If Nitter fails, it automatically falls back to managed infrastructure via `Apify` to ensure high availability.
+- **LinkedIn**: Bypasses strict anti-bot walls on unconnected accounts by executing a zero-API-key **DuckDuckGo HTML Dork** (`site:linkedin.com/in/username`) to silently extract the user's Headline, Job Title, and Name from search snippets.
+
+#### C. RSS & Web Crawling
+- **Substack & Medium**: Natively parses the author's public RSS feeds.
+- **Custom Websites**: Routes generic URLs through **Jina AI** to convert the site to clean Markdown. If Jina fails, it uses Mozilla's **Readability** engine to semantically extract the main article/bio directly from the HTML DOM.
+
 - **Cron Worker**: A Next.js API cron endpoint (`/api/cron/sync-socials`) runs in the background, updating the `social_cache` in Supabase to ensure sub-second portfolio load times without hitting rate limits.
 
 ### 3. The Scraping Worker (Render/Railway)
