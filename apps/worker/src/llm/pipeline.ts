@@ -98,7 +98,8 @@ export async function executeWithRepair(
   1. 'achievements': Create punchy, insightful achievements with a 'title' and 'description'. Ensure you capture milestones.
   2. 'radar_scores': Score the creator from 0 to 100 on impact, consistency, quality, depth, breadth, and community based on the data. Be critical.
   3. 'timeline_events': Extract any notable dates/events to build a timeline. Each event MUST have a 'date', a 'title', and a 'description'.
-  CRITICAL: bio_summary MUST be a single plain string, NOT an object or array.`;
+  CRITICAL: bio_summary MUST be a single plain string, NOT an object or array.
+  ANTI-HALLUCINATION PROTOCOL: If the rawText says "No tweets found", "data extraction is not supported", or clearly lacks profile data, you MUST return empty arrays [] for achievements, technical_skills, past_topics, brand_tone, content_format, and timeline_events, and an empty string "" for bio_summary. NEVER invent default placeholders like "100 Tweets" or "Bachelor's Degree".`;
 
   const response = await fetch(GATEWAY_URL, {
     method: "POST",

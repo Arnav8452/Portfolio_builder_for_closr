@@ -275,7 +275,7 @@ export function RetroPlatformData({ metrics }: RetroPlatformDataProps) {
               <div style={{ marginBottom: "16px", borderBottom: "2px solid var(--arcade-ink)", paddingBottom: "16px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                 <div>
                   <div style={{ fontSize: "14px", color: "var(--arcade-ink)", textTransform: "uppercase", marginBottom: "8px", fontWeight: "bold" }}>
-                    {metric.identity_key || "IDENTITY"} /
+                    {(!metric.identity_key || metric.identity_key === "DEFAULT") ? "PROFILE" : metric.identity_key} /
                   </div>
                   <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
                     <Icon size={24} color="var(--arcade-ink)" />
