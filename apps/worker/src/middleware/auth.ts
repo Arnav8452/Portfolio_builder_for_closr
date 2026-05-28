@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { env } from '../env.js';
+import crypto from 'crypto';
 
 export function authenticate(req: Request, res: Response, next: NextFunction) {
   const authHeader = req.headers.authorization;
@@ -11,7 +12,13 @@ export function authenticate(req: Request, res: Response, next: NextFunction) {
 
   const token = authHeader.split(' ')[1];
   
-  if (token !== expectedSecret) {
+  try {
+    const tokenBuffer = Buffer.from(token);
+    const expectedBuffer = Buffer.from(expectedSecret);
+    if (tokenBuffer.length !== expectedBuffer.length || !crypto.timingSafeEqual(tokenBuffer, expectedBuffer)) {
+      return res.status(403).json({ error: 'Forbidden: Invalid Token' });
+    }
+  } catch (error) {
     return res.status(403).json({ error: 'Forbidden: Invalid Token' });
   }
 

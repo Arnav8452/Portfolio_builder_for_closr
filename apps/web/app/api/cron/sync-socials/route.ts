@@ -43,7 +43,7 @@ export async function GET(req: Request) {
         // Extract handle from url if submitted_handle is missing
         let handle = link.submitted_handle;
         if (!handle) {
-           const match = link.url.match(/twitter\.com\/([^\/?]+)/) || link.url.match(/x\.com\/([^\/?]+)/);
+           const match = link.url.match(/(?:twitter|x)\.com\/(?:@)?([a-zA-Z0-9_]+)/);
            handle = match ? match[1] : null;
         }
 

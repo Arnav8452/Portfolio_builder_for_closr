@@ -82,6 +82,7 @@ export function CreatorDashboard({ portfolio, missingProviders = [], hasLinkedin
   const [mode, setMode] = useState<"dashboard" | "edit">("dashboard");
   const [copied, setCopied] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const searchParams = useSearchParams();
@@ -89,16 +90,16 @@ export function CreatorDashboard({ portfolio, missingProviders = [], hasLinkedin
 
   useEffect(() => {
     const err = searchParams?.get("error");
+    const meta = searchParams?.get("meta");
+    
     if (err === "OAuthAccountNotLinked") {
       setErrorMsg("This account is already connected to another portfolio.");
-      // Optional: Clean up URL
+      window.history.replaceState(null, "", "/creators");
+    } else if (meta === "success") {
+      setSuccessMsg("Instagram connected successfully!");
       window.history.replaceState(null, "", "/creators");
     }
   }, [searchParams]);
-
-  if (mode === "edit") {
-    return <CreatorIntake existingPortfolio={portfolio} />;
-  }
 
   const isProcessing = portfolio.onboarding_status === "queued" || portfolio.onboarding_status === "processing" || portfolio.onboarding_status === "scraped";
 
@@ -110,6 +111,10 @@ export function CreatorDashboard({ portfolio, missingProviders = [], hasLinkedin
       return () => clearInterval(interval);
     }
   }, [isProcessing, router]);
+
+  if (mode === "edit") {
+    return <CreatorIntake existingPortfolio={portfolio} />;
+  }
 
   const status = statusConfig(portfolio.onboarding_status);
   const RootIcon = PLATFORM_ICON[portfolio.root_platform] ?? Github;
@@ -198,6 +203,14 @@ export function CreatorDashboard({ portfolio, missingProviders = [], hasLinkedin
         <div className="bg-red-500/10 border border-red-500 text-red-500 px-4 py-3 rounded-md mb-6 flex items-center gap-2">
           <AlertCircle size={16} />
           {errorMsg}
+        </div>
+      )}
+
+      {/* Success Message */}
+      {successMsg && (
+        <div className="bg-green-500/10 border border-green-500 text-green-500 px-4 py-3 rounded-md mb-6 flex items-center gap-2">
+          <CheckCircle2 size={16} />
+          {successMsg}
         </div>
       )}
 

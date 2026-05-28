@@ -5,6 +5,8 @@ import { getRow, rpc, updateRow, upsertRow } from "../supabase-rest.js";
 
 type AnalysisJob = Database["public"]["Tables"]["analysis_queue"]["Row"];
 
+const creatorLocks = new Map<string, Promise<void>>();
+
 export async function claimAnalysisJobs() {
   return rpc<AnalysisJob[]>("claim_analysis_jobs", {
     p_worker_id: env.workerId,
@@ -23,6 +25,12 @@ export async function pollAnalysisQueue() {
 }
 
 async function processAnalysisJob(job: AnalysisJob) {
+  while (creatorLocks.has(job.creator_id)) {
+    await creatorLocks.get(job.creator_id);
+  }
+  let releaseLock: () => void;
+  creatorLocks.set(job.creator_id, new Promise<void>(resolve => { releaseLock = resolve; }));
+
   try {
     const result = await extractCreatorIdentity(job.raw_text);
     const identity = result.parsed;
@@ -114,6 +122,9 @@ async function processAnalysisJob(job: AnalysisJob) {
       status: job.attempts >= job.max_attempts ? "failed" : "pending",
       error_log: [...(Array.isArray(job.error_log) ? job.error_log : []), serializeError(error)],
     });
+  } finally {
+    creatorLocks.delete(job.creator_id);
+    releaseLock!();
   }
 }
 

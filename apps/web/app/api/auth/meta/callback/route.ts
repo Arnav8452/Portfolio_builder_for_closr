@@ -2,6 +2,8 @@ import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
+import { encryptToken } from "@/lib/encryption";
+import { cookies } from "next/headers";
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
@@ -11,8 +13,16 @@ export async function GET(req: Request) {
 
   const url = new URL(req.url);
   const code = url.searchParams.get("code");
+  const state = url.searchParams.get("state");
   if (!code) {
     return NextResponse.json({ error: "Missing code" }, { status: 400 });
+  }
+
+  // CSRF protection: validate the state parameter against the cookie
+  const cookieStore = await cookies();
+  const storedState = cookieStore.get("meta_oauth_state")?.value;
+  if (!state || !storedState || state !== storedState) {
+    return NextResponse.json({ error: "Invalid state parameter (CSRF check failed)" }, { status: 403 });
   }
 
   const appId = process.env.META_CLIENT_ID || process.env.META_APP_ID;
@@ -59,10 +69,11 @@ export async function GET(req: Request) {
         : null;
 
     // 3. Save to database
+    const encryptedToken = encryptToken(longTokenData.access_token);
     const { error } = await supabase.from("external_api_tokens").upsert({
       creator_id: creator.id,
       provider: "meta",
-      access_token: longTokenData.access_token,
+      access_token: encryptedToken,
       expires_at: expiresAt,
       updated_at: new Date().toISOString()
     }, { onConflict: "creator_id, provider" });

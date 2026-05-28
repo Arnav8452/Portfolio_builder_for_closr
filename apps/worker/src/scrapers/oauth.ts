@@ -1,6 +1,7 @@
 import type { CreatorPlatform, Json } from "@closr/database/types";
 import { env } from "../env.js";
 import { getRow, updateRow } from "../supabase-rest.js";
+import { decryptToken } from "../lib/encryption.js";
 
 type OauthScrapeResult = {
   rawText: string;
@@ -281,7 +282,7 @@ async function fetchInstagramStats(url: string, creatorId: string): Promise<Oaut
   if (!tokens || tokens.length === 0) {
     throw new Error("Missing Meta OAuth token. Creator must re-authenticate Instagram.");
   }
-  const token = tokens[0].access_token;
+  const token = decryptToken(tokens[0].access_token);
 
   // 2. Resolve the connected Instagram Business/Creator Account ID
   const pagesRes = await fetch(`https://graph.facebook.com/v19.0/me/accounts?fields=instagram_business_account&access_token=${token}`);

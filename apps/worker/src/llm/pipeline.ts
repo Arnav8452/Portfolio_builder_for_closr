@@ -7,8 +7,8 @@ const MODELS = [
   // Use generic model names (e.g., gpt-4o-mini) so that Freeloader's ModelRegistry
   // can properly translate it to the correct provider-specific model IDs (e.g., 
   // gemini-2.5-flash for Gemini, llama-3.1-8b-instant for Groq).
-  "gpt-4o-mini",
-  "gpt-4o-mini"
+  "gemini-2.5-flash",
+  "llama-3.1-8b-instant"
 ];
 
 export async function extractCreatorIdentity(rawText: string): Promise<LLMResponse> {
@@ -77,7 +77,14 @@ export async function extractCreatorIdentity(rawText: string): Promise<LLMRespon
       },
       input_tokens: (acc.input_tokens || 0) + (curr.input_tokens || 0),
       output_tokens: (acc.output_tokens || 0) + (curr.output_tokens || 0),
-      duration_ms: (acc.duration_ms || 0) + (curr.duration_ms || 0)
+      duration_ms: (acc.duration_ms || 0) + (curr.duration_ms || 0),
+      provider: acc.provider === curr.provider ? acc.provider : `${acc.provider},${curr.provider}`,
+      model: acc.model === curr.model ? acc.model : `${acc.model},${curr.model}`,
+      prompt_version: acc.prompt_version,
+      prompt_hash: acc.prompt_hash,
+      request_id: acc.request_id === curr.request_id ? acc.request_id : `${acc.request_id},${curr.request_id}`,
+      raw_model_output: `${acc.raw_model_output}\n\n---\n\n${curr.raw_model_output}`,
+      estimated_cost_usd: (acc.estimated_cost_usd || 0) + (curr.estimated_cost_usd || 0)
     };
   });
 

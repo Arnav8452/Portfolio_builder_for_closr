@@ -33,10 +33,14 @@ export function normalizeUrl(input: string) {
   const raw = input.trim();
   if (!raw) return "";
   const withProtocol = /^https?:\/\//i.test(raw) ? raw : `https://${raw}`;
-  const url = new URL(withProtocol);
-  const host = url.hostname.toLowerCase().replace(/^www\./, "");
-  const path = url.pathname.replace(/\/+$/, "");
-  return `https://${host}${path}`;
+  try {
+    const url = new URL(withProtocol);
+    const host = url.hostname.toLowerCase().replace(/^www\./, "");
+    const path = url.pathname.replace(/\/+$/, "");
+    return `https://${host}${path}`;
+  } catch {
+    return withProtocol;
+  }
 }
 
 export function detectPlatform(input: string): CreatorPlatform {

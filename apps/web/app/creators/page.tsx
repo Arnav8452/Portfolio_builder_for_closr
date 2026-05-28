@@ -44,16 +44,26 @@ export default async function CreatorsPage() {
 
       portfolio = { ...creator, links: links ?? [] };
 
-      // Fetch NextAuth accounts for this user
+      // Fetch NextAuth accounts and External API tokens
       const { data: accounts } = await supabase.schema("next_auth")
         .from("accounts")
         .select("provider")
         .eq("userId", userId);
 
+      const { data: externalTokens } = await supabase
+        .from("external_api_tokens")
+        .select("provider")
+        .eq("creator_id", creator.id);
+
+      const connectedProviders: string[] = [];
       if (accounts) {
-        const connectedProviders = accounts.map((a) => a.provider.toLowerCase());
-        missingProviders = missingProviders.filter(p => !connectedProviders.includes(p));
+        connectedProviders.push(...accounts.map((a) => a.provider.toLowerCase()));
       }
+      if (externalTokens) {
+        connectedProviders.push(...externalTokens.map(t => t.provider.toLowerCase() === 'meta' ? 'instagram' : t.provider.toLowerCase()));
+      }
+      
+      missingProviders = missingProviders.filter(p => !connectedProviders.includes(p));
     }
   } catch {
     // Supabase not configured or no data — show builder

@@ -19,7 +19,6 @@ export function MobileNav() {
       {isOpen && (
         <div className="mobile-nav-menu">
           <a href="/creators" onClick={() => setIsOpen(false)}>Creator Portal</a>
-          <a href="/p/demo" onClick={() => setIsOpen(false)}>Demo Profile</a>
           <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "var(--arcade-green)", fontSize: "10px", marginTop: "8px" }}>
             <span className="system-status" /> Systems operational
           </div>

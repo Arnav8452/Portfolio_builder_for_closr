@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { detectPlatform, normalizeUrl } from "@/lib/platforms";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
+import DOMPurify from "isomorphic-dompurify";
 
 function slugify(value: string) {
   return value
@@ -16,17 +17,17 @@ function slugify(value: string) {
 
 export async function submitCreatorProfile(formData: FormData) {
   const session = await getServerSession(authOptions);
-  const allowLocalDev = process.env.ALLOW_LOCAL_DEV_AUTH === "true";
   const userId = (session?.user as any)?.id;
   const userEmail = session?.user?.email;
 
-  if (!userId && !allowLocalDev) {
+  if (!userId) {
     return { ok: false, message: "Please sign in first." };
   }
   
-  const finalUserId = userId ?? "local-dev-uuid";
-  const finalUserEmail = userEmail ?? "local-dev@closr.test";
-  const displayName = (formData.get('displayName') as string || '').trim().replace(/<[^>]*>/g, '').slice(0, 100);
+  const finalUserId = userId;
+  const finalUserEmail = userEmail;
+  const rawDisplayName = (formData.get('displayName') as string || '').trim().slice(0, 100);
+  const displayName = DOMPurify.sanitize(rawDisplayName);
   const rootPlatform = String(formData.get("rootPlatform") ?? "github");
   const rootUrl = String(formData.get("rootUrl") ?? "").trim();
   const secondaryLinks = formData.getAll("secondaryLinks").map(String).map((v) => v.trim()).filter(Boolean);
@@ -140,7 +141,8 @@ export async function updateCreatorProfile(formData: FormData) {
 
   const supabase = getSupabaseAdmin();
   const creatorId = String(formData.get("creatorId") ?? "");
-  const displayName = (formData.get('displayName') as string || '').trim().replace(/<[^>]*>/g, '').slice(0, 100);
+  const rawDisplayName = (formData.get('displayName') as string || '').trim().slice(0, 100);
+  const displayName = DOMPurify.sanitize(rawDisplayName);
   const rootPlatform = String(formData.get("rootPlatform") ?? "github");
   const rootUrl = String(formData.get("rootUrl") ?? "").trim();
   const secondaryLinks = formData.getAll("secondaryLinks").map(String).map((v) => v.trim()).filter(Boolean);
@@ -194,8 +196,9 @@ export async function updateCreatorProfile(formData: FormData) {
       .in("normalized_url", urlsToDelete);
   }
 
-  // Add new secondary links that don't already exist
-  for (const url of secondaryLinks) {
+  // Add new links (including root) that don't already exist
+  const allSubmittedLinks = [rootUrl, ...secondaryLinks];
+  for (const url of allSubmittedLinks) {
     const normalized = normalizeUrl(url);
     if (existingUrls.has(normalized)) continue;
 

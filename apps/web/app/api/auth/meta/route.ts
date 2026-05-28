@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
+import crypto from "crypto";
 
 export async function GET(req: Request) {
   const session = await getServerSession(authOptions);
@@ -21,5 +22,17 @@ export async function GET(req: Request) {
   url.searchParams.set("scope", "instagram_basic,pages_show_list");
   url.searchParams.set("response_type", "code");
   
-  return NextResponse.redirect(url.toString());
+  // CSRF protection: generate a random state token and store it in a cookie
+  const state = crypto.randomBytes(16).toString("hex");
+  url.searchParams.set("state", state);
+  
+  const response = NextResponse.redirect(url.toString());
+  response.cookies.set("meta_oauth_state", state, {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge: 600, // 10 minutes
+    path: "/",
+  });
+  return response;
 }

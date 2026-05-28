@@ -52,6 +52,8 @@ ALTER TABLE next_auth.accounts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE next_auth.sessions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE next_auth.verification_tokens ENABLE ROW LEVEL SECURITY;
 
+CREATE INDEX IF NOT EXISTS idx_accounts_user_provider ON next_auth.accounts ("userId", provider);
+
 -- Note: The frontend NEVER reads these directly. NextAuth server uses SERVICE_ROLE.
 -- The Oracle Worker also uses SERVICE_ROLE. So no public policies are created.
 
@@ -401,11 +403,11 @@ SELECT
     c.root_platform,
     c.root_handle,
     ci.primary_niche,
-    ci.technical_skills,
-    ci.brand_tone,
-    ci.content_format,
+    COALESCE(ci.technical_skills, '{}') AS technical_skills,
+    COALESCE(ci.brand_tone, '{}') AS brand_tone,
+    COALESCE(ci.content_format, '{}') AS content_format,
     ci.audience_size_tier,
-    ci.past_topics,
+    COALESCE(ci.past_topics, '{}') AS past_topics,
     ci.bio_summary,
     ci.raw_model_output AS extra_analysis,
     ci.extraction_confidence AS confidence,
@@ -463,3 +465,20 @@ CREATE TABLE IF NOT EXISTS social_cache (
     synced_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     UNIQUE(creator_id, platform)
 );
+
+-- Strict RLS Lockdown for core tables
+ALTER TABLE creators ENABLE ROW LEVEL SECURITY;
+ALTER TABLE creator_links ENABLE ROW LEVEL SECURITY;
+ALTER TABLE platform_verifications ENABLE ROW LEVEL SECURITY;
+ALTER TABLE platform_data ENABLE ROW LEVEL SECURITY;
+ALTER TABLE creator_identities ENABLE ROW LEVEL SECURITY;
+ALTER TABLE scraping_queue ENABLE ROW LEVEL SECURITY;
+ALTER TABLE analysis_queue ENABLE ROW LEVEL SECURITY;
+ALTER TABLE verification_challenges ENABLE ROW LEVEL SECURITY;
+ALTER TABLE creator_processing_events ENABLE ROW LEVEL SECURITY;
+ALTER TABLE external_api_tokens ENABLE ROW LEVEL SECURITY;
+ALTER TABLE social_cache ENABLE ROW LEVEL SECURITY;
+
+-- Note: All frontend interactions with the DB happen through Next.js server actions (using Service Role)
+-- or through the Worker (using Service Role). If public user policies are ever needed, they should
+-- be tightly scoped using auth.uid().

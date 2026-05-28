@@ -20,7 +20,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </a>
             <nav className="nav desktop-nav">
               <span>Creator Portal</span>
-              <a href="/p/demo">Profile</a>
               <span className="system-status" title="Systems operational" />
             </nav>
             <MobileNav />

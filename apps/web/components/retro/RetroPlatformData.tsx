@@ -23,7 +23,7 @@ function StatBadge({ label, value, bg = "var(--arcade-yellow)" }: { label: strin
       padding: "4px 8px",
       gap: "8px"
     }}>
-      <span style={{ fontWeight: "bold", color: "var(--arcade-ink)", fontSize: "14px" }}>{label[0].toUpperCase()}</span>
+      <span style={{ fontWeight: "bold", color: "var(--arcade-ink)", fontSize: "14px" }}>{label?.[0]?.toUpperCase() ?? "?"}</span>
       <span style={{ color: "var(--arcade-ink)", fontFamily: "'VT323', monospace", fontSize: "18px" }}>{value}</span>
     </div>
   );
