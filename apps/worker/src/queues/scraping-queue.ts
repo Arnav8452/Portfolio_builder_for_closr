@@ -138,10 +138,21 @@ async function scrape(job: ScrapingJob): Promise<ScrapeResult> {
     if (jinaRes.ok) {
       const markdown = await jinaRes.text();
       
-      const titleMatch = markdown.match(/^(?:#\s+)?([^\n]+)/);
+      // Jina puts "Title: <title>\nURL Source: <url>\nMarkdown Content:\n" at the top.
+      const titleMatch = markdown.match(/Title:\s*([^\n]+)/i);
       const title = titleMatch ? titleMatch[1].trim() : job.url;
       
-      const cleanMarkdown = markdown.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+      // Strip out the metadata header
+      let bodyText = markdown;
+      const contentIndex = markdown.indexOf("Markdown Content:");
+      if (contentIndex !== -1) {
+        bodyText = markdown.slice(contentIndex + "Markdown Content:".length).trim();
+      } else {
+        // Fallback if "Markdown Content:" is missing
+        bodyText = markdown.replace(/^Title:.*$/im, '').replace(/^URL Source:.*$/im, '').trim();
+      }
+      
+      const cleanMarkdown = bodyText.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
       const paragraphs = cleanMarkdown.split('\n\n').filter(p => p.trim().length > 20 && !p.startsWith('#') && !p.startsWith('!')).map(p => p.trim());
       const description = paragraphs.length > 0 ? paragraphs[0].slice(0, 300) + (paragraphs[0].length > 300 ? "..." : "") : "Website content extracted.";
 
