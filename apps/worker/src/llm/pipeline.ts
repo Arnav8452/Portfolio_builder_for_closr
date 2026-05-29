@@ -4,11 +4,13 @@ import { creatorIdentityZodSchema, creatorIdentityJsonSchema } from "./schema.js
 import { createHash } from 'crypto';
 
 const MODELS = [
-  // Use generic model names (e.g., gpt-4o-mini) so that Freeloader's ModelRegistry
-  // can properly translate it to the correct provider-specific model IDs (e.g., 
-  // gemini-2.5-flash for Gemini, llama-3.1-8b-instant for Groq).
-  "gemini-2.5-flash",
-  "llama-3.1-8b-instant"
+  // Use Freeloader's virtual model names so that ModelRegistry
+  // translates them to provider-specific IDs automatically (e.g.,
+  // gpt-4o-mini → gemini-2.5-flash for Gemini, llama-3.1-8b-instant for Groq).
+  // Passing raw names like "gemini-2.5-flash" bypasses translation and crashes
+  // when Groq/Cerebras receive a model they don't serve.
+  "gpt-4o-mini",
+  "gpt-4o"
 ];
 
 export async function extractCreatorIdentity(rawText: string): Promise<LLMResponse> {
