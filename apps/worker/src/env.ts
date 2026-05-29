@@ -35,4 +35,6 @@ export const env = {
   apifyToken: process.env.APIFY_API_TOKEN,
   googleId: process.env.GOOGLE_ID,
   googleSecret: process.env.GOOGLE_SECRET,
+  googleSearchApiKey: process.env.GOOGLE_SEARCH_API_KEYS,
+  googleSearchCx: process.env.GOOGLE_SEARCH_CXS,
 };

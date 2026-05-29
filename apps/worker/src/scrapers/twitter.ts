@@ -77,6 +77,61 @@ async function scrapeTwitterDork(username: string): Promise<Partial<ScrapeResult
   }
 }
 
+// --- Google Custom Search (Tier 2 Free Fallback) ---
+async function scrapeTwitterGoogleAPI(username: string): Promise<Partial<ScrapeResult> | null> {
+  if (!env.googleSearchApiKey || !env.googleSearchCx) return null;
+
+  const query = encodeURIComponent(`site:twitter.com/${username} OR site:x.com/${username}`);
+  const url = `https://www.googleapis.com/customsearch/v1?key=${env.googleSearchApiKey}&cx=${env.googleSearchCx}&q=${query}`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+
+    const data = await res.json() as any;
+    if (!data.items || data.items.length === 0) return null;
+
+    // Look through top 3 results for the profile
+    for (const item of data.items.slice(0, 3)) {
+      const title = item.title || "";
+      const snippet = item.snippet || "";
+
+      if (title.toLowerCase().includes(`(@${username.toLowerCase()})`) || title.toLowerCase().includes(`on x`)) {
+        const name = title.split("(@")[0].trim();
+        
+        let followers = "";
+        const followersMatch = snippet.match(/([\d,.]+[KMB]?)\s*followers/i);
+        if (followersMatch) {
+          followers = followersMatch[1];
+        }
+
+        const rawText = [
+          `Name: ${name}`,
+          `Username: ${username}`,
+          `Bio/Snippet: ${snippet}`,
+          followers ? `Followers: ${followers}` : ""
+        ].filter(Boolean).join("\n\n");
+
+        return {
+          rawText,
+          payload: {
+            profile: {
+              name,
+              userName: username,
+              description: snippet,
+              followers
+            }
+          }
+        };
+      }
+    }
+    return null;
+  } catch (err) {
+    console.warn(`[Twitter Google API] Failed for ${username}:`, err);
+    return null;
+  }
+}
+
 // --- Nitter RSS (Free Tweets) ---
 async function scrapeWithNitter(username: string): Promise<Partial<ScrapeResult> | null> {
   const nitterInstances = [
@@ -192,27 +247,32 @@ export async function scrapeTwitter(url: string): Promise<ScrapeResult> {
   }
 
   try {
-    // 1. Try Free Hybrid (Dork + Nitter RSS)
-    const [dorkRes, nitterRes] = await Promise.all([
-      scrapeTwitterDork(username),
-      scrapeWithNitter(username)
-    ]);
+    // 1. Try Free Hybrid Tier 1 (DuckDuckGo Dork)
+    let profileRes = await scrapeTwitterDork(username);
+    
+    // 2. Try Free Hybrid Tier 2 (Google Custom Search API)
+    if (!profileRes) {
+      profileRes = await scrapeTwitterGoogleAPI(username);
+    }
 
-    if (dorkRes || nitterRes) {
-      const combinedRaw = [dorkRes?.rawText, nitterRes?.rawText].filter(Boolean).join("\n\n---\n\n");
+    // Parallel fetch Nitter RSS for tweets
+    const nitterRes = await scrapeWithNitter(username);
+
+    if (profileRes || nitterRes) {
+      const combinedRaw = [profileRes?.rawText, nitterRes?.rawText].filter(Boolean).join("\n\n---\n\n");
       return {
         rawText: combinedRaw,
         payload: {
-          source: "hybrid_free",
-          profile: (dorkRes?.payload as any)?.profile || { userName: username },
+          source: profileRes ? (profileRes.payload as any).source || "hybrid_free" : "hybrid_nitter_only",
+          profile: (profileRes?.payload as any)?.profile || { userName: username },
           tweets: (nitterRes?.payload as any)?.tweets || []
         }
       };
     }
 
-    throw new Error("Free scrapers returned null");
+    throw new Error("All free scrapers returned null");
   } catch (err) {
-    console.warn(`[Twitter Scraper] Hybrid free approach failed for ${username}, falling back to Apify:`, err);
+    console.warn(`[Twitter Scraper] Hybrid free approaches failed for ${username}, falling back to Apify:`, err);
     // 2. Fallback to Apify
     return await scrapeWithApify(username);
   }

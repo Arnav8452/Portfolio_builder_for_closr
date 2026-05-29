@@ -1,10 +1,52 @@
 import { JSDOM } from "jsdom";
 import type { Json } from "@closr/database/types";
+import { env } from "../env.js";
 
 type ScrapeResult = {
   rawText: string;
   payload: Json;
 };
+
+async function scrapeLinkedinGoogleAPI(username: string): Promise<ScrapeResult | null> {
+  if (!env.googleSearchApiKey || !env.googleSearchCx) return null;
+
+  const query = encodeURIComponent(`site:linkedin.com/in/${username}`);
+  const url = `https://www.googleapis.com/customsearch/v1?key=${env.googleSearchApiKey}&cx=${env.googleSearchCx}&q=${query}`;
+
+  try {
+    const res = await fetch(url);
+    if (!res.ok) return null;
+
+    const data = await res.json() as any;
+    if (!data.items || data.items.length === 0) return null;
+
+    const firstItem = data.items[0];
+    const title = firstItem.title || "";
+    const snippet = firstItem.snippet || "";
+
+    const cleanTitle = title.replace(/\s*[-|]\s*LinkedIn.*$/i, "");
+    
+    const rawText = [
+      `LinkedIn Profile: ${cleanTitle}`,
+      `Bio/Headline: ${snippet}`
+    ].filter(Boolean).join("\n\n");
+
+    return {
+      rawText,
+      payload: {
+        source: "google_search_api",
+        profile: {
+          name: cleanTitle,
+          headline: snippet,
+          username
+        }
+      }
+    };
+  } catch (err) {
+    console.warn(`[LinkedIn Google API] Failed for ${username}:`, err);
+    return null;
+  }
+}
 
 export async function scrapeLinkedinWithDork(url: string): Promise<ScrapeResult> {
   const match = url.match(/linkedin\.com\/in\/([^/]+)/i);
@@ -14,7 +56,7 @@ export async function scrapeLinkedinWithDork(url: string): Promise<ScrapeResult>
     throw new Error(`Could not extract LinkedIn username from ${url}`);
   }
 
-  // Use DuckDuckGo HTML search for a lightweight zero-API-key dork
+  // 1. Try DuckDuckGo
   const dorkQuery = encodeURIComponent(`site:linkedin.com/in/${username}`);
   const searchUrl = `https://html.duckduckgo.com/html/?q=${dorkQuery}`;
 
@@ -26,49 +68,48 @@ export async function scrapeLinkedinWithDork(url: string): Promise<ScrapeResult>
       }
     });
 
-    if (!res.ok) {
-      throw new Error(`DuckDuckGo request failed: ${res.status}`);
-    }
+    if (res.ok) {
+      const html = await res.text();
+      const dom = new JSDOM(html);
+      const document = dom.window.document;
+      const resultElement = document.querySelector(".result__body");
+      
+      if (resultElement) {
+        const titleElement = resultElement.querySelector(".result__title");
+        const snippetElement = resultElement.querySelector(".result__snippet");
 
-    const html = await res.text();
-    const dom = new JSDOM(html);
-    const document = dom.window.document;
+        const title = titleElement?.textContent?.trim() || "";
+        const snippet = snippetElement?.textContent?.trim() || "";
 
-    // Find the first result
-    const resultElement = document.querySelector(".result__body");
-    
-    if (!resultElement) {
-      throw new Error(`No search results found for LinkedIn profile ${username}`);
-    }
+        const cleanTitle = title.replace(/\s*[-|]\s*LinkedIn.*$/i, "");
+        
+        const rawText = [
+          `LinkedIn Profile: ${cleanTitle}`,
+          `Bio/Headline: ${snippet}`
+        ].filter(Boolean).join("\n\n");
 
-    const titleElement = resultElement.querySelector(".result__title");
-    const snippetElement = resultElement.querySelector(".result__snippet");
-
-    const title = titleElement?.textContent?.trim() || "";
-    const snippet = snippetElement?.textContent?.trim() || "";
-
-    // Clean up the title (usually format is "Name - Job Title - Company | LinkedIn")
-    const cleanTitle = title.replace(/\s*[-|]\s*LinkedIn.*$/i, "");
-    
-    // Sometimes the title is just the name, and snippet has the job.
-    const rawText = [
-      `LinkedIn Profile: ${cleanTitle}`,
-      `Bio/Headline: ${snippet}`
-    ].filter(Boolean).join("\n\n");
-
-    return {
-      rawText,
-      payload: {
-        source: "duckduckgo_dork",
-        profile: {
-          name: cleanTitle,
-          headline: snippet,
-          username
-        }
+        return {
+          rawText,
+          payload: {
+            source: "duckduckgo_dork",
+            profile: {
+              name: cleanTitle,
+              headline: snippet,
+              username
+            }
+          }
+        };
       }
-    };
+    }
   } catch (err) {
-    console.warn(`[LinkedIn Dork] Failed for ${username}:`, err);
-    throw err;
+    console.warn(`[LinkedIn DuckDuckGo] Failed for ${username}:`, err);
   }
+
+  // 2. Try Google Custom Search Fallback
+  const googleRes = await scrapeLinkedinGoogleAPI(username);
+  if (googleRes) {
+    return googleRes;
+  }
+
+  throw new Error(`All dork search methods failed for LinkedIn profile ${username}`);
 }
