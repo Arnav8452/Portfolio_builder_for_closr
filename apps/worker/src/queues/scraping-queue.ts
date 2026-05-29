@@ -123,11 +123,9 @@ async function scrape(job: ScrapingJob): Promise<ScrapeResult> {
   }
 
   if (job.platform === "linkedin") {
-    try {
-      return await scrapeLinkedinWithDork(job.url);
-    } catch (err) {
-      console.warn(`LinkedIn Dork failed for ${job.url}, falling back to Jina/Readability`, err);
-    }
+    // If LinkedIn dork fails, do NOT fall back to Jina/Readability, as Jina scraping LinkedIn 
+    // produces a massive auth-wall markdown that exceeds the 6000 TPM Groq rate limit.
+    return await scrapeLinkedinWithDork(job.url);
   }
 
   // For general websites, try Jina Reader first
