@@ -137,9 +137,24 @@ async function scrape(job: ScrapingJob): Promise<ScrapeResult> {
     });
     if (jinaRes.ok) {
       const markdown = await jinaRes.text();
+      
+      const titleMatch = markdown.match(/^(?:#\s+)?([^\n]+)/);
+      const title = titleMatch ? titleMatch[1].trim() : job.url;
+      
+      const cleanMarkdown = markdown.replace(/\[([^\]]+)\]\([^)]+\)/g, '$1');
+      const paragraphs = cleanMarkdown.split('\n\n').filter(p => p.trim().length > 20 && !p.startsWith('#') && !p.startsWith('!')).map(p => p.trim());
+      const description = paragraphs.length > 0 ? paragraphs[0].slice(0, 300) + (paragraphs[0].length > 300 ? "..." : "") : "Website content extracted.";
+
       return {
         rawText: markdown,
-        payload: { source: "jina", status: jinaRes.status }
+        payload: { 
+          source: "jina", 
+          status: jinaRes.status,
+          profile: {
+            title,
+            description
+          }
+        }
       };
     }
   } catch (err) {
@@ -158,7 +173,14 @@ async function scrape(job: ScrapingJob): Promise<ScrapeResult> {
     if (article && article.textContent) {
       return {
         rawText: article.textContent,
-        payload: { source: "readability", status: response.status, title: article.title }
+        payload: { 
+          source: "readability", 
+          status: response.status,
+          profile: {
+            title: article.title,
+            description: "Website content extracted via Readability."
+          }
+        }
       };
     }
   } catch (err) {

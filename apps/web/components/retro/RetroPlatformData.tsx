@@ -226,6 +226,30 @@ function TwitchCard({ payload }: { payload: any }) {
   );
 }
 
+// Custom Renderer for Website/Jina
+function WebsiteCard({ payload }: { payload: any }) {
+  const profile = payload.profile || {};
+  const description = profile.description || "Website successfully scraped and analyzed.";
+  
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px", flexGrow: 1 }}>
+      {profile.title && (
+        <p style={{ margin: 0, fontSize: "16px", color: "var(--arcade-ink)", fontWeight: "bold", lineHeight: 1.4 }}>
+          {profile.title}
+        </p>
+      )}
+      <p style={{ margin: 0, fontSize: "14px", color: "var(--arcade-ink)", lineHeight: 1.6, flexGrow: 1 }}>
+        {description}
+      </p>
+      
+      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+        <StatBadge label="Source" value={payload.source || "jina"} bg="var(--arcade-yellow)" />
+        {payload.status && <StatBadge label="Status" value={payload.status} bg="var(--arcade-green)" />}
+      </div>
+    </div>
+  );
+}
+
 export function RetroPlatformData({ metrics }: RetroPlatformDataProps) {
   if (!metrics || metrics.length === 0) return null;
 
@@ -255,6 +279,7 @@ export function RetroPlatformData({ metrics }: RetroPlatformDataProps) {
           const isInstagram = p === "instagram";
           const isLinkedin = p === "linkedin";
           const isTwitch = p === "twitch";
+          const isWebsite = p === "website" || p === "blog" || p === "portfolio";
           
           let Icon = Terminal;
           if (isTwitter) Icon = Twitter;
@@ -301,6 +326,8 @@ export function RetroPlatformData({ metrics }: RetroPlatformDataProps) {
                 <LinkedinCard payload={metric.raw_payload} />
               ) : isTwitch ? (
                 <TwitchCard payload={metric.raw_payload} />
+              ) : isWebsite ? (
+                <WebsiteCard payload={metric.raw_payload} />
               ) : (
                 <div style={{ display: "flex", flexDirection: "column", gap: "16px", flexGrow: 1 }}>
                   <GenericStats data={metric.raw_payload?.profile || metric.raw_payload} />
