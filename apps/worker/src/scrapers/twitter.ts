@@ -1,13 +1,84 @@
 import { env } from "../env.js";
 import type { Json } from "@closr/database/types";
+import { JSDOM } from "jsdom";
 
 type ScrapeResult = {
   rawText: string;
   payload: Json;
 };
 
-// --- Nitter (Free) ---
-async function scrapeWithNitter(username: string): Promise<ScrapeResult> {
+// --- DuckDuckGo Dork (Free Bio + Followers) ---
+async function scrapeTwitterDork(username: string): Promise<Partial<ScrapeResult> | null> {
+  const dorkQuery = encodeURIComponent(`site:twitter.com/${username}`);
+  const searchUrl = `https://html.duckduckgo.com/html/?q=${dorkQuery}`;
+
+  try {
+    const res = await fetch(searchUrl, {
+      headers: {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/114.0.0.0 Safari/537.36",
+        "Accept-Language": "en-US,en;q=0.9",
+      }
+    });
+
+    if (!res.ok) return null;
+
+    const html = await res.text();
+    const dom = new JSDOM(html);
+    const document = dom.window.document;
+
+    // We look at the top 3 results to find the actual profile (not a tweet)
+    const results = Array.from(document.querySelectorAll(".result__body")).slice(0, 3);
+    
+    for (const resultElement of results) {
+      const titleElement = resultElement.querySelector(".result__title");
+      const snippetElement = resultElement.querySelector(".result__snippet");
+
+      const title = titleElement?.textContent?.trim() || "";
+      const snippet = snippetElement?.textContent?.trim() || "";
+
+      // Ensure this result is actually the user's profile and not a specific status/tweet
+      if (title.toLowerCase().includes(`(@${username.toLowerCase()})`) || title.toLowerCase().includes(`on x`)) {
+        
+        // Clean up title to extract name (e.g. "Elon Musk (@elonmusk) / X" -> "Elon Musk")
+        const name = title.split("(@")[0].trim();
+        
+        // Snippet usually contains "followers"
+        let followers = "";
+        const followersMatch = snippet.match(/([\d,.]+[KMB]?)\s*followers/i);
+        if (followersMatch) {
+          followers = followersMatch[1];
+        }
+
+        const rawText = [
+          `Name: ${name}`,
+          `Username: ${username}`,
+          `Bio/Snippet: ${snippet}`,
+          followers ? `Followers: ${followers}` : ""
+        ].filter(Boolean).join("\n\n");
+
+        return {
+          rawText,
+          payload: {
+            profile: {
+              name,
+              userName: username,
+              description: snippet,
+              followers
+            }
+          }
+        };
+      }
+    }
+    
+    return null;
+  } catch (err) {
+    console.warn(`[Twitter Dork] Failed for ${username}:`, err);
+    return null;
+  }
+}
+
+// --- Nitter RSS (Free Tweets) ---
+async function scrapeWithNitter(username: string): Promise<Partial<ScrapeResult> | null> {
   const nitterInstances = [
     "https://nitter.net",
     "https://nitter.cz",
@@ -19,7 +90,6 @@ async function scrapeWithNitter(username: string): Promise<ScrapeResult> {
     "https://nitter.projectsegfau.lt"
   ];
   
-  let lastErr;
   for (const instance of nitterInstances) {
     try {
       const feedUrl = `${instance}/${username}/rss`;
@@ -27,17 +97,12 @@ async function scrapeWithNitter(username: string): Promise<ScrapeResult> {
         headers: { "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)" }
       });
       
-      if (!res.ok) {
-        throw new Error(`Nitter instance ${instance} failed with ${res.status}`);
-      }
+      if (!res.ok) continue;
       
       const xml = await res.text();
-      // Basic regex parsing for RSS since we don't want to add heavy XML parsers
       const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/g)];
       
-      if (items.length === 0) {
-        throw new Error(`No tweets found for ${username} on ${instance}`);
-      }
+      if (items.length === 0) continue;
       
       const tweets = items.map(match => {
         const itemXml = match[1];
@@ -53,20 +118,14 @@ async function scrapeWithNitter(username: string): Promise<ScrapeResult> {
       
       return {
         rawText,
-        payload: {
-          source: "nitter_rss",
-          profile: { userName: username },
-          tweets
-        }
+        payload: { tweets }
       };
     } catch (err) {
-      lastErr = err;
-      console.warn(`[Nitter Fallback] ${err}`);
       // try next instance
     }
   }
   
-  throw lastErr || new Error("All Nitter instances failed");
+  return null;
 }
 
 // --- Apify (Paid Fallback) ---
@@ -133,10 +192,27 @@ export async function scrapeTwitter(url: string): Promise<ScrapeResult> {
   }
 
   try {
-    // 1. Try free Nitter first
-    return await scrapeWithNitter(username);
+    // 1. Try Free Hybrid (Dork + Nitter RSS)
+    const [dorkRes, nitterRes] = await Promise.all([
+      scrapeTwitterDork(username),
+      scrapeWithNitter(username)
+    ]);
+
+    if (dorkRes || nitterRes) {
+      const combinedRaw = [dorkRes?.rawText, nitterRes?.rawText].filter(Boolean).join("\n\n---\n\n");
+      return {
+        rawText: combinedRaw,
+        payload: {
+          source: "hybrid_free",
+          profile: (dorkRes?.payload as any)?.profile || { userName: username },
+          tweets: (nitterRes?.payload as any)?.tweets || []
+        }
+      };
+    }
+
+    throw new Error("Free scrapers returned null");
   } catch (err) {
-    console.warn(`[Twitter Scraper] Nitter failed for ${username}, falling back to Apify:`, err);
+    console.warn(`[Twitter Scraper] Hybrid free approach failed for ${username}, falling back to Apify:`, err);
     // 2. Fallback to Apify
     return await scrapeWithApify(username);
   }
