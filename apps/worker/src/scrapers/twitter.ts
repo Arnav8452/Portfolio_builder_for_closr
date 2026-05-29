@@ -77,22 +77,28 @@ async function scrapeTwitterDork(username: string): Promise<Partial<ScrapeResult
   }
 }
 
-// --- Google Custom Search (Tier 2 Free Fallback) ---
-async function scrapeTwitterGoogleAPI(username: string): Promise<Partial<ScrapeResult> | null> {
-  if (!env.googleSearchApiKey || !env.googleSearchCx) return null;
+// --- Serper API (Tier 2 Fallback) ---
+async function scrapeTwitterSerperAPI(username: string): Promise<Partial<ScrapeResult> | null> {
+  if (!env.serperApiKey) return null;
 
-  const query = encodeURIComponent(`site:twitter.com/${username} OR site:x.com/${username}`);
-  const url = `https://www.googleapis.com/customsearch/v1?key=${env.googleSearchApiKey}&cx=${env.googleSearchCx}&q=${query}`;
-
+  const query = `site:twitter.com/${username} OR site:x.com/${username}`;
+  
   try {
-    const res = await fetch(url);
+    const res = await fetch("https://google.serper.dev/search", {
+      method: "POST",
+      headers: {
+        "X-API-KEY": env.serperApiKey,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ q: query, num: 3 })
+    });
+
     if (!res.ok) return null;
 
     const data = await res.json() as any;
-    if (!data.items || data.items.length === 0) return null;
+    if (!data.organic || data.organic.length === 0) return null;
 
-    // Look through top 3 results for the profile
-    for (const item of data.items.slice(0, 3)) {
+    for (const item of data.organic) {
       const title = item.title || "";
       const snippet = item.snippet || "";
 
@@ -127,7 +133,7 @@ async function scrapeTwitterGoogleAPI(username: string): Promise<Partial<ScrapeR
     }
     return null;
   } catch (err) {
-    console.warn(`[Twitter Google API] Failed for ${username}:`, err);
+    console.warn(`[Twitter Serper API] Failed for ${username}:`, err);
     return null;
   }
 }
@@ -250,9 +256,9 @@ export async function scrapeTwitter(url: string): Promise<ScrapeResult> {
     // 1. Try Free Hybrid Tier 1 (DuckDuckGo Dork)
     let profileRes = await scrapeTwitterDork(username);
     
-    // 2. Try Free Hybrid Tier 2 (Google Custom Search API)
+    // 2. Try Free Hybrid Tier 2 (Serper API)
     if (!profileRes) {
-      profileRes = await scrapeTwitterGoogleAPI(username);
+      profileRes = await scrapeTwitterSerperAPI(username);
     }
 
     // Parallel fetch Nitter RSS for tweets

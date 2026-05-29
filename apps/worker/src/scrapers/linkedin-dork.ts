@@ -7,20 +7,27 @@ type ScrapeResult = {
   payload: Json;
 };
 
-async function scrapeLinkedinGoogleAPI(username: string): Promise<ScrapeResult | null> {
-  if (!env.googleSearchApiKey || !env.googleSearchCx) return null;
+async function scrapeLinkedinSerperAPI(username: string): Promise<ScrapeResult | null> {
+  if (!env.serperApiKey) return null;
 
-  const query = encodeURIComponent(`site:linkedin.com/in/${username}`);
-  const url = `https://www.googleapis.com/customsearch/v1?key=${env.googleSearchApiKey}&cx=${env.googleSearchCx}&q=${query}`;
+  const query = `site:linkedin.com/in/${username}`;
 
   try {
-    const res = await fetch(url);
+    const res = await fetch("https://google.serper.dev/search", {
+      method: "POST",
+      headers: {
+        "X-API-KEY": env.serperApiKey,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ q: query, num: 1 })
+    });
+
     if (!res.ok) return null;
 
     const data = await res.json() as any;
-    if (!data.items || data.items.length === 0) return null;
+    if (!data.organic || data.organic.length === 0) return null;
 
-    const firstItem = data.items[0];
+    const firstItem = data.organic[0];
     const title = firstItem.title || "";
     const snippet = firstItem.snippet || "";
 
@@ -34,7 +41,7 @@ async function scrapeLinkedinGoogleAPI(username: string): Promise<ScrapeResult |
     return {
       rawText,
       payload: {
-        source: "google_search_api",
+        source: "serper_api",
         profile: {
           name: cleanTitle,
           headline: snippet,
@@ -43,7 +50,7 @@ async function scrapeLinkedinGoogleAPI(username: string): Promise<ScrapeResult |
       }
     };
   } catch (err) {
-    console.warn(`[LinkedIn Google API] Failed for ${username}:`, err);
+    console.warn(`[LinkedIn Serper API] Failed for ${username}:`, err);
     return null;
   }
 }
@@ -105,10 +112,10 @@ export async function scrapeLinkedinWithDork(url: string): Promise<ScrapeResult>
     console.warn(`[LinkedIn DuckDuckGo] Failed for ${username}:`, err);
   }
 
-  // 2. Try Google Custom Search Fallback
-  const googleRes = await scrapeLinkedinGoogleAPI(username);
-  if (googleRes) {
-    return googleRes;
+  // 2. Try Serper API Fallback
+  const serperRes = await scrapeLinkedinSerperAPI(username);
+  if (serperRes) {
+    return serperRes;
   }
 
   throw new Error(`All dork search methods failed for LinkedIn profile ${username}`);
