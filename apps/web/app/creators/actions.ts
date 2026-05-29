@@ -5,7 +5,19 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { detectPlatform, normalizeUrl } from "@/lib/platforms";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
-import DOMPurify from "isomorphic-dompurify";
+
+/** Strip HTML tags & decode common entities. Zero-dependency, works on any runtime. */
+function sanitizeDisplayName(raw: string): string {
+  return raw
+    .replace(/<[^>]*>/g, "")            // strip HTML tags
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#x27;/g, "'")
+    .replace(/&#x2F;/g, "/")
+    .trim();
+}
 
 function slugify(value: string) {
   return value
@@ -16,97 +28,104 @@ function slugify(value: string) {
 }
 
 export async function submitCreatorProfile(formData: FormData) {
-  const session = await getServerSession(authOptions);
-  const userId = (session?.user as any)?.id;
-  const userEmail = session?.user?.email;
+  try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as any)?.id;
+    const userEmail = session?.user?.email;
 
-  if (!userId) {
-    return { ok: false, message: "Please sign in first." };
-  }
-  
-  const finalUserId = userId;
-  const finalUserEmail = userEmail;
-  const rawDisplayName = (formData.get('displayName') as string || '').trim().slice(0, 100);
-  const displayName = DOMPurify.sanitize(rawDisplayName);
-  const rootPlatform = String(formData.get("rootPlatform") ?? "github");
-  const rootUrl = String(formData.get("rootUrl") ?? "").trim();
-  const secondaryLinks = formData.getAll("secondaryLinks").map(String).map((v) => v.trim()).filter(Boolean);
+    if (!userId) {
+      return { ok: false, message: "Please sign in first." };
+    }
 
-  if (!displayName || !rootUrl) {
-    return { ok: false, message: "Display name and root OAuth URL are required." };
-  }
+    const finalUserId = userId;
+    const finalUserEmail = userEmail;
+    const rawDisplayName = (formData.get('displayName') as string || '').trim().slice(0, 100);
+    const displayName = sanitizeDisplayName(rawDisplayName);
+    const rootPlatform = String(formData.get("rootPlatform") ?? "github");
+    const rootUrl = String(formData.get("rootUrl") ?? "").trim();
+    const secondaryLinks = formData.getAll("secondaryLinks").map(String).map((v) => v.trim()).filter(Boolean);
 
-  const supabase = getSupabaseAdmin();
-  const baseSlug = slugify(displayName);
-  const slug = `${baseSlug}-${Math.random().toString(36).slice(2, 7)}`;
-  const normalizedRootUrl = normalizeUrl(rootUrl);
-  const rootDetectedPlatform = detectPlatform(rootUrl);
-  const root = rootPlatform === "youtube" || rootPlatform === "github" || rootPlatform === "twitch" || rootPlatform === "instagram"
-    ? rootPlatform
-    : rootDetectedPlatform;
+    if (!displayName || !rootUrl) {
+      return { ok: false, message: "Display name and root OAuth URL are required." };
+    }
 
-  const { data: creator, error: creatorError } = await supabase
-    .from("creators")
-    .insert({
-      owner_user_id: finalUserId,
-      owner_email: finalUserEmail,
-      slug,
-      display_name: displayName,
-      root_platform: root,
-      root_handle: normalizedRootUrl.split("/").filter(Boolean).at(-1)?.replace("@", "") ?? null,
-      onboarding_status: "queued",
-    })
-    .select("id")
-    .single();
+    const supabase = getSupabaseAdmin();
+    const baseSlug = slugify(displayName);
+    const slug = `${baseSlug}-${Math.random().toString(36).slice(2, 7)}`;
+    const normalizedRootUrl = normalizeUrl(rootUrl);
+    const rootDetectedPlatform = detectPlatform(rootUrl);
+    const root = rootPlatform === "youtube" || rootPlatform === "github" || rootPlatform === "twitch" || rootPlatform === "instagram"
+      ? rootPlatform
+      : rootDetectedPlatform;
 
-  if (creatorError || !creator) {
-    return { ok: false, message: creatorError?.message ?? "Could not create creator." };
-  }
-  const allLinks = [
-    { url: normalizedRootUrl, platform: root, level: 3 },
-    ...secondaryLinks.map((url) => ({
-      url: normalizeUrl(url),
-      platform: detectPlatform(url),
-      level: 1,
-    })),
-  ];
-
-  for (const link of allLinks) {
-    const { data: creatorLink, error: linkError } = await supabase
-      .from("creator_links")
+    const { data: creator, error: creatorError } = await supabase
+      .from("creators")
       .insert({
-        creator_id: creator.id,
-        platform: link.platform,
-        url: link.url,
-        normalized_url: link.url,
-        verification_level: link.level,
-        verification_status: link.level === 3 ? "oauth_verified" : "claimed",
+        owner_user_id: finalUserId,
+        owner_email: finalUserEmail,
+        slug,
+        display_name: displayName,
+        root_platform: root,
+        root_handle: normalizedRootUrl.split("/").filter(Boolean).at(-1)?.replace("@", "") ?? null,
+        onboarding_status: "queued",
       })
       .select("id")
       .single();
 
-    if (linkError || !creatorLink) {
-      continue;
+    if (creatorError || !creator) {
+      console.error("submitCreatorProfile insert error:", creatorError);
+      return { ok: false, message: creatorError?.message ?? "Could not create creator." };
+    }
+    const allLinks = [
+      { url: normalizedRootUrl, platform: root, level: 3 },
+      ...secondaryLinks.map((url) => ({
+        url: normalizeUrl(url),
+        platform: detectPlatform(url),
+        level: 1,
+      })),
+    ];
+
+    for (const link of allLinks) {
+      const { data: creatorLink, error: linkError } = await supabase
+        .from("creator_links")
+        .insert({
+          creator_id: creator.id,
+          platform: link.platform,
+          url: link.url,
+          normalized_url: link.url,
+          verification_level: link.level,
+          verification_status: link.level === 3 ? "oauth_verified" : "claimed",
+        })
+        .select("id")
+        .single();
+
+      if (linkError || !creatorLink) {
+        console.error("submitCreatorProfile link insert error:", linkError, link);
+        continue;
+      }
+
+      await supabase.from("scraping_queue").insert({
+        creator_id: creator.id,
+        link_id: creatorLink.id,
+        platform: link.platform,
+        url: link.url,
+        priority: link.level === 3 ? 10 : 0,
+      });
     }
 
-    await supabase.from("scraping_queue").insert({
+    await supabase.from("creator_processing_events").insert({
       creator_id: creator.id,
-      link_id: creatorLink.id,
-      platform: link.platform,
-      url: link.url,
-      priority: link.level === 3 ? 10 : 0,
+      event_type: "queued",
+      message: "Creator profile queued for verification.",
+      payload: { link_count: allLinks.length },
     });
+
+    revalidatePath("/creators");
+    return { ok: true, creatorId: creator.id, slug };
+  } catch (err) {
+    console.error("submitCreatorProfile unhandled error:", err);
+    return { ok: false, message: err instanceof Error ? err.message : "An unexpected error occurred." };
   }
-
-  await supabase.from("creator_processing_events").insert({
-    creator_id: creator.id,
-    event_type: "queued",
-    message: "Creator profile queued for verification.",
-    payload: { link_count: allLinks.length },
-  });
-
-  revalidatePath("/creators");
-  return { ok: true, creatorId: creator.id, slug };
 }
 
 export async function getUserPortfolio() {
@@ -135,107 +154,112 @@ export async function getUserPortfolio() {
 }
 
 export async function updateCreatorProfile(formData: FormData) {
-  const session = await getServerSession(authOptions);
-  const userId = (session?.user as any)?.id;
-  if (!userId) return { ok: false, message: "Please sign in first." };
+  try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as any)?.id;
+    if (!userId) return { ok: false, message: "Please sign in first." };
 
-  const supabase = getSupabaseAdmin();
-  const creatorId = String(formData.get("creatorId") ?? "");
-  const rawDisplayName = (formData.get('displayName') as string || '').trim().slice(0, 100);
-  const displayName = DOMPurify.sanitize(rawDisplayName);
-  const rootPlatform = String(formData.get("rootPlatform") ?? "github");
-  const rootUrl = String(formData.get("rootUrl") ?? "").trim();
-  const secondaryLinks = formData.getAll("secondaryLinks").map(String).map((v) => v.trim()).filter(Boolean);
+    const supabase = getSupabaseAdmin();
+    const creatorId = String(formData.get("creatorId") ?? "");
+    const rawDisplayName = (formData.get('displayName') as string || '').trim().slice(0, 100);
+    const displayName = sanitizeDisplayName(rawDisplayName);
+    const rootPlatform = String(formData.get("rootPlatform") ?? "github");
+    const rootUrl = String(formData.get("rootUrl") ?? "").trim();
+    const secondaryLinks = formData.getAll("secondaryLinks").map(String).map((v) => v.trim()).filter(Boolean);
 
-  if (!creatorId || !displayName || !rootUrl) {
-    return { ok: false, message: "Missing required fields." };
-  }
+    if (!creatorId || !displayName || !rootUrl) {
+      return { ok: false, message: "Missing required fields." };
+    }
 
-  // Verify ownership
-  const { data: existing } = await supabase
-    .from("creators")
-    .select("id, slug")
-    .eq("id", creatorId)
-    .eq("owner_user_id", userId)
-    .single();
-
-  if (!existing) return { ok: false, message: "Portfolio not found or not owned by you." };
-
-  // Update creator name
-  await supabase
-    .from("creators")
-    .update({
-      display_name: displayName,
-      root_platform: rootPlatform === "youtube" || rootPlatform === "github" || rootPlatform === "twitch" || rootPlatform === "instagram"
-        ? rootPlatform
-        : detectPlatform(rootUrl),
-      onboarding_status: "queued",
-    })
-    .eq("id", creatorId);
-
-  // Get existing links for this creator
-  const { data: existingLinks } = await supabase
-    .from("creator_links")
-    .select("id, normalized_url")
-    .eq("creator_id", creatorId);
-
-  const existingUrls = new Set((existingLinks ?? []).map((l) => l.normalized_url));
-  const submittedUrls = new Set(secondaryLinks.map(normalizeUrl));
-  submittedUrls.add(normalizeUrl(rootUrl));
-
-  // Delete orphaned links that the user removed
-  const urlsToDelete = (existingLinks ?? [])
-    .filter((l) => !submittedUrls.has(l.normalized_url))
-    .map((l) => l.normalized_url);
-
-  if (urlsToDelete.length > 0) {
-    await supabase
-      .from("creator_links")
-      .delete()
-      .eq("creator_id", creatorId)
-      .in("normalized_url", urlsToDelete);
-  }
-
-  // Add new links (including root) that don't already exist
-  const allSubmittedLinks = [rootUrl, ...secondaryLinks];
-  for (const url of allSubmittedLinks) {
-    const normalized = normalizeUrl(url);
-    if (existingUrls.has(normalized)) continue;
-
-    const platform = detectPlatform(url);
-    const { data: newLink } = await supabase
-      .from("creator_links")
-      .insert({
-        creator_id: creatorId,
-        platform,
-        url: normalized,
-        normalized_url: normalized,
-        verification_level: 1,
-        verification_status: "claimed",
-      })
-      .select("id")
+    // Verify ownership
+    const { data: existing } = await supabase
+      .from("creators")
+      .select("id, slug")
+      .eq("id", creatorId)
+      .eq("owner_user_id", userId)
       .single();
 
-    if (newLink) {
-      await supabase.from("scraping_queue").insert({
-        creator_id: creatorId,
-        link_id: newLink.id,
-        platform,
-        url: normalized,
-        priority: 0,
-      });
+    if (!existing) return { ok: false, message: "Portfolio not found or not owned by you." };
+
+    // Update creator name
+    await supabase
+      .from("creators")
+      .update({
+        display_name: displayName,
+        root_platform: rootPlatform === "youtube" || rootPlatform === "github" || rootPlatform === "twitch" || rootPlatform === "instagram"
+          ? rootPlatform
+          : detectPlatform(rootUrl),
+        onboarding_status: "queued",
+      })
+      .eq("id", creatorId);
+
+    // Get existing links for this creator
+    const { data: existingLinks } = await supabase
+      .from("creator_links")
+      .select("id, normalized_url")
+      .eq("creator_id", creatorId);
+
+    const existingUrls = new Set((existingLinks ?? []).map((l) => l.normalized_url));
+    const submittedUrls = new Set(secondaryLinks.map(normalizeUrl));
+    submittedUrls.add(normalizeUrl(rootUrl));
+
+    // Delete orphaned links that the user removed
+    const urlsToDelete = (existingLinks ?? [])
+      .filter((l) => !submittedUrls.has(l.normalized_url))
+      .map((l) => l.normalized_url);
+
+    if (urlsToDelete.length > 0) {
+      await supabase
+        .from("creator_links")
+        .delete()
+        .eq("creator_id", creatorId)
+        .in("normalized_url", urlsToDelete);
     }
+
+    // Add new links (including root) that don't already exist
+    const allSubmittedLinks = [rootUrl, ...secondaryLinks];
+    for (const url of allSubmittedLinks) {
+      const normalized = normalizeUrl(url);
+      if (existingUrls.has(normalized)) continue;
+
+      const platform = detectPlatform(url);
+      const { data: newLink } = await supabase
+        .from("creator_links")
+        .insert({
+          creator_id: creatorId,
+          platform,
+          url: normalized,
+          normalized_url: normalized,
+          verification_level: 1,
+          verification_status: "claimed",
+        })
+        .select("id")
+        .single();
+
+      if (newLink) {
+        await supabase.from("scraping_queue").insert({
+          creator_id: creatorId,
+          link_id: newLink.id,
+          platform,
+          url: normalized,
+          priority: 0,
+        });
+      }
+    }
+
+    await supabase.from("creator_processing_events").insert({
+      creator_id: creatorId,
+      event_type: "updated",
+      message: "Portfolio updated and re-queued.",
+      payload: { new_links: secondaryLinks.length },
+    });
+
+    revalidatePath("/creators");
+    return { ok: true, creatorId, slug: existing.slug };
+  } catch (err) {
+    console.error("updateCreatorProfile unhandled error:", err);
+    return { ok: false, message: err instanceof Error ? err.message : "An unexpected error occurred." };
   }
-
-  await supabase.from("creator_processing_events").insert({
-    creator_id: creatorId,
-    event_type: "updated",
-    message: "Portfolio updated and re-queued.",
-    payload: { new_links: secondaryLinks.length },
-  });
-
-  revalidatePath("/creators");
-  return { ok: true, creatorId, slug: existing.slug };
 }
 
 export async function deleteCreatorProfile(creatorId: string) {

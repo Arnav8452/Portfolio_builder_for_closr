@@ -69,9 +69,16 @@ DO $$ BEGIN
         'pinterest',
         'website',
         'instagram',
+        'linkedin',
         'other'
     );
 EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
+
+-- Add 'linkedin' to existing enum if it was already created without it
+DO $$ BEGIN
+    ALTER TYPE creator_platform ADD VALUE IF NOT EXISTS 'linkedin';
+EXCEPTION WHEN others THEN NULL;
 END $$;
 
 DO $$ BEGIN
