@@ -263,7 +263,8 @@ async function fetchYouTubeAnalytics(url: string, creatorId: string): Promise<Oa
   const stats = channelData.statistics || {};
 
   const rawText = [
-    `YouTube Channel: ${snippet.title || url}`,
+    `YouTube Channel: ${snippet.title || ""}`,
+    `Channel URL: ${url}`,
     snippet.description ? `Bio: ${snippet.description}` : '',
     stats.subscriberCount ? `Subscribers: ${stats.subscriberCount}` : '',
     stats.videoCount ? `Videos: ${stats.videoCount}` : '',
@@ -319,6 +320,7 @@ async function fetchInstagramStats(url: string, creatorId: string): Promise<Oaut
   const igData = await igRes.json() as Record<string, any>;
   
   const rawText = [
+    `Profile URL: ${url}`,
     igData.name ? `Name: ${igData.name}` : "",
     igData.username ? `Username: ${igData.username}` : "",
     igData.biography ? `Bio: ${igData.biography}` : "",
@@ -367,6 +369,7 @@ async function fetchTwitchProfile(url: string, creatorId: string): Promise<Oauth
   const channel = channelData?.data?.[0];
 
   const rawText = [
+    `Channel URL: ${url}`,
     user.display_name ? `Display Name: ${user.display_name}` : "",
     user.description ? `Bio: ${user.description}` : "",
     user.view_count !== undefined ? `Total Views: ${user.view_count}` : "",
@@ -406,6 +409,7 @@ async function fetchLinkedinProfile(url: string, creatorId: string): Promise<Oau
   const profile = await response.json() as any;
 
   const rawText = [
+    `Profile URL: ${url}`,
     profile.name ? `Name: ${profile.name}` : "",
     profile.email ? `Email: ${profile.email}` : "",
     profile.locale?.country ? `Locale: ${profile.locale.country}` : "",
