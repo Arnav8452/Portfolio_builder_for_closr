@@ -74,15 +74,21 @@ function TwitterCard({ payload }: { payload: any }) {
           <div style={{ color: "var(--muted-2)", fontStyle: "italic", fontSize: "14px" }}>No recent transmissions.</div>
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-            {tweets.slice(0, 2).map((t: any, i: number) => t.text && (
-              <div key={i} style={{ border: "2px solid var(--arcade-ink)", padding: "12px", backgroundColor: "white", boxShadow: "2px 2px 0 var(--arcade-ink)" }}>
+            {tweets.slice(0, 2).map((t: any, i: number) => {
+              if (!t.text) return null;
+              const TweetWrapper = t.url ? "a" : "div";
+              return (
+              <TweetWrapper key={i} href={t.url} target={t.url ? "_blank" : undefined} rel={t.url ? "noopener noreferrer" : undefined} style={{ border: "2px solid var(--arcade-ink)", padding: "12px", backgroundColor: "white", boxShadow: "2px 2px 0 var(--arcade-ink)", textDecoration: "none", display: "block" }}>
                 <p style={{ margin: 0, fontSize: "14px", color: "var(--arcade-ink)", lineHeight: 1.5, wordBreak: "break-word" }}>{t.text}</p>
-                <div style={{ display: "flex", gap: "16px", marginTop: "12px", color: "var(--arcade-ink)", fontSize: "14px", fontFamily: "'VT323', monospace" }}>
-                  <span style={{ fontWeight: "bold" }}>H {t.likes || 0}</span>
-                  <span style={{ fontWeight: "bold" }}>R {t.retweets || 0}</span>
+                <div style={{ display: "flex", gap: "16px", marginTop: "12px", color: "var(--arcade-ink)", fontSize: "14px", fontFamily: "'VT323', monospace", justifyContent: "space-between" }}>
+                  <div style={{ display: "flex", gap: "16px" }}>
+                    <span style={{ fontWeight: "bold" }}>H {t.likes || 0}</span>
+                    <span style={{ fontWeight: "bold" }}>R {t.retweets || 0}</span>
+                  </div>
+                  {t.url && <ExternalLink size={14} style={{ opacity: 0.5 }} />}
                 </div>
-              </div>
-            ))}
+              </TweetWrapper>
+            )})}
           </div>
         )}
       </div>

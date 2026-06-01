@@ -39,7 +39,7 @@ export function RetroHeader({ profile, displayImage, overallScore, isTrustworthy
       }}
     >
       {/* Left Profile */}
-      <div style={{ display: "flex", gap: "24px", alignItems: "flex-start", flex: "1 1 300px", maxWidth: "500px" }}>
+      <div style={{ display: "flex", gap: "24px", alignItems: "flex-start", flex: "1 1 300px", maxWidth: "500px", flexWrap: "wrap" }}>
         {displayImage && (
           <div className="pixel-border" style={{ width: 120, height: 120, backgroundColor: "var(--arcade-cream)", flexShrink: 0 }}>
             <img src={displayImage} alt={profile.display_name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
