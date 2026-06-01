@@ -89,7 +89,7 @@ Search results often contain information about OTHER PEOPLE with similar names o
 CRITICAL: NEVER list generic skills, languages, or tools (like "Docker", "React", or "Python") as achievements. Achievements must be tangible projects, metrics, or milestones.
 
 If you find NEW, VERIFIED achievements in the OSINT data, or if you need to merge them with the existing telemetry, do so.
-Your final output MUST contain EXACTLY the top 1 to 10 MOST IMPRESSIVE achievements. Limit to a MAXIMUM of 10. Do not output duplicates or slightly rephrased versions of the same project. You MUST include a 'url' field if a link is present in the OSINT or telemetry data.
+Your final output MUST contain EXACTLY the top 1 to 10 MOST IMPRESSIVE achievements. Limit to a MAXIMUM of 10. Do not output duplicates or slightly rephrased versions of the same project. You MUST include a 'url' field if a link is present in the OSINT or telemetry data. CRITICAL: Do NOT copy-paste the raw README or raw text into the description. You MUST summarize it into 1-2 short sentences.
 Output EXACTLY this JSON format:
 {
   "bio_summary": "...",
