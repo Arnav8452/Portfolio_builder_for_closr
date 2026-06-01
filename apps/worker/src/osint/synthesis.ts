@@ -86,12 +86,13 @@ CRITICAL: Do not just list their accounts or quote them. The bio MUST be a true 
 
 ANTI-HALLUCINATION PROTOCOL FOR OSINT DATA:
 Search results often contain information about OTHER PEOPLE with similar names or random text from unrelated pages. You MUST cross-reference any OSINT data with the verified telemetry. If an achievement or bio detail in the OSINT data (e.g. "$868K ARR", "Roblox Developer") does NOT explicitly and unambiguously match the creator's known name, niche, or platforms, you MUST IGNORE IT. Do not attribute random search result achievements to this creator.
+CRITICAL: NEVER list generic skills, languages, or tools (like "Docker", "React", or "Python") as achievements. Achievements must be tangible projects, metrics, or milestones.
 
-If you find NEW, VERIFIED achievements in the OSINT data that confidently belong to this creator, return them. Otherwise, return an empty array for new_achievements.
+If you find NEW, VERIFIED achievements in the OSINT data that confidently belong to this creator, return them. Otherwise, return an empty array for new_achievements. You MUST include a 'url' field if a link is present in the OSINT data.
 Output EXACTLY this JSON format:
 {
   "bio_summary": "...",
-  "new_achievements": [ { "title": "...", "description": "..." } ]
+  "new_achievements": [ { "title": "...", "description": "...", "url": "..." } ]
 }`;
 
     const GATEWAY_URL = env.aiGatewayUrl;

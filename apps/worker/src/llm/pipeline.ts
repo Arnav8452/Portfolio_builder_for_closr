@@ -3,6 +3,15 @@ import type { LLMResponse } from "./types.js";
 import { creatorIdentityZodSchema, creatorIdentityJsonSchema } from "./schema.js";
 import { createHash } from 'crypto';
 
+function isSimilar(a: string, b: string): boolean {
+  if (!a || !b) return false;
+  const wordsA = new Set(a.toLowerCase().split(/[\s\-_—]+/));
+  const wordsB = new Set(b.toLowerCase().split(/[\s\-_—]+/));
+  const intersection = new Set([...wordsA].filter(x => wordsB.has(x)));
+  const union = new Set([...wordsA, ...wordsB]);
+  return (intersection.size / union.size) > 0.5;
+}
+
 const MODELS = [
   // Use Freeloader's virtual model names so that ModelRegistry
   // translates them to provider-specific IDs automatically (e.g.,
@@ -47,6 +56,16 @@ export async function extractCreatorIdentity(rawText: string, creatorName: strin
   }
 
   // 2. REDUCE: Merge the partial CreatorIdentities
+  const radar_scores = { impact: 50, consistency: 50, quality: 50, depth: 50, breadth: 50, community: 50 };
+  const confidences = successfulResults.map(r => r.parsed.confidence || 0);
+  
+  if (successfulResults.length > 0) {
+    for (const key of ['impact', 'consistency', 'quality', 'depth', 'breadth', 'community'] as const) {
+      const scores = successfulResults.map(r => r.parsed.radar_scores?.[key] || 50);
+      radar_scores[key] = Math.round(scores.reduce((a, b) => a + b, 0) / scores.length);
+    }
+  }
+
   const mergedIdentity = successfulResults.reduce((acc, curr) => {
     const p1 = acc.parsed;
     const p2 = curr.parsed;
@@ -63,20 +82,13 @@ export async function extractCreatorIdentity(rawText: string, creatorName: strin
         audience_size_tier: p1.audience_size_tier || p2.audience_size_tier,
         past_topics: Array.from(new Set([...(p1.past_topics || []), ...(p2.past_topics || [])])),
         achievements: [...(p1.achievements || []), ...(p2.achievements || [])].filter((v, i, a) => 
-          a.findIndex(t => t.title.toLowerCase().replace(/[^a-z0-9]/g, '') === v.title.toLowerCase().replace(/[^a-z0-9]/g, '')) === i
+          a.findIndex(t => isSimilar(t.title, v.title)) === i
         ),
         timeline_events: [...(p1.timeline_events || []), ...(p2.timeline_events || [])].filter((v, i, a) => 
-          a.findIndex(t => t.title.toLowerCase().replace(/[^a-z0-9]/g, '') === v.title.toLowerCase().replace(/[^a-z0-9]/g, '')) === i
+          a.findIndex(t => isSimilar(t.title, v.title)) === i
         ),
-        radar_scores: {
-          impact: Math.max(p1.radar_scores?.impact || 50, p2.radar_scores?.impact || 50),
-          consistency: Math.max(p1.radar_scores?.consistency || 50, p2.radar_scores?.consistency || 50),
-          quality: Math.max(p1.radar_scores?.quality || 50, p2.radar_scores?.quality || 50),
-          depth: Math.max(p1.radar_scores?.depth || 50, p2.radar_scores?.depth || 50),
-          breadth: Math.max(p1.radar_scores?.breadth || 50, p2.radar_scores?.breadth || 50),
-          community: Math.max(p1.radar_scores?.community || 50, p2.radar_scores?.community || 50)
-        },
-        confidence: Math.max(p1.confidence || 0, p2.confidence || 0)
+        radar_scores: radar_scores,
+        confidence: Math.round(confidences.reduce((a, b) => a + b, 0) / confidences.length * 10) / 10
       },
       input_tokens: (acc.input_tokens || 0) + (curr.input_tokens || 0),
       output_tokens: (acc.output_tokens || 0) + (curr.output_tokens || 0),
@@ -117,7 +129,7 @@ export async function executeWithRepair(
   
   CRITICAL GROUNDING INSTRUCTION: You MUST ground ALL your extraction and analysis STRICTLY in the provided telemetry data payload. DO NOT hallucinate, guess, or invent external information. If a field like bio_summary cannot be confidently deduced from the payload, clearly state 'Insufficient data to generate summary.' instead of inventing one.
   CRITICAL UI FIELDS:
-  1. 'achievements': Extract notable achievements, major projects, top content, and impressive metrics across ALL platforms (e.g., follower counts, total commits, most viewed videos, viral tweets, Twitch streams, LinkedIn roles). Treat prominent repositories, videos, or projects as distinct achievements. Use the project/video name or metric as the 'title' with a brief summary as the 'description'. If the raw data includes a URL for this achievement (e.g., a link to the repo or video), extract it into the 'url' field. Return an array of these achievements.
+  1. 'achievements': Extract notable achievements, major projects, top content, and impressive metrics across ALL platforms. Treat prominent repositories, videos, or projects as distinct achievements. You MUST extract a 'url' field if a link is present in the raw data. CRITICAL: NEVER list generic skills, languages, or tools (like "Docker", "React", or "Python") as achievements. Achievements must be tangible projects or milestones. Use the project/video name or metric as the 'title' with a brief summary as the 'description'. Return an array of these achievements.
   2. 'radar_scores': Score the creator from 0 to 100 on the following metrics using this STRICT RUBRIC:
      - IMPACT: How much reach or tangible influence does their work have? (e.g. >10k followers/stars = 90+, <100 = 50-).
      - CONSISTENCY: How regularly and reliably do they publish, commit, or upload? (e.g. Daily/Weekly = 90+, Sporadic/Inactive = 50-).
