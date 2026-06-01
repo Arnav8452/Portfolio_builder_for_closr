@@ -117,8 +117,15 @@ export async function executeWithRepair(
   CRITICAL GROUNDING INSTRUCTION: You MUST ground ALL your extraction and analysis STRICTLY in the provided telemetry data payload. DO NOT hallucinate, guess, or invent external information. If a field like bio_summary cannot be confidently deduced from the payload, clearly state 'Insufficient data to generate summary.' instead of inventing one.
   CRITICAL UI FIELDS:
   1. 'achievements': Extract concrete, verifiable achievements (e.g. awards, major projects, specific metrics). DO NOT infer or invent generic achievements like "Hackathon Hero" or "Open Source Contributor" unless explicitly stated. Use the EXACT project name or metric as the 'title' so duplicate achievements can be merged later. If no verifiable achievements exist in this chunk, return an empty array [].
-  2. 'radar_scores': Score the creator from 0 to 100 on impact, consistency, quality, depth, breadth, and community based on the data. Be critical.
+  2. 'radar_scores': Score the creator from 0 to 100 on the following metrics using this STRICT RUBRIC:
+     - IMPACT: How much reach or tangible influence does their work have? (e.g. >10k followers/stars = 90+, <100 = 50-).
+     - CONSISTENCY: How regularly and reliably do they publish, commit, or upload? (e.g. Daily/Weekly = 90+, Sporadic/Inactive = 50-).
+     - QUALITY: How polished and well-received is their content/code? (e.g. High engagement, clean code, highly praised = 90+).
+     - DEPTH: Do they demonstrate profound expertise or build complex/advanced projects?
+     - BREADTH: Do they cover multiple domains, technologies, or topics? (e.g. Polyglot dev, multi-niche creator = 85+).
+     - COMMUNITY: How much do they interact, collaborate, and respond to their audience/peers?
   3. 'timeline_events': Extract any notable dates/events to build a timeline. Each event MUST have a 'date', a 'title', and a 'description'.
+  4. 'confidence': A decimal from 0.0 to 1.0 representing how much raw, hard data was actually available to make these assessments. If the data is extremely sparse or missing, confidence MUST be low (< 0.4). If there is rich, verifiable data, set it high (> 0.8).
   CRITICAL: bio_summary MUST be a single plain string, NOT an object or array.
   ANTI-HALLUCINATION PROTOCOL: If the rawText says "No tweets found", "data extraction is not supported", or clearly lacks profile data, you MUST return empty arrays [] for achievements, technical_skills, past_topics, brand_tone, content_format, and timeline_events, and an empty string "" for bio_summary. NEVER invent default placeholders like "100 Tweets" or "Bachelor's Degree".`;
 

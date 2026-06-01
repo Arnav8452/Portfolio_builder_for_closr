@@ -104,7 +104,7 @@ export function RetroRadar({ scores }: RetroRadarProps) {
                 {/* Label */}
                 <div style={{ width: "120px", fontFamily: "'Press Start 2P', monospace", fontSize: "10px", color: "var(--arcade-ink)" }}>
                   <div style={{ marginBottom: "4px" }}>{item.subject.toUpperCase()}</div>
-                  <div style={{ fontSize: "8px", color: "var(--muted-2)" }}>20% WEIGHT</div>
+                  <div style={{ fontSize: "8px", color: "var(--muted-2)" }}>16.7% WEIGHT</div>
                 </div>
                 
                 {/* Progress Bar Track */}
