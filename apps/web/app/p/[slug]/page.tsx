@@ -99,7 +99,8 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     }
 
     if (creator && ['completed', 'analysis_completed', 'intake', 'live'].includes(creator.onboarding_status)) {
-       const ci = (creator.creator_identities as any)?.[0] || {};
+       const ciRaw = creator.creator_identities as any;
+       const ci = Array.isArray(ciRaw) ? (ciRaw[0] || {}) : (ciRaw || {});
        
        let owner_image = null;
        if (creator.owner_user_id) {
@@ -123,8 +124,8 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
          extra_analysis: ci.raw_model_output,
          confidence: ci.extraction_confidence,
          owner_image: owner_image,
-         verified_links: (creator.creator_links || []).sort((a: any, b: any) => b.verification_level - a.verification_level),
-         platform_metrics: (creator.platform_data || []).sort((a: any, b: any) => new Date(b.fetched_at).getTime() - new Date(a.fetched_at).getTime())
+         verified_links: Array.isArray(creator.creator_links) ? creator.creator_links.sort((a: any, b: any) => b.verification_level - a.verification_level) : [],
+         platform_metrics: Array.isArray(creator.platform_data) ? creator.platform_data.sort((a: any, b: any) => new Date(b.fetched_at).getTime() - new Date(a.fetched_at).getTime()) : []
        };
     } else {
        notFound();
