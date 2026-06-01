@@ -176,7 +176,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
          extra_analysis: typeof ci.raw_model_output === "object" ? ci.raw_model_output : null,
          confidence: ci.extraction_confidence,
          owner_image: owner_image,
-         verified_links: Array.isArray(creator.creator_links) ? creator.creator_links.sort((a: any, b: any) => b.verification_level - a.verification_level) : [],
+         verified_links: Array.isArray(creator.creator_links) ? creator.creator_links.map((cl: any) => ({ ...cl, url: cl.normalized_url })).sort((a: any, b: any) => b.verification_level - a.verification_level) : [],
          platform_metrics: Array.isArray(creator.platform_data) ? creator.platform_data.sort((a: any, b: any) => new Date(b.fetched_at).getTime() - new Date(a.fetched_at).getTime()) : []
        };
     } else {
