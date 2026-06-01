@@ -1,5 +1,5 @@
 import React from "react";
-import { Database, Terminal, Twitter, Github, Activity, LayoutGrid, Users } from "lucide-react";
+import { Database, Terminal, Twitter, Github, Activity, LayoutGrid, Users, ExternalLink } from "lucide-react";
 
 type PlatformMetric = {
   platform: string;
@@ -115,14 +115,18 @@ function GithubCard({ payload }: { payload: any }) {
           <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
             {repos.slice(0, 4).map((repo: any, i: number) => {
               const mainLang = repo.languages?.edges?.[0]?.node?.name || "Unknown";
+              const RepoWrapper = repo.url ? "a" : "div";
               return (
-                <div key={i} style={{ padding: "8px 12px", border: "2px solid var(--arcade-ink)", backgroundColor: "white", boxShadow: "2px 2px 0 var(--arcade-ink)" }}>
-                  <div style={{ fontWeight: "bold", color: "var(--arcade-ink)", fontSize: "14px", wordBreak: "break-all" }}>{repo.name}</div>
+                <RepoWrapper key={i} href={repo.url} target={repo.url ? "_blank" : undefined} rel={repo.url ? "noopener noreferrer" : undefined} style={{ padding: "8px 12px", border: "2px solid var(--arcade-ink)", backgroundColor: "white", boxShadow: "2px 2px 0 var(--arcade-ink)", textDecoration: "none", display: "block" }}>
+                  <div style={{ fontWeight: "bold", color: "var(--arcade-ink)", fontSize: "14px", wordBreak: "break-all", display: "flex", alignItems: "center", gap: "8px" }}>
+                    {repo.name}
+                    {repo.url && <ExternalLink size={14} style={{ opacity: 0.5 }} />}
+                  </div>
                   <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "6px", fontSize: "12px", color: "var(--arcade-ink)", fontWeight: "bold" }}>
                     <div style={{ width: "8px", height: "8px", borderRadius: "50%", backgroundColor: "var(--arcade-purple)", border: "1px solid var(--arcade-ink)" }} />
                     {mainLang}
                   </div>
-                </div>
+                </RepoWrapper>
               );
             })}
           </div>
@@ -299,12 +303,24 @@ export function RetroPlatformData({ metrics, links = [] }: RetroPlatformDataProp
             }}>
               
               <div style={{ marginBottom: "16px", borderBottom: "2px solid var(--arcade-ink)", paddingBottom: "16px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <Icon size={24} style={{ color: "var(--arcade-ink)" }} />
-                  <h3 style={{ margin: 0, fontFamily: "'Press Start 2P', monospace", fontSize: "20px", color: "var(--arcade-ink)", textTransform: "uppercase" }}>
-                    {metric.platform}
-                  </h3>
-                </div>
+                {(() => {
+                  const link = links.find(l => l.platform.toLowerCase() === p);
+                  const HeaderWrapper = link?.url ? "a" : "div";
+                  return (
+                    <HeaderWrapper 
+                      href={link?.url}
+                      target={link?.url ? "_blank" : undefined}
+                      rel={link?.url ? "noopener noreferrer" : undefined}
+                      style={{ display: "flex", alignItems: "center", gap: "12px", textDecoration: "none", cursor: link?.url ? "pointer" : "default" }}
+                    >
+                      <Icon size={24} style={{ color: "var(--arcade-ink)" }} />
+                      <h3 style={{ margin: 0, fontFamily: "'Press Start 2P', monospace", fontSize: "20px", color: "var(--arcade-ink)", textTransform: "uppercase" }}>
+                        {metric.platform}
+                      </h3>
+                      {link?.url && <ExternalLink size={20} style={{ color: "var(--arcade-ink)", opacity: 0.5 }} />}
+                    </HeaderWrapper>
+                  );
+                })()}
                 
                 {(() => {
                   const link = links.find(l => l.platform.toLowerCase() === p);

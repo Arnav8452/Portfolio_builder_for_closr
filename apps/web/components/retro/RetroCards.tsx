@@ -4,6 +4,7 @@ import { ExternalLink } from "lucide-react";
 type Achievement = {
   title: string;
   description: string;
+  url?: string;
 };
 
 type RetroCardsProps = {
@@ -46,9 +47,14 @@ export function RetroCards({ achievements }: RetroCardsProps) {
           gap: "16px" 
         }}
       >
-        {achievements.map((item, index) => (
-          <div 
+        {achievements.map((item: any, index) => {
+          const CardWrapper = item.url ? "a" : "div";
+          return (
+          <CardWrapper 
             key={index}
+            href={item.url}
+            target={item.url ? "_blank" : undefined}
+            rel={item.url ? "noopener noreferrer" : undefined}
             className="pixel-border"
             style={{
               backgroundColor: BG_COLORS[index % BG_COLORS.length],
@@ -56,17 +62,25 @@ export function RetroCards({ achievements }: RetroCardsProps) {
               color: index % BG_COLORS.length === 1 || index % BG_COLORS.length === 4 ? "var(--arcade-ink)" : "white",
               display: "flex",
               flexDirection: "column",
-              gap: "12px"
+              gap: "12px",
+              textDecoration: "none",
+              cursor: item.url ? "pointer" : "default",
+              transition: "transform 0.1s ease",
             }}
+            onMouseOver={(e: any) => item.url && (e.currentTarget.style.transform = "translate(-2px, -2px)")}
+            onMouseOut={(e: any) => item.url && (e.currentTarget.style.transform = "translate(0, 0)")}
           >
-            <h3 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "12px", margin: 0, textTransform: "uppercase", lineHeight: 1.5 }}>
-              {item.title}
-            </h3>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <h3 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "12px", margin: 0, textTransform: "uppercase", lineHeight: 1.5, flex: 1 }}>
+                {item.title}
+              </h3>
+              {item.url && <ExternalLink size={16} style={{ marginLeft: "8px", flexShrink: 0 }} />}
+            </div>
             <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "12px", margin: 0, lineHeight: 1.5, fontWeight: 500, color: "inherit" }}>
               {item.description}
             </p>
-          </div>
-        ))}
+          </CardWrapper>
+        )})}
 
       </div>
     </div>
