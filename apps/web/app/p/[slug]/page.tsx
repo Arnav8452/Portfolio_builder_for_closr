@@ -62,16 +62,26 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     notFound();
   }
 
-  const { data, error } = await getSupabaseAdmin()
+  let data = null;
+  const { data: viewData, error: viewError } = await getSupabaseAdmin()
     .from("public_creator_profiles")
     .select("*")
     .eq("slug", slug)
     .single();
 
-  if (error || !data) {
+  if (!viewError && viewData) {
+    data = viewData;
+  } else {
+    // The view might be missing the 'live' status or have schema drift.
+    // Manually reconstruct the profile from the core tables.
     const { data: creator } = await getSupabaseAdmin()
       .from("creators")
-      .select("id, slug, onboarding_status")
+      .select(`
+        id, slug, display_name, root_platform, root_handle, onboarding_status, owner_user_id,
+        creator_identities ( primary_niche, technical_skills, brand_tone, content_format, audience_size_tier, past_topics, bio_summary, raw_model_output, extraction_confidence ),
+        creator_links ( platform, normalized_url, verification_level, verification_status, last_verified_at ),
+        platform_data ( platform, identity_key, raw_payload, fetched_at )
+      `)
       .eq("slug", slug)
       .single();
 
@@ -87,7 +97,38 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
         </main>
       );
     }
-    notFound();
+
+    if (creator && ['completed', 'analysis_completed', 'intake', 'live'].includes(creator.onboarding_status)) {
+       const ci = (creator.creator_identities as any)?.[0] || {};
+       
+       let owner_image = null;
+       if (creator.owner_user_id) {
+           const { data: user } = await getSupabaseAdmin().schema("next_auth").from("users").select("image").eq("id", creator.owner_user_id).single();
+           owner_image = user?.image;
+       }
+
+       data = {
+         id: creator.id,
+         slug: creator.slug,
+         display_name: creator.display_name,
+         root_platform: creator.root_platform,
+         root_handle: creator.root_handle,
+         primary_niche: ci.primary_niche || 'other',
+         technical_skills: ci.technical_skills || [],
+         brand_tone: ci.brand_tone || [],
+         content_format: ci.content_format || [],
+         audience_size_tier: ci.audience_size_tier,
+         past_topics: ci.past_topics || [],
+         bio_summary: ci.bio_summary,
+         extra_analysis: ci.raw_model_output,
+         confidence: ci.extraction_confidence,
+         owner_image: owner_image,
+         verified_links: (creator.creator_links || []).sort((a: any, b: any) => b.verification_level - a.verification_level),
+         platform_metrics: (creator.platform_data || []).sort((a: any, b: any) => new Date(b.fetched_at).getTime() - new Date(a.fetched_at).getTime())
+       };
+    } else {
+       notFound();
+    }
   }
 
   // The production DB view 'public_creator_profiles' is currently missing the 'extra_analysis' column.
