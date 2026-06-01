@@ -54,6 +54,58 @@ type PublicProfile = {
   owner_image?: string | null;
 };
 
+import { Metadata } from "next";
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  
+  if (slug === "demo") return { title: "Demo Profile | Closr" };
+
+  const { data } = await getSupabaseAdmin()
+    .from("creators")
+    .select("display_name, creator_identities(bio_summary), owner_user_id")
+    .eq("slug", slug)
+    .single();
+
+  if (!data) return { title: "Profile Not Found | Closr" };
+
+  const displayName = data.display_name;
+  
+  const ciRaw = data.creator_identities as any;
+  const ci = Array.isArray(ciRaw) ? (ciRaw[0] || {}) : (ciRaw || {});
+  const bio = ci.bio_summary && ci.bio_summary !== "Pending summary." 
+    ? ci.bio_summary 
+    : `Explore the verified developer portfolio of ${displayName}.`;
+
+  let imageUrl = undefined;
+  if (data.owner_user_id) {
+    const { data: user } = await getSupabaseAdmin()
+      .schema("next_auth")
+      .from("users")
+      .select("image")
+      .eq("id", data.owner_user_id)
+      .single();
+    if (user?.image) imageUrl = user.image;
+  }
+
+  return {
+    title: `${displayName} | Verified Portfolio`,
+    description: bio,
+    openGraph: {
+      title: `${displayName} | Verified Portfolio`,
+      description: bio,
+      type: "profile",
+      images: imageUrl ? [{ url: imageUrl }] : [],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${displayName} | Verified Portfolio`,
+      description: bio,
+      images: imageUrl ? [imageUrl] : [],
+    }
+  };
+}
+
 export default async function PublicProfilePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
 
@@ -279,6 +331,20 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
     );
   }
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Person",
+    name: profile.display_name,
+    description: profile.bio_summary || `Verified developer portfolio of ${profile.display_name}`,
+    url: `https://closr.to/p/${profile.slug}`,
+    sameAs: profile.verified_links.map(l => l.url),
+    knowsAbout: [
+      ...(profile.primary_niche ? [profile.primary_niche] : []),
+      ...(profile.technical_skills || []),
+      ...(profile.past_topics || [])
+    ]
+  };
+
   return (
     <main style={{ 
       minHeight: "100vh", 
@@ -289,6 +355,10 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
       "--arcade-yellow": "#F5A623",
       "--arcade-purple": "#9B59B6",
     } as React.CSSProperties}>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="bento-grid">
         {/* 1. Main Header */}
         <div style={{ gridColumn: "1 / -1" }}>
