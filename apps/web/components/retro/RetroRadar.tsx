@@ -29,12 +29,12 @@ export function RetroRadar({ scores }: RetroRadarProps) {
   if (!scores) return null;
 
   const data = [
-    { subject: "Impact", A: scores.impact, fullMark: 100 },
-    { subject: "Consistency", A: scores.consistency, fullMark: 100 },
-    { subject: "Quality", A: scores.quality, fullMark: 100 },
-    { subject: "Depth", A: scores.depth, fullMark: 100 },
-    { subject: "Breadth", A: scores.breadth, fullMark: 100 },
-    { subject: "Community", A: scores.community, fullMark: 100 },
+    { subject: "Impact", A: scores.impact || 0, fullMark: 100 },
+    { subject: "Consistency", A: scores.consistency || 0, fullMark: 100 },
+    { subject: "Quality", A: scores.quality || 0, fullMark: 100 },
+    { subject: "Depth", A: scores.depth || 0, fullMark: 100 },
+    { subject: "Breadth", A: scores.breadth || 0, fullMark: 100 },
+    { subject: "Community", A: scores.community || 0, fullMark: 100 },
   ];
 
   return (

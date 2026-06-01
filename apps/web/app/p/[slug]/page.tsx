@@ -239,7 +239,7 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
   const radar = profile.extra_analysis?.radar_scores;
   let baseScore = profile.confidence ? profile.confidence * 100 : 50;
   if (radar) {
-    baseScore = (radar.impact + radar.consistency + radar.quality + radar.depth + radar.breadth + radar.community) / 6;
+    baseScore = ((radar.impact || 0) + (radar.consistency || 0) + (radar.quality || 0) + (radar.depth || 0) + (radar.breadth || 0) + (radar.community || 0)) / 6;
   }
 
   // Gather stats about links for trust scoring
