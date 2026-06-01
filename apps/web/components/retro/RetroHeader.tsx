@@ -60,7 +60,7 @@ export function RetroHeader({ profile, displayImage, overallScore, isTrustworthy
                 fontWeight: "bold",
                 animation: "pulse 2s infinite"
               }}>
-                NOT TRUSTWORTHY
+                NOT TRULY VERIFIED
               </span>
             )}
           </div>
