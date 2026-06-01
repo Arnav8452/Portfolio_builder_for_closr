@@ -87,6 +87,7 @@ const SUPPORTED_LINKS = [
   { name: "Substack", icon: Mail },
   { name: "Medium", icon: FileText },
   { name: "Personal Site", icon: Globe },
+  { name: "CV/Resume (add later)", icon: FileText },
 ];
 
 const CATEGORY_TITLES: Record<string, string> = {

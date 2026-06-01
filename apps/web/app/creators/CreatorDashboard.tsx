@@ -380,7 +380,7 @@ export function CreatorDashboard({ portfolio, missingProviders = [], hasLinkedin
           padding: "12px",
           marginBottom: "16px",
           fontSize: "12px",
-          color: "var(--arcade-ink)",
+          color: "var(--arcade-cream)",
           lineHeight: "1.5"
         }}>
           <strong>⚠️ IMPORTANT NOTICE:</strong>
