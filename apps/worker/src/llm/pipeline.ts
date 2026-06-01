@@ -83,7 +83,7 @@ export async function extractCreatorIdentity(rawText: string, creatorName: strin
         past_topics: Array.from(new Set([...(p1.past_topics || []), ...(p2.past_topics || [])])),
         achievements: [...(p1.achievements || []), ...(p2.achievements || [])].filter((v, i, a) => 
           a.findIndex(t => isSimilar(t.title, v.title)) === i
-        ),
+        ).slice(0, 8),
         timeline_events: [...(p1.timeline_events || []), ...(p2.timeline_events || [])].filter((v, i, a) => 
           a.findIndex(t => isSimilar(t.title, v.title)) === i
         ),
@@ -129,7 +129,7 @@ export async function executeWithRepair(
   
   CRITICAL GROUNDING INSTRUCTION: You MUST ground ALL your extraction and analysis STRICTLY in the provided telemetry data payload. DO NOT hallucinate, guess, or invent external information. If a field like bio_summary cannot be confidently deduced from the payload, clearly state 'Insufficient data to generate summary.' instead of inventing one.
   CRITICAL UI FIELDS:
-  1. 'achievements': Extract notable achievements, major projects, top content, and impressive metrics across ALL platforms. Treat prominent repositories, videos, or projects as distinct achievements. You MUST extract a 'url' field if a link is present in the raw data. CRITICAL: NEVER list generic skills, languages, or tools (like "Docker", "React", or "Python") as achievements. Achievements must be tangible projects or milestones. Use the project/video name or metric as the 'title' with a brief summary as the 'description'. Return an array of these achievements.
+  1. 'achievements': Extract EXACTLY the top 1 to 8 MOST IMPRESSIVE achievements, major projects, or top content. Limit to a MAXIMUM of 8. Treat prominent repositories or projects as distinct achievements. You MUST extract a 'url' field if a link is present in the raw data. CRITICAL: NEVER list generic skills, languages, or tools (like "Docker", "React", or "Python") as achievements. Use the project/video name or metric as the 'title' with a brief summary as the 'description'. Return an array of these achievements.
   2. 'radar_scores': Score the creator from 0 to 100 on the following metrics using this STRICT RUBRIC:
      - IMPACT: How much reach or tangible influence does their work have? (e.g. >10k followers/stars = 90+, <100 = 50-).
      - CONSISTENCY: How regularly and reliably do they publish, commit, or upload? (e.g. Daily/Weekly = 90+, Sporadic/Inactive = 50-).
