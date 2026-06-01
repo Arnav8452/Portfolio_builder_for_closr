@@ -169,13 +169,15 @@ async function scrapeWithNitter(username: string): Promise<Partial<ScrapeResult>
         const itemXml = match[1];
         const titleMatch = itemXml.match(/<title>([\s\S]*?)<\/title>/);
         const dateMatch = itemXml.match(/<pubDate>([\s\S]*?)<\/pubDate>/);
+        const urlMatch = itemXml.match(/<link>([\s\S]*?)<\/link>/);
         return {
           text: titleMatch ? titleMatch[1].replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, '$1') : "",
-          createdAt: dateMatch ? dateMatch[1] : ""
+          createdAt: dateMatch ? dateMatch[1] : "",
+          url: urlMatch ? urlMatch[1] : ""
         };
       }).slice(0, 15);
       
-      const rawText = tweets.map(t => `Tweet: ${t.text}`).join("\n\n");
+      const rawText = tweets.map(t => `Tweet: ${t.text}\nURL: ${t.url}`).join("\n\n");
       
       return {
         rawText,
@@ -231,7 +233,7 @@ async function scrapeWithApify(username: string): Promise<ScrapeResult> {
     profile.userName ? `Username: ${profile.userName}` : "",
     profile.description ? `Bio: ${profile.description}` : "",
     profile.followers ? `Followers: ${profile.followers}` : "",
-    ...items.map((t: any) => `Tweet: ${t.text || ""}`)
+    ...items.map((t: any) => `Tweet: ${t.text || ""}\nURL: ${t.url || ""}`)
   ].filter(Boolean).join("\n\n");
 
   return {

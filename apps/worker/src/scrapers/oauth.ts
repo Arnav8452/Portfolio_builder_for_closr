@@ -156,8 +156,8 @@ async function fetchGithubProfile(url: string, creatorId?: string): Promise<Oaut
   }
 
   const repoText = repos
-    .map((repo) => `${repo.name ?? "repo"}: ${repo.description ?? ""}`)
-    .join("\n");
+    .map((repo) => `${repo.name ?? "repo"} - URL: ${repo.html_url ?? repo.url ?? ""}\nDescription: ${repo.description ?? ""}`)
+    .join("\n\n");
 
   const rawText = [
     `Name: ${profile.name || profile.login}`,
