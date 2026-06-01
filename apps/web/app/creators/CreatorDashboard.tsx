@@ -23,7 +23,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { CreatorIntake } from "./CreatorIntake";
-import { deleteCreatorProfile } from "./actions";
+import { deleteCreatorProfile, uploadFileAction } from "./actions";
 
 type PortfolioLink = {
   platform: string;
@@ -84,6 +84,7 @@ export function CreatorDashboard({ portfolio, missingProviders = [], hasLinkedin
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   const searchParams = useSearchParams();
   const router = useRouter();
@@ -365,6 +366,70 @@ export function CreatorDashboard({ portfolio, missingProviders = [], hasLinkedin
           </div>
         </div>
       )}
+
+      {/* Upload File / Resume */}
+      <div className="share-card" style={{ marginBottom: "24px", border: "2px solid var(--arcade-purple)" }}>
+        <h3 style={{ color: "var(--arcade-purple)" }}>Upload Document / Resume</h3>
+        <p className="dashboard-subtitle" style={{ marginBottom: "16px", marginTop: "4px" }}>
+          Upload a PDF, TXT, or Markdown file to be merged into your AI analysis.
+        </p>
+        
+        <div style={{
+          backgroundColor: "rgba(255, 68, 68, 0.1)",
+          border: "1px dashed var(--arcade-red)",
+          padding: "12px",
+          marginBottom: "16px",
+          fontSize: "12px",
+          color: "var(--arcade-ink)",
+          lineHeight: "1.5"
+        }}>
+          <strong>⚠️ IMPORTANT NOTICE:</strong>
+          <ul style={{ margin: "8px 0 0 16px", padding: 0 }}>
+            <li>Uploaded files are marked as <strong style={{color:"var(--arcade-red)"}}>CLAIMED</strong>. They may lower your Overall Trust Score if they conflict with cryptographically verified profiles.</li>
+            <li>Files are processed ephemerally in-memory. They are <strong>permanently deleted</strong> from our servers immediately after text extraction.</li>
+            <li>File data is one-shot. It will <strong>NOT</strong> be updated when you click "Refresh Portfolio".</li>
+          </ul>
+        </div>
+
+        <form 
+          action={async (formData) => {
+            setUploading(true);
+            setErrorMsg(null);
+            setSuccessMsg(null);
+            const res = await uploadFileAction(formData);
+            if (res.ok) {
+              setSuccessMsg(res.message || "File uploaded successfully.");
+            } else {
+              setErrorMsg(res.message || "Failed to upload.");
+            }
+            setUploading(false);
+          }}
+          style={{ display: "flex", gap: "12px", alignItems: "center", flexWrap: "wrap" }}
+        >
+          <input 
+            type="file" 
+            name="file" 
+            accept=".pdf,.txt,.md" 
+            required 
+            style={{ 
+              flex: 1, 
+              minWidth: "200px",
+              padding: "8px",
+              border: "2px solid var(--arcade-ink)",
+              fontFamily: "'Inter', sans-serif"
+            }}
+          />
+          <button 
+            type="submit" 
+            className="primary-action hover-lift" 
+            disabled={uploading || isProcessing}
+            style={{ backgroundColor: "var(--arcade-purple)", borderColor: "var(--arcade-purple)" }}
+          >
+            {uploading ? <Loader2 size={16} className="spin" /> : <ExternalLink size={16} />} 
+            {uploading ? "Extracting..." : "Upload & Analyze"}
+          </button>
+        </form>
+      </div>
 
       {/* Share card */}
       <div className="share-card">

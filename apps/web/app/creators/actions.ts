@@ -347,3 +347,89 @@ export async function refreshPortfolio(slug: string) {
   revalidatePath(`/p/${slug}`);
   return { ok: true };
 }
+
+export async function uploadFileAction(formData: FormData) {
+  try {
+    const session = await getServerSession(authOptions);
+    const userId = (session?.user as any)?.id;
+    if (!userId) return { ok: false, message: "Unauthorized." };
+
+    const file = formData.get("file") as File;
+    if (!file) return { ok: false, message: "No file uploaded." };
+
+    // Get the creator profile
+    const supabase = getSupabaseAdmin();
+    const { data: creator } = await supabase
+      .from("creators")
+      .select("id, slug")
+      .eq("owner_user_id", userId)
+      .single();
+
+    if (!creator) return { ok: false, message: "Creator profile not found." };
+
+    const buffer = Buffer.from(await file.arrayBuffer());
+    let extractedText = "";
+
+    if (file.name.toLowerCase().endsWith(".pdf")) {
+      const pdfParseModule = await import("pdf-parse");
+      const pdfParse = (pdfParseModule as any).default || pdfParseModule;
+      const parsed = await pdfParse(buffer);
+      extractedText = parsed.text;
+    } else {
+      // Assume txt or markdown
+      extractedText = buffer.toString("utf-8");
+    }
+
+    if (!extractedText.trim()) {
+      return { ok: false, message: "Could not extract text from the file." };
+    }
+
+    // Insert the "link" representing this file
+    const { data: link, error: linkErr } = await supabase.from("creator_links").insert({
+      creator_id: creator.id,
+      platform: "other",
+      url: file.name,
+      normalized_url: file.name,
+      verification_level: 1,
+      verification_status: "claimed"
+    }).select().single();
+
+    if (linkErr || !link) {
+      if (linkErr?.code === '23505') return { ok: false, message: "A file with this name was already processed." };
+      throw linkErr;
+    }
+
+    // Inject directly into scraping queue as completed
+    const { data: scrapeJob, error: scrapeErr } = await supabase.from("scraping_queue").insert({
+      creator_id: creator.id,
+      link_id: link.id,
+      platform: "other",
+      url: file.name,
+      status: "completed",
+      raw_output: { text: extractedText.substring(0, 50000) }, // Limit size just in case
+      completed_at: new Date().toISOString()
+    }).select().single();
+
+    if (scrapeErr || !scrapeJob) throw scrapeErr;
+
+    // Inject into analysis queue to be picked up by the LLM
+    await supabase.from("analysis_queue").insert({
+      creator_id: creator.id,
+      scraping_job_id: scrapeJob.id,
+      raw_text: `[UPLOADED FILE CONTENT: ${file.name}]\n${extractedText.substring(0, 15000)}`,
+      status: "pending"
+    });
+
+    // Ensure status is processing
+    await supabase.from("creators").update({ onboarding_status: "processing" }).eq("id", creator.id);
+
+    revalidatePath(`/creators`);
+    revalidatePath(`/p/${creator.slug}`);
+    
+    return { ok: true, message: "File processed and added to analysis queue!" };
+  } catch (error: any) {
+    console.error("Upload error:", error);
+    return { ok: false, message: error.message || "An error occurred during upload." };
+  }
+}
+
