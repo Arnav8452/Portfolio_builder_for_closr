@@ -20,7 +20,7 @@ const BG_COLORS = [
 ];
 
 export function RetroCards({ achievements }: RetroCardsProps) {
-  if (!achievements || achievements.length === 0) return null;
+  if (!achievements || !Array.isArray(achievements) || achievements.length === 0) return null;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", height: "100%" }}>

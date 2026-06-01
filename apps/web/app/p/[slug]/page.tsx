@@ -166,14 +166,14 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
          display_name: creator.display_name,
          root_platform: creator.root_platform,
          root_handle: creator.root_handle,
-         primary_niche: ci.primary_niche || 'other',
-         technical_skills: ci.technical_skills || [],
-         brand_tone: ci.brand_tone || [],
-         content_format: ci.content_format || [],
-         audience_size_tier: ci.audience_size_tier,
-         past_topics: ci.past_topics || [],
-         bio_summary: ci.bio_summary,
-         extra_analysis: ci.raw_model_output,
+         primary_niche: typeof ci.primary_niche === "string" ? ci.primary_niche : 'other',
+         technical_skills: Array.isArray(ci.technical_skills) ? ci.technical_skills : [],
+         brand_tone: Array.isArray(ci.brand_tone) ? ci.brand_tone : [],
+         content_format: Array.isArray(ci.content_format) ? ci.content_format : [],
+         audience_size_tier: typeof ci.audience_size_tier === "string" ? ci.audience_size_tier : null,
+         past_topics: Array.isArray(ci.past_topics) ? ci.past_topics : [],
+         bio_summary: typeof ci.bio_summary === "string" ? ci.bio_summary : null,
+         extra_analysis: typeof ci.raw_model_output === "object" ? ci.raw_model_output : null,
          confidence: ci.extraction_confidence,
          owner_image: owner_image,
          verified_links: Array.isArray(creator.creator_links) ? creator.creator_links.sort((a: any, b: any) => b.verification_level - a.verification_level) : [],
@@ -259,7 +259,7 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
   let languages: { name: string; value: number }[] = [];
   let statsNumbers: { label: string; subLabel: string; value: string | number }[] = [];
   
-  if (githubMetrics?.raw_payload?.contributions?.repositories?.nodes) {
+  if (githubMetrics?.raw_payload?.contributions?.repositories?.nodes && Array.isArray(githubMetrics.raw_payload.contributions.repositories.nodes)) {
     const nodes = githubMetrics.raw_payload.contributions.repositories.nodes;
     const byLang = new Map<string, number>();
     for (const r of nodes) {
