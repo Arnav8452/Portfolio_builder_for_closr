@@ -81,7 +81,8 @@ ${JSON.stringify(rawOutput, null, 2)}
 And the following OSINT web search data:
 ${osintData || "None"}
 
-Your task is to write a comprehensive, professional, 3-4 sentence 'bio_summary' that synthesizes ALL of this data into a cohesive narrative. Do not just list their accounts. Write a compelling summary of who they are, their primary focus, and their biggest achievements across all platforms combined.
+Your task is to write a comprehensive, professional, 3-4 sentence 'bio_summary' that synthesizes ALL of this data into a cohesive narrative written in the third person. 
+CRITICAL: Do not just list their accounts or quote them. The bio MUST be a true summary of their career and expertise. DO NOT simply extract a philosophical quote (like "The best systems...") from their README and use it as the summary. Read all the data and write a proper professional summary.
 If you find new achievements in the OSINT data, return them as well.
 Output EXACTLY this JSON format:
 {

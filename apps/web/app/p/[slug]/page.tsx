@@ -104,6 +104,21 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
     }
   }
 
+  // The production DB view is ALSO missing 'platform_metrics'. We must fetch it manually from 'platform_data'.
+  if (!data.platform_metrics) {
+    const { data: pdData } = await getSupabaseAdmin()
+      .from("platform_data")
+      .select("platform, identity_key, raw_payload, fetched_at")
+      .eq("creator_id", data.id)
+      .order("fetched_at", { ascending: false });
+
+    if (pdData && pdData.length > 0) {
+      data.platform_metrics = pdData;
+    } else {
+      data.platform_metrics = [];
+    }
+  }
+
   return <ProfileView profile={data as PublicProfile} />;
 }
 
