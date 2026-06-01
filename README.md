@@ -8,7 +8,9 @@ The repository is organized as a monorepo containing the Next.js Vercel frontend
 *   **Interactive Bento UI**: Beautiful, interactive retro-arcade styled portfolios. Data cards and platform dossiers act as hyperlinks connecting directly to the source content (e.g. GitHub repos, Tweets, YouTube videos).
 *   **Fully Mobile Optimized**: The UI utilizes a fluid CSS grid (`bento-grid`) and `flexWrap` optimizations to ensure perfect rendering across desktops, tablets, and extremely small mobile screens.
 *   **Advanced Dynamic SEO**: Portfolios are primed for Google search out of the box. Includes Next.js dynamic metadata, Open Graph / Twitter Card social previews, JSON-LD `Person` structured data, and a dynamically generated XML Sitemap (`/sitemap.xml`) for all live portfolios.
-*   **Strict Anti-Hallucination LLM Pipeline**: Uses rigorous system prompts and a cross-referencing protocol to ensure the AI never invents generic achievements or misattributes web-scraped OSINT data to the wrong person.
+*   **Agentic Re-Act Deep Scraping**: The worker utilizes an intelligent Re-Act (Reasoning + Acting) LLM loop to evaluate the richness of the user's data. If the user hasn't connected enough telemetry, the Agent dynamically executes a deep-web OSINT (Open Source Intelligence) search on Google/Jina to aggressively hunt for the creator's missing background information.
+*   **Cross-Platform Identity Consistency**: When ingesting unconnected data (like unverified CVs or web-searches), the LLM executes a strict Cross-Platform Consistency Check. It compares the semantic signature of the new data against the cryptographically verified profile. If the identity matches but lacks a cryptographic token, the UI accurately marks it as "Claimed (Not Truly Verified)".
+*   **Strict Anti-Hallucination Pipeline**: Uses rigorous system prompts and the cross-referencing protocol to ensure the AI never invents generic achievements or misattributes web-scraped OSINT data to the wrong person.
 *   **Zero-Proxy Social Ingestion**: A highly scalable architecture that avoids expensive proxies by using official OAuth APIs, RSS feeds, and lightweight HTML dorks.
 
 ---
