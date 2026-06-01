@@ -114,26 +114,52 @@ export async function executeWithRepair(
   CRITICAL: bio_summary MUST be a single plain string, NOT an object or array.
   ANTI-HALLUCINATION PROTOCOL: If the rawText says "No tweets found", "data extraction is not supported", or clearly lacks profile data, you MUST return empty arrays [] for achievements, technical_skills, past_topics, brand_tone, content_format, and timeline_events, and an empty string "" for bio_summary. NEVER invent default placeholders like "100 Tweets" or "Bachelor's Degree".`;
 
-  const response = await fetch(GATEWAY_URL, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Authorization": `Bearer ${GATEWAY_SECRET}`
-    },
-    body: JSON.stringify({
-      model: modelName,
-      messages: [
-        { role: "system", content: systemPrompt },
-        { role: "user", content: rawText }
-      ],
-      response_format: { type: "json_object" },
-      temperature: 0.1
-    })
-  });
+  let response: Response | null = null;
+  let fetchAttempt = 0;
+  const maxFetchAttempts = 4; // Initial + 3 retries
 
-  if (!response.ok) {
+  while (fetchAttempt < maxFetchAttempts) {
+    fetchAttempt++;
+    response = await fetch(GATEWAY_URL, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${GATEWAY_SECRET}`
+      },
+      body: JSON.stringify({
+        model: modelName,
+        messages: [
+          { role: "system", content: systemPrompt },
+          { role: "user", content: rawText }
+        ],
+        response_format: { type: "json_object" },
+        temperature: 0.1
+      })
+    });
+
+    if (response.ok) break;
+
     const errText = await response.text();
+    if (response.status === 429 && fetchAttempt < maxFetchAttempts) {
+      // Exponential backoff default: 2s, 4s, 8s
+      let waitSeconds = Math.pow(2, fetchAttempt); 
+      
+      // Parse Groq's specific wait time if available: "Please try again in 10.42s"
+      const match = errText.match(/Please try again in ([\d.]+)s/);
+      if (match && match[1]) {
+        waitSeconds = parseFloat(match[1]) + 1.5; // Give it an extra 1.5s buffer
+      }
+      
+      console.warn(`[LLM] Rate limit hit (429). Waiting ${waitSeconds.toFixed(2)}s before attempt ${fetchAttempt + 1}...`);
+      await new Promise(resolve => setTimeout(resolve, waitSeconds * 1000));
+      continue;
+    }
+
     throw new Error(`AI Gateway error: ${response.status} ${errText}`);
+  }
+
+  if (!response) {
+    throw new Error("Failed to fetch from AI Gateway");
   }
 
   const data = await response.json();
