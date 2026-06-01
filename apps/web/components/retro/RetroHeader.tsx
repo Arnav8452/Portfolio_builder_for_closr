@@ -50,28 +50,6 @@ export function RetroHeader({ profile, displayImage, overallScore, isTrustworthy
             <h1 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "28px", color: "var(--arcade-cream)", margin: 0, textTransform: "uppercase" }}>
               {profile.display_name}
             </h1>
-            <div style={{
-              display: "flex",
-              alignItems: "center",
-              gap: "8px",
-              backgroundColor: "var(--arcade-ink)",
-              color: "var(--arcade-green)",
-              padding: "4px 12px",
-              border: "1px solid var(--arcade-green)",
-              fontFamily: "'VT323', monospace",
-              fontSize: "16px",
-              fontWeight: "bold",
-              letterSpacing: "1px"
-            }}>
-              <div style={{
-                width: "8px",
-                height: "8px",
-                backgroundColor: "var(--arcade-green)",
-                borderRadius: "50%",
-                animation: "pulse 1.5s infinite"
-              }} />
-              LIVE
-            </div>
             {!isTrustworthy && (
               <span className="pixel-border" style={{ 
                 backgroundColor: "var(--arcade-red)", 
@@ -89,7 +67,6 @@ export function RetroHeader({ profile, displayImage, overallScore, isTrustworthy
           <p style={{ color: "var(--arcade-cream)", fontFamily: "'Inter', sans-serif", fontSize: "14px", margin: 0, opacity: 0.9, lineHeight: 1.6 }}>
             {profile.bio_summary || "No summary was produced for this creator."}
           </p>
-          <RefreshButton slug={profile.slug} />
         </div>
       </div>
 
@@ -161,6 +138,9 @@ export function RetroHeader({ profile, displayImage, overallScore, isTrustworthy
               </a>
             );
           })}
+          <div style={{ width: "100%", display: "flex", justifyContent: "flex-end", marginTop: "12px" }}>
+            <RefreshButton slug={profile.slug} />
+          </div>
         </div>
       )}
     </div>

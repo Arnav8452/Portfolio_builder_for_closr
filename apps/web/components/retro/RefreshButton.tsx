@@ -29,7 +29,7 @@ export function RefreshButton({ slug }: { slug: string }) {
   };
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "12px", marginTop: "16px" }}>
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: "8px" }}>
       <button 
         onClick={handleRefresh}
         disabled={loading || success}
@@ -39,21 +39,21 @@ export function RefreshButton({ slug }: { slug: string }) {
           display: "flex",
           alignItems: "center",
           gap: "8px",
-          padding: "8px 16px",
-          backgroundColor: success ? "var(--arcade-green)" : "var(--arcade-blue)",
-          color: "var(--arcade-cream)",
+          padding: "6px 12px",
+          backgroundColor: success ? "var(--arcade-green)" : "var(--arcade-ink)",
+          color: success ? "var(--arcade-ink)" : "var(--arcade-cream)",
           fontFamily: "'VT323', monospace",
-          fontSize: "18px",
+          fontSize: "16px",
           cursor: (loading || success) ? "not-allowed" : "pointer",
-          border: "none",
+          border: "2px solid var(--arcade-cream)",
           outline: "none"
         }}
       >
-        <RefreshCw size={18} style={{ animation: loading ? "spin 2s linear infinite" : "none" }} />
+        <RefreshCw size={14} style={{ animation: loading ? "spin 2s linear infinite" : "none" }} />
         {loading ? "REFRESHING..." : success ? "QUEUED" : "REFRESH DATA"}
       </button>
       {error && (
-        <span style={{ color: "var(--arcade-red)", fontFamily: "'VT323', monospace", fontSize: "16px" }}>
+        <span style={{ color: "var(--arcade-red)", fontFamily: "'VT323', monospace", fontSize: "14px" }}>
           {error}
         </span>
       )}

@@ -19,8 +19,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               <span>Closr</span>
             </a>
             <nav className="nav desktop-nav">
-              <span>Creator Portal</span>
-              <span className="system-status" title="Systems operational" />
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <span>Creator Portal</span>
+                <span className="system-status" title="Systems operational" />
+                <span style={{ 
+                  fontFamily: "'VT323', monospace", 
+                  color: "var(--arcade-green)", 
+                  fontSize: "16px", 
+                  fontWeight: "bold",
+                  animation: "pulse 1.5s infinite"
+                }}>
+                  LIVE
+                </span>
+              </div>
             </nav>
             <MobileNav />
           </header>
