@@ -48,8 +48,8 @@ export function insertRow<T>(table: string, payload: Record<string, Json | undef
   });
 }
 
-export function updateRow<T>(table: string, id: string, payload: Record<string, Json | undefined>) {
-  return supabaseFetch<T>(`/rest/v1/${table}?id=eq.${encodeURIComponent(id)}`, {
+export function updateRow<T>(table: string, id: string, payload: Record<string, Json | undefined>, idColumn: string = "id") {
+  return supabaseFetch<T>(`/rest/v1/${table}?${idColumn}=eq.${encodeURIComponent(id)}`, {
     method: "PATCH",
     headers: { Prefer: "return=representation" },
     body: JSON.stringify(payload),

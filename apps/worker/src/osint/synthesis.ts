@@ -125,10 +125,10 @@ Output EXACTLY this JSON format:
       
       rawOutput.achievements = mergedAchievements;
 
-      await updateRow("creator_identities", identity.id, {
+      await updateRow("creator_identities", identity.creator_id, {
         bio_summary: finalBio,
         raw_model_output: rawOutput
-      });
+      }, "creator_id");
     } else {
       console.error(`[OSINT Synthesis] LLM request failed: ${await response.text()}`);
     }
