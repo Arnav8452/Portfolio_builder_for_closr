@@ -386,6 +386,11 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
 
           {/* 5. Numbers */}
           {statsNumbers.length > 0 && <RetroNumbers stats={statsNumbers} />}
+
+          {/* 6. Platform Data Dumps */}
+          {profile.platform_metrics && profile.platform_metrics.length > 0 && (
+            <RetroPlatformData metrics={profile.platform_metrics} links={profile.verified_links} />
+          )}
         </div>
 
         {/* Right Column */}
@@ -393,13 +398,6 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
           {/* 2. Roasts / Achievements Cards */}
           <RetroCards achievements={profile.extra_analysis?.achievements} />
         </div>
-
-        {/* 6. Platform Data Dumps */}
-        {profile.platform_metrics && profile.platform_metrics.length > 0 && (
-          <div style={{ gridColumn: "1 / -1" }}>
-            <RetroPlatformData metrics={profile.platform_metrics} links={profile.verified_links} />
-          </div>
-        )}
       </div>
       
       {/* Footer Padding */}

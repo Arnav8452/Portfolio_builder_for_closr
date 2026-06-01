@@ -66,11 +66,11 @@ export function RetroCards({ achievements }: RetroCardsProps) {
               flexDirection: "column",
               gap: "12px",
               textDecoration: "none",
-              cursor: item.url ? "pointer" : "default",
+              cursor: "pointer",
               transition: "transform 0.1s ease",
             }}
-            onMouseOver={(e: any) => item.url && (e.currentTarget.style.transform = "translate(-2px, -2px)")}
-            onMouseOut={(e: any) => item.url && (e.currentTarget.style.transform = "translate(0, 0)")}
+            onMouseOver={(e: any) => (e.currentTarget.style.transform = "translate(-2px, -2px)")}
+            onMouseOut={(e: any) => (e.currentTarget.style.transform = "translate(0, 0)")}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
               <h3 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "12px", margin: 0, textTransform: "uppercase", lineHeight: 1.5, flex: 1 }}>

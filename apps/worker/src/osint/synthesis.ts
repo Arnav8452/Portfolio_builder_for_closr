@@ -89,11 +89,11 @@ Search results often contain information about OTHER PEOPLE with similar names o
 CRITICAL: NEVER list generic skills, languages, or tools (like "Docker", "React", or "Python") as achievements. Achievements must be tangible projects, metrics, or milestones.
 
 If you find NEW, VERIFIED achievements in the OSINT data, or if you need to merge them with the existing telemetry, do so.
-Your final output MUST contain EXACTLY the top 1 to 8 MOST IMPRESSIVE achievements. Limit to a MAXIMUM of 8. Do not output duplicates or slightly rephrased versions of the same project. You MUST include a 'url' field if a link is present in the OSINT or telemetry data.
+Your final output MUST contain EXACTLY the top 1 to 10 MOST IMPRESSIVE achievements. Limit to a MAXIMUM of 10. Do not output duplicates or slightly rephrased versions of the same project. You MUST include a 'url' field if a link is present in the OSINT or telemetry data.
 Output EXACTLY this JSON format:
 {
   "bio_summary": "...",
-  "top_8_achievements": [ { "title": "...", "description": "...", "url": "..." } ]
+  "top_10_achievements": [ { "title": "...", "description": "...", "url": "..." } ]
 }`;
 
     const GATEWAY_URL = env.aiGatewayUrl;
@@ -121,9 +121,9 @@ Output EXACTLY this JSON format:
       const parsed = JSON.parse(data.choices[0].message.content);
       
       const finalBio = parsed.bio_summary || identity.bio_summary;
-      const top8 = parsed.top_8_achievements || achievements;
+      const top10 = parsed.top_10_achievements || achievements;
       
-      rawOutput.achievements = top8.slice(0, 8);
+      rawOutput.achievements = top10.slice(0, 10);
 
       await updateRow("creator_identities", identity.creator_id, {
         bio_summary: finalBio,
