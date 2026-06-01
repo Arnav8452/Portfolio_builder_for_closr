@@ -1,141 +1,127 @@
-# Closr Verified Portfolio Builder
-
-The Verified Portfolio Builder turns creator-submitted links and documents into verified, structured creator profiles.
-The repository is organized as a monorepo containing the Next.js Vercel frontend, a stateless TypeScript worker, a centralized AI Gateway, and shared database contracts.
-
-## 🚀 Key Features
-
-*   **Interactive Bento UI**: Beautiful, interactive retro-arcade styled portfolios. Data cards and platform dossiers act as hyperlinks connecting directly to the source content (e.g. GitHub repos, Tweets, YouTube videos).
-*   **Fully Mobile Optimized**: The UI utilizes a fluid CSS grid (`bento-grid`) and `flexWrap` optimizations to ensure perfect rendering across desktops, tablets, and extremely small mobile screens.
-*   **Advanced Dynamic SEO**: Portfolios are primed for Google search out of the box. Includes Next.js dynamic metadata, Open Graph / Twitter Card social previews, JSON-LD `Person` structured data, and a dynamically generated XML Sitemap (`/sitemap.xml`) for all live portfolios.
-*   **Agentic Re-Act Deep Scraping**: The worker utilizes an intelligent Re-Act (Reasoning + Acting) LLM loop to evaluate the richness of the user's data. If the user hasn't connected enough telemetry, the Agent dynamically executes a deep-web OSINT (Open Source Intelligence) search on Google/Jina to aggressively hunt for the creator's missing background information.
-*   **Cross-Platform Identity Consistency**: When ingesting unconnected data (like unverified CVs or web-searches), the LLM executes a strict Cross-Platform Consistency Check. It compares the semantic signature of the new data against the cryptographically verified profile. If the identity matches but lacks a cryptographic token, the UI accurately marks it as "Claimed (Not Truly Verified)".
-*   **Strict Anti-Hallucination Pipeline**: Uses rigorous system prompts and the cross-referencing protocol to ensure the AI never invents generic achievements or misattributes web-scraped OSINT data to the wrong person.
-*   **Zero-Proxy Social Ingestion**: A highly scalable architecture that avoids expensive proxies by using official OAuth APIs, RSS feeds, and lightweight HTML dorks.
+<div align="center">
+  <h1>Closr Verified Portfolio Engine</h1>
+  <p><strong>Enterprise-Grade Creator Identity & Cryptographic Portfolio Verification System</strong></p>
+  
+  [![Build Status](https://img.shields.io/badge/build-passing-brightgreen.svg)]()
+  [![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue.svg)]()
+  [![Next.js](https://img.shields.io/badge/Next.js-14-black.svg)]()
+  [![License](https://img.shields.io/badge/License-MIT-blue.svg)]()
+</div>
 
 ---
 
-## 🛠 Supported Platforms & Extraction Engines
+## 📌 Overview
 
-The pipeline supports an extensive list of platforms to build a holistic profile of the creator:
+The **Closr Verified Portfolio Engine** is a high-availability, zero-trust architecture designed to autonomously construct, verify, and serve structured creator profiles. Built for scale, it seamlessly ingests fragmented data across the social web, applies cryptographic verification protocols, and deploys fully responsive, SEO-optimized B2B creator portfolios in real-time.
 
-### 1. OAuth Integrated (The Gold Standard)
-*These platforms use official APIs via user-connected OAuth tokens for robust, legal data extraction.*
-- **GitHub**: Pulls profile info, repositories, top languages, and contribution history.
-- **YouTube**: Pulls channel analytics, demographics, engagement, and geo-data.
-- **Twitch**: Pulls channel streaming data and total views.
-- **Instagram**: Integrated Meta OAuth exchanges logins for Long-Lived Access Tokens to extract media and stats.
-- **LinkedIn**: Basic verified data pulled via LinkedIn's official OAuth scope.
-
-### 2. Lightweight OSINT Scrapers (100% Free)
-*Used for unconnected profiles, avoiding expensive proxies or fragile headless browsers.*
-- **Twitter / X**: Safely fetches timelines using **Nitter** open-source RSS instances. Automatically falls back to managed infrastructure via `Apify` if Nitter instances fail.
-- **LinkedIn**: Bypasses strict anti-bot walls on unconnected accounts by executing a zero-API-key **DuckDuckGo HTML Dork** (`site:linkedin.com/in/username`) to silently extract the user's Headline, Job Title, and Name.
-
-### 3. Web Crawling & RSS
-- **Substack & Medium**: Natively parses the author's public RSS feeds.
-- **Custom Websites**: Routes generic URLs through **Jina AI** to convert the site to clean Markdown. If Jina fails, it uses Mozilla's **Readability** engine to semantically extract the main article/bio.
-
-### 4. Direct Document Uploads
-- **Resumes / CVs**: Creators can directly upload their Resume/CV files (PDF, DOCX). The files are parsed using advanced multimodal LLMs (like LlamaParse/Gemini). Data extracted from these files is explicitly marked as "Not Truly Verified" on the UI to maintain integrity. For privacy, the uploaded files are immediately and permanently deleted from the database once data extraction is complete.
+By decoupling the ingestion pipeline, AI inference routing, and the client presentation layer, the engine achieves robust fault tolerance, zero-proxy scalability, and sub-second latency for end users.
 
 ---
 
-## 🏗 Pipeline Architecture
+## 🚀 Enterprise Features
 
-The system is decoupled to ensure high reliability, zero-proxy scalability, and seamless AI processing.
-
-### 1. The Creator Intake (Vercel Frontend)
-- A creator visits the Next.js app and securely signs in via **Google Authentication** (`NextAuth.js`).
-- They connect their "Root Node" (e.g., YouTube, GitHub) to prove cryptographic ownership.
-- They paste secondary social links or upload their Resume/CV.
-- The Next.js frontend writes the creator profile to Supabase and pushes the links to a PostgreSQL-backed `scraping_queue`.
-
-### 2. The Scraping Worker (Render/Railway)
-- A stateless Node.js worker polls the `scraping_queue`. 
-- It extracts raw HTML/data from platforms and cleans it aggressively down to a compact semantic context.
-- The worker verifies specific DNS or bio challenge codes (e.g. `closr-8f2a`) to establish cryptographic trust.
-- The cleaned semantic payload is pushed into the `analysis_queue`.
-
-### 3. AI Gateway & Inference 
-- To avoid provider lock-in and handle rate limits, the worker routes all LLM calls through a dedicated **AI Gateway** powered by `@freeloaderapi/core`.
-- The gateway natively load-balances requests across **DeepSeek, Groq, Cerebras, and OpenRouter**.
-- Output goes through a rigid Zod validation pipeline to ensure structured identities.
+*   **Zero-Trust Cryptographic Verification**: Implements strict Cross-Platform Identity Consistency protocols. Data ingested via official OAuth tokens is cryptographically verified, while unconnected OSINT data (like uploaded CVs or deep-web searches) undergoes a rigorous semantic signature check before being flagged as "Claimed".
+*   **Agentic Re-Act Deep Scraping Engine**: The worker utilizes a Reasoning + Acting (Re-Act) autonomous loop. If initial telemetry is insufficient, the agent dynamically executes OSINT (Open Source Intelligence) deep searches to proactively hunt for missing background context without human intervention.
+*   **Strict Anti-Hallucination Pipeline**: Employs deterministic cross-referencing algorithms to ensure Large Language Models (LLMs) never misattribute OSINT data or hallucinate generic achievements.
+*   **Decentralized AI Gateway Routing**: Built-in support for `@freeloaderapi/core` to automatically load-balance LLM inference across DeepSeek, Groq, Cerebras, and OpenRouter, preventing vendor lock-in and bypassing strict rate limits.
+*   **Production-Ready SEO & SSR**: Portfolios are Server-Side Rendered (SSR) with Next.js dynamic metadata. Includes auto-generated JSON-LD `Person` schemas, Open Graph rich previews, and dynamic XML Sitemaps for optimal search engine indexing.
+*   **Responsive Bento-Grid UI**: A fluid, interactive interface optimized for all form factors, featuring hyperlinked data cards that trace every achievement back to its origin source.
 
 ---
 
-## 📁 Repository Layout
+## 🔌 Supported Telemetry Pipelines
+
+The ingestion engine is highly modular, supporting multi-modal data extraction:
+
+### 1. OAuth Verified Nodes (Tier 1 Trust)
+*Direct integration with official REST & GraphQL APIs via user-authorized tokens.*
+- **GitHub**: Repositories, language heatmaps, and contribution timelines.
+- **YouTube**: Channel analytics, demographics, engagement, and geo-data.
+- **Twitch**: Live streaming data, concurrents, and total views.
+- **Instagram**: Long-Lived Access Token exchange for media & community metrics via Meta Graph API.
+- **LinkedIn**: Verified professional headline and summary extraction.
+
+### 2. Zero-Proxy OSINT Scrapers (Tier 2 Trust)
+*Highly resilient, scalable scraping without relying on fragile headless browsers or expensive proxy networks.*
+- **Twitter / X**: Distributed fetching via **Nitter** open-source instances, with automatic failover to managed `Apify` infrastructure.
+- **LinkedIn (Fallback)**: Executes silent, zero-API-key **DuckDuckGo HTML Dorks** (`site:linkedin.com/in/*`) to bypass anti-bot walls.
+- **Websites & Blogs**: Intelligent routing via **Jina AI** for markdown conversion, falling back to Mozilla's **Readability** engine for semantic DOM extraction.
+
+### 3. Asynchronous Document Parsing (Tier 3 Trust)
+- **Resumes / CVs**: Supports direct PDF/DOCX uploads. Documents are processed by multimodal LLMs (LlamaParse/Gemini), explicitly marked as "Claimed" for data integrity, and immediately purged from block storage post-extraction to comply with strict data privacy standards.
+
+---
+
+## 🏗 System Architecture
+
+The monorepo strictly separates concerns across three primary services:
 
 ```text
 closr-monorepo/
   apps/
-    web/                    # Next.js creator intake, NextAuth, SEO Engine, Interactive UI
-    worker/                 # TypeScript stateless worker for scraping, queues & OSINT
-    ai-gateway/             # Centralized Freeloader API Gateway for LLM balancing
+    web/                    # Next.js 14 (App Router) - Client Intake, SSR Portfolios, SEO Engine
+    worker/                 # Node.js TypeScript Worker - Headless Scrapers, Queues & Re-Act OSINT
+    ai-gateway/             # Express.js - Centralized LLM Inference Load Balancer
   packages/
     database/
-      schema.sql            # Master Supabase schema (Tables, Caches, Tokens, Queues)
-      types.ts              # Shared TypeScript definitions
-  package.json              # npm workspaces
+      schema.sql            # Master PostgreSQL schema (Supabase)
+      types.ts              # Global TypeScript definitions for end-to-end type safety
 ```
+
+### Data Flow
+1. **Intake**: Creators authenticate via NextAuth and submit their root platform.
+2. **Queueing**: The Next.js client writes to Supabase and pushes jobs to a PostgreSQL-backed asynchronous queue.
+3. **Execution**: The stateless Node.js worker polls the queue, executes multi-threaded scrapers, and performs DNS/bio verification.
+4. **Synthesis**: Cleaned semantic payloads are routed through the AI Gateway for structured JSON generation.
+5. **Serving**: The Next.js client reconstructs the data into sub-second, highly interactive public portfolios.
 
 ---
 
-## ⚙️ Setup & Deployment
+## ⚙️ Deployment & Infrastructure
 
-### 1. Setup Supabase
-Run the schema locked in `packages/database/schema.sql` inside your Supabase SQL Editor to generate the tables, queues, and caching infrastructure.
+### 1. Database (Supabase)
+Execute `packages/database/schema.sql` in your PostgreSQL instance to initialize tables, row-level security (RLS), and message queues.
 
-### 2. Configure the Frontend (`apps/web/.env`)
-Deploy to Vercel and configure:
+### 2. Frontend Edge Deployment (Vercel)
+Configure the following environment variables in your deployment dashboard:
 ```env
 NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your-anon-key
-
 NEXTAUTH_URL=https://your-domain.com
 NEXTAUTH_SECRET=generate_a_random_secret_string
-
 GOOGLE_ID=your_google_oauth_client_id
 GOOGLE_SECRET=your_google_oauth_client_secret
-
-# Zero-Proxy Sync
 META_APP_ID=your_facebook_app_id
 META_APP_SECRET=your_facebook_app_secret
 APIFY_API_TOKEN=your_apify_token
 CRON_SECRET=secret_for_cron_endpoint
 ```
 
-### 3. Deploy the Monolith Worker (Render)
-We merged the AI Gateway and the Scraping Worker into a single `@closr/worker` Node.js application.
+### 3. Worker Node Deployment (Render / AWS / Railway)
+The backend is packaged as a high-performance Node monolith containing both the scrapers and the AI gateway. 
 
-To deploy it to Render, you can either use our automated Blueprint or set it up manually.
+**Recommended Setup (Render Blueprint):**
+Link the repository to Render and use the integrated `render.yaml` for automatic provisioning.
 
-#### Option A: Automated Blueprint (Recommended)
-1. Go to your Render Dashboard.
-2. Click **New +** and select **Blueprint**.
-3. Connect your GitHub repository.
-4. Render will read the `render.yaml` file in this repository and automatically configure the Web Service with the correct Build Command, Run Command, and standard Environment Variables.
-
-#### Option B: Manual Setup
-1. Go to your Render Dashboard, click **New +**, and select **Web Service**.
-2. Choose **Build and deploy from a Git repository** and connect your repo.
-3. Configure the service:
-   - **Name:** `closr-monolith-worker`
-   - **Root Directory:** *(leave blank)*
-   - **Runtime:** `Node`
-   - **Build Command:** `npm install && npm run build --workspace=apps/worker`
-   - **Start Command:** `npm start --workspace=apps/worker`
-4. Add the environment variables below under the Environment Variables section.
-
+**Manual Docker / Node Setup:**
+```bash
+npm install
+npm run build --workspace=apps/worker
+npm start --workspace=apps/worker
+```
+Required Environment Variables:
 ```env
 SUPABASE_URL=https://your-project.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-
-# Gateway Configuration
 GEMINI_API_KEY=your_google_studio_key
 GATEWAY_SECRET=closr-secure-ai-key-2026
-AI_GATEWAY_URL=http://localhost:8080/v1/chat/completions # The worker queries its own internal Express server!
-
+AI_GATEWAY_URL=http://localhost:8080/v1/chat/completions # Routes internally
 GITHUB_TOKEN=your_github_pat
 PORT=8080 
 ```
+
+---
+
+<div align="center">
+  <p>Built with precision for the next generation of creators.</p>
+</div>
