@@ -58,7 +58,8 @@ export const creatorIdentityZodSchema = z.object({
   // Retro UI dynamic fields
   achievements: z.array(z.object({
     title: z.string(),
-    description: z.string()
+    description: z.string(),
+    url: z.string().optional().describe("Optional URL linking to the source of this achievement (e.g. repo URL, video URL).")
   })).optional().default([]),
   radar_scores: z.object({
     impact: z.number().min(0).max(100).optional().default(50),
