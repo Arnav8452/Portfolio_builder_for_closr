@@ -124,10 +124,23 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
 
   // Compute Overall Score based on confidence or radar
   const radar = profile.extra_analysis?.radar_scores;
-  let overallScore = profile.confidence ? profile.confidence * 100 : 50;
+  let baseScore = profile.confidence ? profile.confidence * 100 : 50;
   if (radar) {
-    overallScore = (radar.impact + radar.consistency + radar.quality + radar.depth + radar.breadth + radar.community) / 6;
+    baseScore = (radar.impact + radar.consistency + radar.quality + radar.depth + radar.breadth + radar.community) / 6;
   }
+
+  // Gather stats about links for trust scoring
+  const verifiedLinks = profile.verified_links || [];
+  const rootNodes = verifiedLinks.filter(l => l.verification_level === 3 && l.verification_status === "oauth_verified").length;
+  const challengeVerified = verifiedLinks.filter(l => l.verification_status === "challenge_verified").length;
+  const claimed = verifiedLinks.filter(l => l.verification_status === "claimed").length;
+  const inconsistent = verifiedLinks.filter(l => l.verification_status === "inconsistent_identity").length;
+
+  let bonus = (rootNodes > 1 ? (rootNodes - 1) * 10 : 0) + (challengeVerified * 5);
+  let penalty = (claimed * 10) + (inconsistent * 50);
+
+  const overallScore = Math.max(0, Math.min(100, Math.round(baseScore + bonus - penalty)));
+  const isTrustworthy = overallScore >= 40 && inconsistent === 0;
 
   // Parse GitHub Languages for Pie Chart — ONLY if GitHub data actually exists with repos
   let languages: { name: string; value: number }[] = [];
@@ -221,7 +234,8 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
           <RetroHeader 
             profile={profile} 
             displayImage={displayImage} 
-            overallScore={overallScore} 
+            overallScore={overallScore}
+            isTrustworthy={isTrustworthy}
           />
         </div>
 

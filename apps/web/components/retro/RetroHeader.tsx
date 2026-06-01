@@ -13,9 +13,10 @@ type RetroHeaderProps = {
   };
   displayImage: string | null;
   overallScore: number;
+  isTrustworthy?: boolean;
 };
 
-export function RetroHeader({ profile, displayImage, overallScore }: RetroHeaderProps) {
+export function RetroHeader({ profile, displayImage, overallScore, isTrustworthy = true }: RetroHeaderProps) {
   // Map confidence or score to a funny grade string like "GETTING THERE"
   let gradeText = "NEEDS WORK";
   if (overallScore >= 80) gradeText = "ELITE TIER";
@@ -43,9 +44,24 @@ export function RetroHeader({ profile, displayImage, overallScore }: RetroHeader
           </div>
         )}
         <div style={{ color: "var(--arcade-cream)" }}>
-          <h1 style={{ color: "var(--arcade-cream)", fontFamily: "'Press Start 2P', monospace", fontSize: "28px", margin: "0 0 16px 0", textTransform: "uppercase" }}>
-            {profile.display_name}
-          </h1>
+          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px", flexWrap: "wrap" }}>
+            <h1 style={{ color: "var(--arcade-cream)", fontFamily: "'Press Start 2P', monospace", fontSize: "28px", margin: 0, textTransform: "uppercase" }}>
+              {profile.display_name}
+            </h1>
+            {!isTrustworthy && (
+              <span className="pixel-border" style={{ 
+                backgroundColor: "var(--arcade-red)", 
+                color: "white", 
+                padding: "4px 8px", 
+                fontFamily: "'VT323', monospace", 
+                fontSize: "18px", 
+                fontWeight: "bold",
+                animation: "pulse 1.5s infinite"
+              }}>
+                ⚠ NOT TRUSTWORTHY
+              </span>
+            )}
+          </div>
           <p style={{ color: "var(--arcade-cream)", fontFamily: "'Inter', sans-serif", fontSize: "14px", margin: 0, opacity: 0.9, lineHeight: 1.6 }}>
             {profile.bio_summary || "No summary was produced for this creator."}
           </p>
