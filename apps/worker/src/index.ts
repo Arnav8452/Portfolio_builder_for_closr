@@ -46,11 +46,26 @@ async function main() {
   console.log(`[worker] ${env.workerId} started`);
 
   // 3. Initialize AI Gateway Pipeline
+  const openRouter = new OpenRouterAdapter();
+  const originalOrCompletion = openRouter._chatCompletion.bind(openRouter);
+  openRouter._chatCompletion = async (req: any, sig: any) => {
+    const model = req.model === "gpt-4o-mini" ? "openai/gpt-4o-mini" : (req.model === "gpt-4o" ? "openai/gpt-4o" : req.model);
+    return originalOrCompletion({ ...req, model }, sig);
+  };
+
+  const cerebras = new CerebrasAdapter();
+  cerebras.supportsModel = () => true;
+  const originalCbCompletion = cerebras._chatCompletion.bind(cerebras);
+  cerebras._chatCompletion = async (req: any, sig: any) => {
+    // Map any incoming model to Cerebras's fast llama 8b
+    return originalCbCompletion({ ...req, model: "llama3.1-8b" }, sig);
+  };
+
   const providers = [];
-  providers.push(new OpenRouterAdapter());
+  providers.push(openRouter);
   providers.push(new GroqAdapter());
   providers.push(new GeminiAdapter());
-  providers.push(new CerebrasAdapter());
+  providers.push(cerebras);
   
   const pipeline = new PipelineOrchestrator(providers);
 
