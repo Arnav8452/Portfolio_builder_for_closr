@@ -1,5 +1,6 @@
 import React from "react";
 import { ExternalLink, Github, Twitter, Youtube, Twitch, Linkedin, Instagram, Link as LinkIcon } from "lucide-react";
+import { RefreshButton } from "./RefreshButton";
 
 type RetroHeaderProps = {
   profile: {
@@ -10,6 +11,7 @@ type RetroHeaderProps = {
     owner_image?: string | null;
     bio_summary?: string | null;
     verified_links?: Array<{ platform: string; url: string }>;
+    slug: string;
   };
   displayImage: string | null;
   overallScore: number;
@@ -44,27 +46,50 @@ export function RetroHeader({ profile, displayImage, overallScore, isTrustworthy
           </div>
         )}
         <div style={{ color: "var(--arcade-cream)" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "16px", flexWrap: "wrap" }}>
-            <h1 style={{ color: "var(--arcade-cream)", fontFamily: "'Press Start 2P', monospace", fontSize: "28px", margin: 0, textTransform: "uppercase" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "16px", flexWrap: "wrap", marginBottom: "16px" }}>
+            <h1 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "28px", color: "var(--arcade-cream)", margin: 0, textTransform: "uppercase" }}>
               {profile.display_name}
             </h1>
+            <div style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              backgroundColor: "var(--arcade-ink)",
+              color: "var(--arcade-green)",
+              padding: "4px 12px",
+              border: "1px solid var(--arcade-green)",
+              fontFamily: "'VT323', monospace",
+              fontSize: "16px",
+              fontWeight: "bold",
+              letterSpacing: "1px"
+            }}>
+              <div style={{
+                width: "8px",
+                height: "8px",
+                backgroundColor: "var(--arcade-green)",
+                borderRadius: "50%",
+                animation: "pulse 1.5s infinite"
+              }} />
+              LIVE
+            </div>
             {!isTrustworthy && (
               <span className="pixel-border" style={{ 
                 backgroundColor: "var(--arcade-red)", 
                 color: "white", 
-                padding: "4px 8px", 
+                padding: "4px 12px", 
                 fontFamily: "'VT323', monospace", 
-                fontSize: "18px", 
+                fontSize: "16px",
                 fontWeight: "bold",
-                animation: "pulse 1.5s infinite"
+                animation: "pulse 2s infinite"
               }}>
-                ⚠ NOT TRUSTWORTHY
+                NOT TRUSTWORTHY
               </span>
             )}
           </div>
           <p style={{ color: "var(--arcade-cream)", fontFamily: "'Inter', sans-serif", fontSize: "14px", margin: 0, opacity: 0.9, lineHeight: 1.6 }}>
             {profile.bio_summary || "No summary was produced for this creator."}
           </p>
+          <RefreshButton slug={profile.slug} />
         </div>
       </div>
 

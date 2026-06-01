@@ -298,3 +298,52 @@ export async function deleteCreatorProfile(creatorId: string) {
   revalidatePath("/", "layout");
   return { ok: true };
 }
+
+export async function refreshPortfolio(slug: string) {
+  const supabase = getSupabaseAdmin();
+
+  const { data: creator, error } = await supabase
+    .from("creators")
+    .select("id, updated_at")
+    .eq("slug", slug)
+    .single();
+
+  if (error || !creator) {
+    return { ok: false, message: "Portfolio not found." };
+  }
+
+  const lastUpdated = new Date(creator.updated_at).getTime();
+  const now = Date.now();
+  if (now - lastUpdated < 24 * 60 * 60 * 1000) {
+    return { ok: false, message: "Portfolio was updated within the last 24 hours." };
+  }
+
+  const { data: links } = await supabase
+    .from("creator_links")
+    .select("id, url")
+    .eq("creator_id", creator.id);
+
+  if (!links || links.length === 0) {
+    return { ok: false, message: "No links found to refresh." };
+  }
+
+  await supabase
+    .from("creators")
+    .update({ 
+      onboarding_status: "processing",
+      updated_at: new Date().toISOString()
+    })
+    .eq("id", creator.id);
+
+  for (const link of links) {
+    await supabase.from("scraping_queue").insert({
+      creator_id: creator.id,
+      link_id: link.id,
+      url: link.url,
+      status: "pending",
+    });
+  }
+
+  revalidatePath(`/p/${slug}`);
+  return { ok: true };
+}

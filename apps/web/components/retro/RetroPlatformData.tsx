@@ -10,6 +10,7 @@ type PlatformMetric = {
 
 type RetroPlatformDataProps = {
   metrics?: PlatformMetric[];
+  links?: Array<{ platform: string; url: string; verification_level: number; verification_status: string }>;
 };
 
 function StatBadge({ label, value, bg = "var(--arcade-yellow)" }: { label: string, value: string | number, bg?: string }) {
@@ -250,7 +251,7 @@ function WebsiteCard({ payload }: { payload: any }) {
   );
 }
 
-export function RetroPlatformData({ metrics }: RetroPlatformDataProps) {
+export function RetroPlatformData({ metrics, links = [] }: RetroPlatformDataProps) {
   if (!metrics || metrics.length === 0) return null;
 
   return (
@@ -298,20 +299,54 @@ export function RetroPlatformData({ metrics }: RetroPlatformDataProps) {
             }}>
               
               <div style={{ marginBottom: "16px", borderBottom: "2px solid var(--arcade-ink)", paddingBottom: "16px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-                <div>
-                  <div style={{ fontSize: "14px", color: "var(--arcade-ink)", textTransform: "uppercase", marginBottom: "8px", fontWeight: "bold" }}>
-                    {(!metric.identity_key || metric.identity_key === "DEFAULT") ? "PROFILE" : metric.identity_key} /
-                  </div>
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <Icon size={24} color="var(--arcade-ink)" />
-                    <h3 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "20px", color: "var(--arcade-ink)", margin: 0 }}>
-                      {metric.platform}
-                    </h3>
-                  </div>
+                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                  <Icon size={24} style={{ color: "var(--arcade-ink)" }} />
+                  <h3 style={{ margin: 0, fontFamily: "'Press Start 2P', monospace", fontSize: "20px", color: "var(--arcade-ink)", textTransform: "uppercase" }}>
+                    {metric.platform}
+                  </h3>
                 </div>
                 
-                {/* Visual anchor top right like in image */}
-                <div style={{ width: "8px", height: "24px", backgroundColor: "var(--arcade-yellow)", border: "2px solid var(--arcade-ink)" }} />
+                {(() => {
+                  const link = links.find(l => l.platform.toLowerCase() === p);
+                  if (!link) return null;
+                  
+                  let badgeText = "CLAIMED";
+                  let bg = "var(--arcade-yellow)";
+                  let color = "var(--arcade-ink)";
+                  let anim = "none";
+                  
+                  if (link.verification_status === "oauth_verified") {
+                    badgeText = "OAUTH VERIFIED";
+                    bg = "var(--arcade-green)";
+                  } else if (link.verification_status === "challenge_verified") {
+                    badgeText = "CHALLENGE VERIFIED";
+                    bg = "var(--arcade-green)";
+                  } else if (link.verification_status === "inconsistent_identity") {
+                    badgeText = "INCONSISTENT IDENTITY - REJECTED";
+                    bg = "var(--arcade-red)";
+                    color = "white";
+                    anim = "pulse 1.5s infinite";
+                  } else if (link.verification_status === "challenge_failed") {
+                    badgeText = "CHALLENGE FAILED";
+                    bg = "var(--arcade-red)";
+                    color = "white";
+                  }
+
+                  return (
+                    <div style={{ 
+                      backgroundColor: bg, 
+                      color: color, 
+                      padding: "4px 8px", 
+                      border: `2px solid ${color}`,
+                      fontFamily: "'VT323', monospace", 
+                      fontSize: "14px", 
+                      fontWeight: "bold",
+                      animation: anim
+                    }}>
+                      {badgeText}
+                    </div>
+                  );
+                })()}
               </div>
 
               {isTwitter ? (

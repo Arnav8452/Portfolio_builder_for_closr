@@ -140,6 +140,19 @@ async function processAnalysisJob(job: AnalysisJob) {
       status: "completed",
       completed_at: new Date().toISOString(),
     });
+
+    // Synthesis & Re-Act Trigger
+    try {
+      const pendingScrape = await getRow<any[]>("scraping_queue", `creator_id=eq.${job.creator_id}&status=in.(pending,processing)`);
+      const pendingAnalysis = await getRow<any[]>("analysis_queue", `creator_id=eq.${job.creator_id}&status=in.(pending,processing)`);
+      
+      if ((!pendingScrape || pendingScrape.length === 0) && (!pendingAnalysis || pendingAnalysis.length === 0)) {
+        console.log(`[Queue] All jobs completed for ${job.creator_id}. Triggering final synthesis...`);
+        import("../osint/synthesis.js").then((m) => m.synthesizePortfolio(job.creator_id).catch(console.error));
+      }
+    } catch (e) {
+      console.error("[Queue] Error checking for synthesis trigger", e);
+    }
   } catch (error) {
     await updateRow<AnalysisJob[]>("analysis_queue", job.id, {
       status: job.attempts >= job.max_attempts ? "failed" : "pending",

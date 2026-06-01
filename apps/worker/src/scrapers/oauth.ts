@@ -167,7 +167,7 @@ async function fetchGithubProfile(url: string, creatorId?: string): Promise<Oaut
     `Total Commits: ${contributions?.contributionsCollection?.totalCommitContributions || 0}`,
     `Top Languages: ${languagesText}`,
     `Recent Repositories:\n${repoText}`,
-    profileReadme ? `Profile README:\n${profileReadme}` : "",
+    profileReadme ? `Profile README:\n${profileReadme}` : "NO README EXISTS. YOU MUST RELY ON THE NUMBERS ABOVE TO GENERATE ACHIEVEMENTS (e.g. Followers, Repos, Commits).",
   ].filter(Boolean).join("\n\n");
 
   return {
@@ -242,22 +242,32 @@ async function fetchYouTubeAnalytics(url: string, creatorId: string): Promise<Oa
   const today = new Date().toISOString().split("T")[0];
   const paramsCommon = `ids=channel==MINE&startDate=2010-01-01&endDate=${today}`;
   
-  const [demoRes, geoRes, watchRes, trafficRes] = await Promise.all([
+  const [demoRes, geoRes, watchRes, trafficRes, channelRes] = await Promise.all([
     fetch(`https://youtubeanalytics.googleapis.com/v2/reports?${paramsCommon}&metrics=viewerPercentage&dimensions=ageGroup,gender&sort=-viewerPercentage`, { headers }),
     fetch(`https://youtubeanalytics.googleapis.com/v2/reports?${paramsCommon}&metrics=views&dimensions=country&sort=-views&maxResults=3`, { headers }),
     fetch(`https://youtubeanalytics.googleapis.com/v2/reports?${paramsCommon}&metrics=views,estimatedMinutesWatched,averageViewDuration`, { headers }),
-    fetch(`https://youtubeanalytics.googleapis.com/v2/reports?${paramsCommon}&metrics=views&dimensions=insightTrafficSourceType&sort=-views&maxResults=10`, { headers })
+    fetch(`https://youtubeanalytics.googleapis.com/v2/reports?${paramsCommon}&metrics=views&dimensions=insightTrafficSourceType&sort=-views&maxResults=10`, { headers }),
+    fetch(`https://youtube.googleapis.com/youtube/v3/channels?part=snippet,statistics&mine=true`, { headers })
   ]);
 
-  const [demo, geo, watch, traffic] = await Promise.all([
+  const [demo, geo, watch, traffic, channel] = await Promise.all([
     demoRes.ok ? demoRes.json() : Promise.resolve(null),
     geoRes.ok ? geoRes.json() : Promise.resolve(null),
     watchRes.ok ? watchRes.json() : Promise.resolve(null),
     trafficRes.ok ? trafficRes.json() : Promise.resolve(null),
+    channelRes.ok ? channelRes.json() : Promise.resolve(null),
   ]);
 
+  const channelData = (channel as any)?.items?.[0] || {};
+  const snippet = channelData.snippet || {};
+  const stats = channelData.statistics || {};
+
   const rawText = [
-    `YouTube Analytics for ${url}`,
+    `YouTube Channel: ${snippet.title || url}`,
+    snippet.description ? `Bio: ${snippet.description}` : '',
+    stats.subscriberCount ? `Subscribers: ${stats.subscriberCount}` : '',
+    stats.videoCount ? `Videos: ${stats.videoCount}` : '',
+    stats.viewCount ? `Total Channel Views: ${stats.viewCount}` : '',
     (demo as any)?.rows?.length ? `Demographics: ${JSON.stringify((demo as any).rows)}` : '',
     (geo as any)?.rows?.length ? `Top Countries: ${JSON.stringify((geo as any).rows)}` : '',
     (watch as any)?.rows?.length ? `Engagement: total views=${(watch as any).rows[0]?.[0]}, minutes watched=${(watch as any).rows[0]?.[1]}, avg duration=${(watch as any).rows[0]?.[2]}` : '',
@@ -268,6 +278,7 @@ async function fetchYouTubeAnalytics(url: string, creatorId: string): Promise<Oa
     rawText,
     payload: {
       source: "youtube_analytics_api",
+      profile: channelData,
       demographics: (demo as any)?.rows ?? [],
       geography: (geo as any)?.rows ?? [],
       engagement: (watch as any)?.rows ?? [],

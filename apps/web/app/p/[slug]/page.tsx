@@ -117,7 +117,11 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
   const displayImage = 
     (profile.root_platform === "github" ? githubMetrics?.raw_payload?.profile?.avatar_url : null) ||
     (profile.root_platform === "twitch" ? twitchMetrics?.raw_payload?.profile?.profile_image_url : null) ||
+    (profile.root_platform === "youtube" ? youtubeMetrics?.raw_payload?.profile?.snippet?.thumbnails?.high?.url : null) ||
+    (profile.root_platform === "instagram" ? instagramMetrics?.raw_payload?.profile?.profile_picture_url : null) ||
     githubMetrics?.raw_payload?.profile?.avatar_url ||
+    youtubeMetrics?.raw_payload?.profile?.snippet?.thumbnails?.high?.url ||
+    instagramMetrics?.raw_payload?.profile?.profile_picture_url ||
     twitchMetrics?.raw_payload?.profile?.profile_image_url ||
     profile.owner_image || 
     null;
@@ -260,7 +264,7 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
         {/* 6. Platform Data Dumps */}
         {profile.platform_metrics && profile.platform_metrics.length > 0 && (
           <div style={{ gridColumn: "1 / -1" }}>
-            <RetroPlatformData metrics={profile.platform_metrics} />
+            <RetroPlatformData metrics={profile.platform_metrics} links={profile.verified_links} />
           </div>
         )}
       </div>
