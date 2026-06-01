@@ -83,7 +83,11 @@ ${osintData || "None"}
 
 Your task is to write a comprehensive, professional, 3-4 sentence 'bio_summary' that synthesizes ALL of this data into a cohesive narrative written in the third person. 
 CRITICAL: Do not just list their accounts or quote them. The bio MUST be a true summary of their career and expertise. DO NOT simply extract a philosophical quote (like "The best systems...") from their README and use it as the summary. Read all the data and write a proper professional summary.
-If you find new achievements in the OSINT data, return them as well.
+
+ANTI-HALLUCINATION PROTOCOL FOR OSINT DATA:
+Search results often contain information about OTHER PEOPLE with similar names or random text from unrelated pages. You MUST cross-reference any OSINT data with the verified telemetry. If an achievement or bio detail in the OSINT data (e.g. "$868K ARR", "Roblox Developer") does NOT explicitly and unambiguously match the creator's known name, niche, or platforms, you MUST IGNORE IT. Do not attribute random search result achievements to this creator.
+
+If you find NEW, VERIFIED achievements in the OSINT data that confidently belong to this creator, return them. Otherwise, return an empty array for new_achievements.
 Output EXACTLY this JSON format:
 {
   "bio_summary": "...",
