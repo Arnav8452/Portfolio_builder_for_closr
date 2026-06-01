@@ -321,16 +321,9 @@ export function RetroPlatformData({ metrics, links = [] }: RetroPlatformDataProp
                   } else if (link.verification_status === "challenge_verified") {
                     badgeText = "CHALLENGE VERIFIED";
                     bg = "var(--arcade-green)";
-                  } else if (link.verification_status === "inconsistent_identity") {
-                    badgeText = "INCONSISTENT IDENTITY - REJECTED";
-                    bg = "var(--arcade-red)";
-                    color = "white";
-                    anim = "pulse 1.5s infinite";
-                  } else if (link.verification_status === "challenge_failed") {
-                    badgeText = "CHALLENGE FAILED";
-                    bg = "var(--arcade-red)";
-                    color = "white";
                   }
+                  // If verification fails or identity is inconsistent, degrade gracefully to CLAIMED 
+                  // instead of aggressively rejecting it in the UI, as scrapers often fail on platforms like LinkedIn.
 
                   return (
                     <div style={{ 

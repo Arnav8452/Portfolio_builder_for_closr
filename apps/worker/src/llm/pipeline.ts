@@ -110,7 +110,8 @@ export async function executeWithRepair(
   const startTime = Date.now();
   const systemPrompt = `You are evaluating a creator's verified social telemetry chunks to construct a comprehensive B2B profile.
   The creator claims to be named "${creatorName}".
-  If this telemetry clearly belongs to a different person with a vastly different name (e.g. claiming to be Arnav but the profile is Linus Torvalds), set 'identity_match' to false. Otherwise, set it to true.
+  If this telemetry clearly belongs to a different person with a vastly different name (e.g. claiming to be Arnav but the profile is Linus Torvalds), set 'identity_match' to false. 
+  CRITICAL: If the telemetry says "No results found", "Not Found", or otherwise indicates the data is missing, DO NOT reject the identity. Set 'identity_match' to true. Only set false if you see POSITIVE proof that the profile belongs to someone else.
   Extract the data matching the following JSON schema exactly.
   Schema: ${schemaString}
   
