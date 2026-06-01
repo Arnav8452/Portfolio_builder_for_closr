@@ -117,7 +117,7 @@ export async function executeWithRepair(
   
   CRITICAL GROUNDING INSTRUCTION: You MUST ground ALL your extraction and analysis STRICTLY in the provided telemetry data payload. DO NOT hallucinate, guess, or invent external information. If a field like bio_summary cannot be confidently deduced from the payload, clearly state 'Insufficient data to generate summary.' instead of inventing one.
   CRITICAL UI FIELDS:
-  1. 'achievements': Extract concrete, verifiable achievements (e.g. awards, major projects, specific metrics). DO NOT infer or invent generic achievements like "Hackathon Hero" or "Open Source Contributor" unless explicitly stated. Use the EXACT project name or metric as the 'title' so duplicate achievements can be merged later. If no verifiable achievements exist in this chunk, return an empty array [].
+  1. 'achievements': Extract notable achievements, major projects, top repositories, and impressive metrics (e.g., follower counts, total commits). Treat prominent repositories or projects as distinct achievements. Use the project name or metric as the 'title' with a brief summary as the 'description'. Return an array of these achievements.
   2. 'radar_scores': Score the creator from 0 to 100 on the following metrics using this STRICT RUBRIC:
      - IMPACT: How much reach or tangible influence does their work have? (e.g. >10k followers/stars = 90+, <100 = 50-).
      - CONSISTENCY: How regularly and reliably do they publish, commit, or upload? (e.g. Daily/Weekly = 90+, Sporadic/Inactive = 50-).
