@@ -35,7 +35,7 @@ export function RetroNumbers({ stats }: RetroNumbersProps) {
             key={i}
             className="pixel-border"
             style={{
-              flex: "1 1 200px",
+              flex: "1 1 min(100%, 200px)",
               backgroundColor: "var(--arcade-cream-soft)",
               padding: "24px",
               display: "flex",

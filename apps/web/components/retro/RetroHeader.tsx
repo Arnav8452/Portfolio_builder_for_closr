@@ -39,7 +39,7 @@ export function RetroHeader({ profile, displayImage, overallScore, isTrustworthy
       }}
     >
       {/* Left Profile */}
-      <div style={{ display: "flex", gap: "24px", alignItems: "flex-start", flex: "1 1 300px", maxWidth: "500px", flexWrap: "wrap" }}>
+      <div style={{ display: "flex", gap: "24px", alignItems: "flex-start", flex: "1 1 min(100%, 300px)", maxWidth: "500px", flexWrap: "wrap" }}>
         {displayImage && (
           <div className="pixel-border" style={{ width: 120, height: 120, backgroundColor: "var(--arcade-cream)", flexShrink: 0 }}>
             <img src={displayImage} alt={profile.display_name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -79,7 +79,7 @@ export function RetroHeader({ profile, displayImage, overallScore, isTrustworthy
         backgroundColor: "var(--arcade-ink)", 
         border: "2px solid var(--arcade-cream)",
         minWidth: "280px",
-        flex: "1 1 300px"
+        flex: "1 1 min(100%, 300px)"
       }}>
         <div style={{ display: "flex", justifyContent: "space-between", borderBottom: "1px dashed var(--arcade-cream)", paddingBottom: "8px" }}>
           <span style={{ color: "var(--arcade-cream)", fontFamily: "'VT323', monospace", fontSize: "20px" }}>ROOT PLATFORM</span>
@@ -105,7 +105,7 @@ export function RetroHeader({ profile, displayImage, overallScore, isTrustworthy
 
       {/* Right Social Links */}
       {profile.verified_links && profile.verified_links.length > 0 && (
-        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", flex: "1 1 200px", justifyContent: "flex-end", alignContent: "flex-start" }}>
+        <div style={{ display: "flex", gap: "12px", flexWrap: "wrap", flex: "1 1 min(100%, 200px)", justifyContent: "flex-end", alignContent: "flex-start" }}>
           {profile.verified_links.map((link, idx) => {
             let Icon = LinkIcon;
             const p = link.platform.toLowerCase();

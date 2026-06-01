@@ -60,7 +60,7 @@ export function RetroRadar({ scores }: RetroRadarProps) {
         <div 
           className="pixel-border" 
           style={{ 
-            flex: "1 1 400px", 
+            flex: "1 1 min(100%, 400px)", 
             backgroundColor: "var(--arcade-cream-soft)",
             padding: "24px",
             height: "400px"
@@ -89,7 +89,7 @@ export function RetroRadar({ scores }: RetroRadarProps) {
         <div 
           className="pixel-border" 
           style={{ 
-            flex: "1 1 400px", 
+            flex: "1 1 min(100%, 400px)", 
             backgroundColor: "var(--arcade-cream-soft)",
             padding: "32px 24px",
             display: "flex",

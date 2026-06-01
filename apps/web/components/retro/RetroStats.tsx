@@ -54,7 +54,7 @@ export function RetroStats({ languages }: RetroStatsProps) {
 
       <div style={{ display: "flex", flexWrap: "wrap", gap: "24px", alignItems: "stretch" }}>
         {/* Heatmap Panel */}
-        <div style={{ flex: "1 1 300px" }}>
+        <div style={{ flex: "1 1 min(100%, 300px)" }}>
           <div style={{ display: "flex", justifyContent: "space-between", fontFamily: "'Press Start 2P', monospace", fontSize: "10px", color: "var(--arcade-ink)", marginBottom: "8px" }}>
             <span>365-DAY COMMIT HEATMAP</span>
             <span>{heatmapGrid.filter(d => d > 0).length} ACTIVE DAYS</span>
@@ -97,7 +97,7 @@ export function RetroStats({ languages }: RetroStatsProps) {
         <div 
           className="pixel-border" 
           style={{ 
-            flex: "1 1 300px", 
+            flex: "1 1 min(100%, 300px)", 
             backgroundColor: "var(--arcade-cream-soft)",
             padding: "clamp(16px, 4vw, 24px)",
             display: "flex",
