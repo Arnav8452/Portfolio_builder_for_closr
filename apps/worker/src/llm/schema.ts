@@ -21,6 +21,7 @@ const arrayField = (maxItems: number) =>
     .transform(dedupeArray);
 
 export const creatorIdentityZodSchema = z.object({
+  identity_match: z.boolean().describe("True if this data clearly belongs to the claimed creator name. False if it explicitly belongs to someone completely different (e.g., claiming to be Arnav but the profile is Linus Torvalds).").optional().default(true),
   primary_niche: z.enum([
     "ai_ml",
     "devtools",

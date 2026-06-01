@@ -2,7 +2,7 @@ import type { Database, Json } from "@closr/database/types";
 import { JSDOM } from "jsdom";
 import { Readability } from "@mozilla/readability";
 import { env } from "../env.js";
-import { insertRow, rpc, updateRow, upsertRow } from "../supabase-rest.js";
+import { insertRow, rpc, updateRow, upsertRow, getRow } from "../supabase-rest.js";
 import { parseRssFeed, scrapeRssSource } from "../scrapers/rss.js";
 import { fetchOauthPlatform } from "../scrapers/oauth.js";
 import { scrapeWithPlaywright } from "../scrapers/playwright.js";
@@ -41,11 +41,23 @@ async function processScrapingJob(job: ScrapingJob) {
     const result = await scrape(job);
     
     // Check for bio / domain verification challenges
+    let foundChallenge = false;
     if (result.rawText && (result.rawText.includes("closr-8f2a") || result.rawText.includes("closr-verification=8f2a"))) {
+      foundChallenge = true;
       if (job.link_id) {
         await updateRow("creator_links", job.link_id, {
           verification_level: 2,
           verification_status: "challenge_verified",
+        });
+      }
+    }
+
+    if (!foundChallenge && job.link_id) {
+      // Check if it was pending a challenge
+      const linkRows = await getRow<any[]>("creator_links", `id=eq.${job.link_id}`);
+      if (linkRows && linkRows.length > 0 && linkRows[0].verification_status === "claimed") {
+        await updateRow("creator_links", job.link_id, {
+          verification_status: "challenge_failed",
         });
       }
     }

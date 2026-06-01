@@ -32,8 +32,31 @@ async function processAnalysisJob(job: AnalysisJob) {
   creatorLocks.set(job.creator_id, new Promise<void>(resolve => { releaseLock = resolve; }));
 
   try {
-    const result = await extractCreatorIdentity(job.raw_text);
+    // Fetch creator name for consistency checking
+    const creatorResult = await getRow<any[]>("creators", `id=eq.${job.creator_id}`);
+    const creatorName = creatorResult?.[0]?.display_name || "Unknown Creator";
+
+    const result = await extractCreatorIdentity(job.raw_text, creatorName);
     const identity = result.parsed;
+
+    if (identity.identity_match === false) {
+      // Identity spoofing detected!
+      if (job.scraping_job_id) {
+        const scrapingJobResult = await getRow<any[]>("scraping_queue", `id=eq.${job.scraping_job_id}`);
+        const linkId = scrapingJobResult?.[0]?.link_id;
+        if (linkId) {
+          await updateRow("creator_links", linkId, {
+            verification_status: "inconsistent_identity"
+          });
+        }
+      }
+      
+      await updateRow<AnalysisJob[]>("analysis_queue", job.id, {
+        status: "completed", // Complete the job so it doesn't retry, but we didn't merge it.
+        raw_output: result
+      });
+      return;
+    }
 
     // Fetch existing identity to merge arrays
     const existingResult = await getRow<any[]>("creator_identities", `creator_id=eq.${job.creator_id}`);

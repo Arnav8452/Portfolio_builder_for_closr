@@ -76,6 +76,8 @@ export async function submitCreatorProfile(formData: FormData) {
       console.error("submitCreatorProfile insert error:", creatorError);
       return { ok: false, message: creatorError?.message ?? "Could not create creator." };
     }
+    const rootVerificationMethod = String(formData.get("rootVerificationMethod") || "oauth");
+
     const allLinks = [
       { url: normalizedRootUrl, platform: root, level: 3 },
       ...secondaryLinks.map((url) => ({
@@ -94,7 +96,7 @@ export async function submitCreatorProfile(formData: FormData) {
           url: link.url,
           normalized_url: link.url,
           verification_level: link.level,
-          verification_status: link.level === 3 ? "oauth_verified" : "claimed",
+          verification_status: link.level === 3 && rootVerificationMethod === "challenge" ? "claimed" : (link.level === 3 ? "oauth_verified" : "claimed"),
         })
         .select("id")
         .single();

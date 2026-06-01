@@ -56,6 +56,7 @@ type PlatformDetection = {
 type RootNode = PlatformDetection & {
   url: string;
   username: string;
+  verificationMethod?: string;
 };
 
 type LogEntry = {
@@ -409,6 +410,7 @@ export function CreatorIntake({ existingPortfolio, hasLinkedinOauth = false }: {
       ...detectedPlatform,
       url: withProtocol(mainLinkInput),
       username,
+      verificationMethod: detectedPlatform.type === "bio" ? "challenge" : "oauth"
     });
     if (!displayName) {
       setDisplayName(nameFromHandle(username));
@@ -471,6 +473,7 @@ export function CreatorIntake({ existingPortfolio, hasLinkedinOauth = false }: {
     form.set("displayName", displayName.trim() || nameFromHandle(rootNode.username) || "Verified Creator");
     form.set("rootPlatform", rootNode.formValue);
     form.set("rootUrl", rootNode.url);
+    form.set("rootVerificationMethod", rootNode.verificationMethod || "oauth");
     secondaryLinks.forEach((link) => form.append("secondaryLinks", link));
 
     // If editing, use update action with creatorId

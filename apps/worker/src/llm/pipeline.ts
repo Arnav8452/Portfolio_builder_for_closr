@@ -13,7 +13,7 @@ const MODELS = [
   "gpt-4o"
 ];
 
-export async function extractCreatorIdentity(rawText: string): Promise<LLMResponse> {
+export async function extractCreatorIdentity(rawText: string, creatorName: string): Promise<LLMResponse> {
   const schemaString = JSON.stringify(creatorIdentityJsonSchema);
   
   let chunks: string[] = [];
@@ -33,7 +33,7 @@ export async function extractCreatorIdentity(rawText: string): Promise<LLMRespon
   // 1. MAP: Run extraction on each chunk in parallel using different models
   const mapPromises = chunks.map((chunk, index) => {
     const model = MODELS[index % MODELS.length]!;
-    return executeWithRepair(chunk, schemaString, model, 1);
+    return executeWithRepair(chunk, schemaString, model, 1, creatorName);
   });
 
   const mapResults = await Promise.allSettled(mapPromises);
@@ -54,6 +54,7 @@ export async function extractCreatorIdentity(rawText: string): Promise<LLMRespon
     return {
       ...acc,
       parsed: {
+        identity_match: p1.identity_match !== false && p2.identity_match !== false,
         primary_niche: p1.primary_niche || p2.primary_niche,
         bio_summary: (p1.bio_summary?.length || 0) > (p2.bio_summary?.length || 0) ? p1.bio_summary : p2.bio_summary,
         technical_skills: Array.from(new Set([...(p1.technical_skills || []), ...(p2.technical_skills || [])])),
@@ -90,6 +91,9 @@ export async function extractCreatorIdentity(rawText: string): Promise<LLMRespon
     };
   });
 
+  // We must logically AND the identity_match flags. If any chunk is a clear spoof, the whole identity is spoofed.
+  mergedIdentity.parsed.identity_match = successfulResults.every(r => r.parsed.identity_match !== false);
+
   return mergedIdentity;
 }
 
@@ -97,15 +101,19 @@ export async function executeWithRepair(
   rawText: string,
   schemaString: string,
   modelName: string,
-  attempt = 1
+  attempt: number = 1,
+  creatorName: string
 ): Promise<LLMResponse> {
   const GATEWAY_URL = env.aiGatewayUrl;
   const GATEWAY_SECRET = env.aiGatewaySecret;
 
   const startTime = Date.now();
-  const systemPrompt = `You are an expert OSINT data analyst evaluating a creator's verified social telemetry to build a comprehensive portfolio dashboard. 
-  Extract a highly-detailed creator identity following this JSON schema exactly: ${schemaString}. 
-  Do not lose data. Deep dive into the text, extract specific numbers, and synthesize a rich bio_summary. 
+  const systemPrompt = `You are evaluating a creator's verified social telemetry chunks to construct a comprehensive B2B profile.
+  The creator claims to be named "${creatorName}".
+  If this telemetry clearly belongs to a different person with a vastly different name (e.g. claiming to be Arnav but the profile is Linus Torvalds), set 'identity_match' to false. Otherwise, set it to true.
+  Extract the data matching the following JSON schema exactly.
+  Schema: ${schemaString}
+  
   CRITICAL GROUNDING INSTRUCTION: You MUST ground ALL your extraction and analysis STRICTLY in the provided telemetry data payload. DO NOT hallucinate, guess, or invent external information. If a field like bio_summary cannot be confidently deduced from the payload, clearly state 'Insufficient data to generate summary.' instead of inventing one.
   CRITICAL UI FIELDS:
   1. 'achievements': Extract concrete, verifiable achievements (e.g. awards, major projects, specific metrics). DO NOT infer or invent generic achievements like "Hackathon Hero" or "Open Source Contributor" unless explicitly stated. Use the EXACT project name or metric as the 'title' so duplicate achievements can be merged later. If no verifiable achievements exist in this chunk, return an empty array [].
@@ -210,7 +218,7 @@ export async function executeWithRepair(
       const repairPrompt = `The previous JSON you output was invalid or failed validation. Please fix it.\n\nOriginal text:\n${rawText}\n\nFailed output:\n${jsonString}\n\nValidation errors:\n${String(err)}`;
       // Use gpt-4o-mini to trigger Freeloader's provider-specific mapping
       const repairModel = "gpt-4o-mini"; 
-      return executeWithRepair(repairPrompt, schemaString, repairModel, attempt + 1);
+      return executeWithRepair(repairPrompt, schemaString, repairModel, attempt + 1, creatorName);
     }
     throw new Error(`Failed to parse/validate LLM output after repair. Errors: ${String(err)}`);
   }
