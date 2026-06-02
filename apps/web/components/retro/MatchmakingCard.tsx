@@ -7,23 +7,32 @@ import { Activity } from "lucide-react";
 export function MatchmakingCardInner({ slug }: { slug: string }) {
   const searchParams = useSearchParams();
   const jobUrl = searchParams.get("job");
+  const matchId = searchParams.get("match");
   
   const [pitch, setPitch] = useState<string | null>(null);
+  const [targetName, setTargetName] = useState<string>("JOB DESCRIPTION");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!jobUrl) {
+    if (!jobUrl && !matchId) {
       setLoading(false);
       return;
     }
 
     async function fetchMatch() {
       try {
-        const res = await fetch(`/api/matchmake?slug=${encodeURIComponent(slug)}&job=${encodeURIComponent(jobUrl!)}`);
+        const urlParams = new URLSearchParams({ slug });
+        if (jobUrl) urlParams.append("job", jobUrl);
+        if (matchId) urlParams.append("match", matchId);
+        
+        const res = await fetch(`/api/matchmake?${urlParams.toString()}`);
         if (!res.ok) throw new Error("Matchmaking failed");
         const data = await res.json();
         setPitch(data.pitch);
+        if (data.company) {
+          setTargetName(data.company.toUpperCase());
+        }
       } catch (err) {
         console.error("Matchmaking error:", err);
         setError(true);
@@ -33,17 +42,19 @@ export function MatchmakingCardInner({ slug }: { slug: string }) {
     }
     
     fetchMatch();
-  }, [slug, jobUrl]);
+  }, [slug, jobUrl, matchId]);
 
-  if (!jobUrl || (error && !pitch)) return null;
+  if ((!jobUrl && !matchId) || (error && !pitch)) return null;
 
-  // Extract a readable domain or short string from the jobUrl for the UI
-  let displayTarget = "JOB DESCRIPTION";
-  try {
-    const urlObj = new URL(jobUrl);
-    displayTarget = "ROLE AT " + urlObj.hostname.replace('www.', '').toUpperCase();
-  } catch (e) {
-    // ignore
+  // Extract a readable domain or short string from the jobUrl for the UI if company isn't provided by the match
+  let displayTarget = targetName;
+  if (displayTarget === "JOB DESCRIPTION" && jobUrl) {
+    try {
+      const urlObj = new URL(jobUrl);
+      displayTarget = "ROLE AT " + urlObj.hostname.replace('www.', '').toUpperCase();
+    } catch (e) {
+      // ignore
+    }
   }
 
   return (

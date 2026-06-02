@@ -6,9 +6,10 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get("slug");
     const jobUrl = searchParams.get("job");
+    const matchId = searchParams.get("match");
 
-    if (!slug || !jobUrl) {
-      return NextResponse.json({ error: "Missing slug or job URL" }, { status: 400 });
+    if (!slug || (!jobUrl && !matchId)) {
+      return NextResponse.json({ error: "Missing slug or job URL/match ID" }, { status: 400 });
     }
 
     // 1. Fetch Creator
@@ -33,9 +34,18 @@ export async function GET(request: Request) {
 
     // 2. Check if we already stored this match in raw_model_output to save DB calls
     const existingMatches = rawModelOutput.company_matches || {};
-    // Use a hash or just the full URL as the cache key
-    if (existingMatches[jobUrl]) {
-      return NextResponse.json({ pitch: existingMatches[jobUrl] });
+    
+    // Check for explicit pre-generated match ID
+    if (matchId && existingMatches[matchId]) {
+      return NextResponse.json({ 
+        pitch: existingMatches[matchId].pitch || existingMatches[matchId],
+        company: existingMatches[matchId].companyName || "CUSTOM ROLE"
+      });
+    }
+
+    // Check for cached URL
+    if (jobUrl && existingMatches[jobUrl]) {
+      return NextResponse.json({ pitch: existingMatches[jobUrl].pitch || existingMatches[jobUrl] });
     }
 
     // 3. Scrape the Job Description using Jina

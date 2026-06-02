@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { CreatorIntake } from "./CreatorIntake";
 import { deleteCreatorProfile, uploadFileAction } from "./actions";
+import { MatchGenerator } from "./MatchGenerator";
 
 type PortfolioLink = {
   platform: string;
@@ -458,6 +459,9 @@ export function CreatorDashboard({ portfolio, missingProviders = [], hasLinkedin
           </button>
         </div>
       </div>
+
+      {/* Matchmaking Link Generator */}
+      <MatchGenerator slug={portfolio.slug} />
     </div>
   );
 }
