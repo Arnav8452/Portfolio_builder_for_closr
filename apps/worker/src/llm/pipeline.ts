@@ -135,9 +135,9 @@ export async function executeWithRepair(
   
   CRITICAL GROUNDING INSTRUCTION: You MUST ground ALL your extraction and analysis STRICTLY in the provided telemetry data payload. DO NOT hallucinate, guess, or invent external information. If a field like bio_summary cannot be confidently deduced from the payload, clearly state 'Insufficient data to generate summary.' instead of inventing one.
   CRITICAL UI FIELDS:
-  1. 'experience': Extract professional work history, roles, and major employment milestones.
-  2. 'projects': Extract EXACTLY the top 1 to 10 MOST IMPRESSIVE side projects, open source contributions, or content series. You MUST extract a 'url' field if a link is present. CRITICAL: Do NOT copy-paste the raw README or raw text into the description. You MUST summarize it into 1-2 short sentences.
-  3. 'achievements': Extract major wins, virality, awards, high-impact statistics (e.g. "PUBLISHED TO NPM", "1M Views"), or notable recognitions. Limit to a MAXIMUM of 10. CRITICAL: NEVER list generic skills, languages, or tools (like "Docker" or "Python") as achievements. Return an array of these achievements.
+  1. 'experience': Extract professional work history, roles, and major employment milestones. CRITICAL: Retain specific metrics, technologies, and hard data. DO NOT write generic descriptions.
+  2. 'projects': Extract EXACTLY the top 1 to 10 MOST IMPRESSIVE side projects, open source contributions, or content series. You MUST extract a 'url' field if a link is present. CRITICAL: You MUST retain exact technical specifics, hardware details, hard metrics, and exact statistics in your descriptions. DO NOT write generic summaries. Condense the raw text while preserving all impressive hard data.
+  3. 'achievements': Extract major wins, virality, awards, high-impact statistics (e.g. "PUBLISHED TO NPM", "1M Views"), or notable recognitions. Limit to a MAXIMUM of 10. CRITICAL: Retain exact numbers and technical context. Return an array of these achievements.
   4. 'radar_scores': Score the creator from 0 to 100 on the following metrics using this STRICT RUBRIC:
      - IMPACT: How much reach or tangible influence does their work have? (e.g. >10k followers/stars = 90+, <100 = 50-).
      - CONSISTENCY: How regularly and reliably do they publish, commit, or upload? (e.g. Daily/Weekly = 90+, Sporadic/Inactive = 50-).

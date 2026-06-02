@@ -12,7 +12,6 @@ import { RetroPlatformData } from "@/components/retro/RetroPlatformData";
 import { AutoRefresh } from "@/components/AutoRefresh";
 import { BuildingBanner } from "@/components/retro/BuildingBanner";
 import { MatchmakingCard } from "@/components/retro/MatchmakingCard";
-import { LiveResume } from "@/components/retro/LiveResume";
 import { ColorfulCards } from "@/components/retro/ColorfulCards";
 
 type PlatformMetric = {
@@ -411,26 +410,17 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
 
         {/* --- RIGHT COLUMN --- */}
         <div style={{ display: "flex", flexDirection: "column", gap: "64px", minWidth: 0, overflow: "hidden" }}>
-          {/* Live Resume (Experience only now) */}
+          {/* Colorful Data Cards (Experience + Projects + Achievements) */}
           <div id="cv-upload-tool" style={{ scrollMarginTop: "32px" }}>
-            <LiveResume experience={
-              profile.extra_analysis?.experience || 
-              profile.extra_analysis?.timeline_events?.map(t => ({
-                role: t.title,
-                company: "Milestone",
-                timeframe: t.date,
-                description: t.description
-              }))
-            } />
+            <ColorfulCards 
+              items={[
+                ...(profile.extra_analysis?.experience || []).slice(0, 4).map(e => ({ title: `${e.role} @ ${e.company}`, description: e.description, label: e.timeframe })),
+                ...(profile.extra_analysis?.timeline_events || []).slice(0, 4).map(t => ({ title: t.title, description: t.description, label: t.date })),
+                ...(profile.extra_analysis?.projects || []).slice(0, 8).map(p => ({ title: p.name, description: p.description, url: p.url })),
+                ...(profile.extra_analysis?.achievements || []).slice(0, 8).map(a => ({ title: a.title, description: a.description, url: a.url }))
+              ].slice(0, 15)}
+            />
           </div>
-          
-          {/* Colorful Data Cards (Projects + Legacy Achievements) */}
-          <ColorfulCards 
-            items={[
-              ...(profile.extra_analysis?.projects || []).slice(0, 8).map(p => ({ title: p.name, description: p.description, url: p.url })),
-              ...(profile.extra_analysis?.achievements || []).slice(0, 8).map(a => ({ title: a.title, description: a.description, url: a.url }))
-            ].slice(0, 10)}
-          />
         </div>
         
         {/* Full Width Footer Data */}
