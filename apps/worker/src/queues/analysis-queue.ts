@@ -98,6 +98,14 @@ async function processAnalysisJob(job: AnalysisJob) {
       return acc;
     }, []);
 
+    // Merge timeline events
+    const existingTimeline = Array.isArray(existingRaw.timeline_events) ? existingRaw.timeline_events : [];
+    const newTimeline = Array.isArray(identity.timeline_events) ? identity.timeline_events : [];
+    const mergedTimeline = [...existingTimeline, ...newTimeline].reduce((acc, curr) => {
+      if (!acc.find((a: any) => a.title === curr.title && a.date === curr.date)) acc.push(curr);
+      return acc;
+    }, []);
+
     // Merge radar scores
     const confidenceIsHigher = (identity.confidence ?? 0) > (existing?.extraction_confidence ?? 0);
     const mergedRadar = confidenceIsHigher && identity.radar_scores && Object.keys(identity.radar_scores).length > 0
@@ -110,6 +118,7 @@ async function processAnalysisJob(job: AnalysisJob) {
       experience: mergedExperience,
       projects: mergedProjects,
       achievements: mergedAchievements,
+      timeline_events: mergedTimeline,
       radar_scores: mergedRadar,
       raw: result.raw_model_output,
       source_payload: job.payload
