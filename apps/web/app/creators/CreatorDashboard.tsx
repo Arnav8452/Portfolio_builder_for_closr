@@ -20,6 +20,8 @@ import {
   AlertCircle,
   RefreshCw,
   Trash2,
+  FileText,
+  MessageSquare,
   type LucideIcon,
 } from "lucide-react";
 import { CreatorIntake } from "./CreatorIntake";
@@ -177,12 +179,20 @@ export function CreatorDashboard({ portfolio, missingProviders = [], hasLinkedin
   return (
     <div className="creator-stage compact fade-in" style={{ padding: "48px 24px", display: "flex", flexDirection: "column", gap: "24px" }}>
       {/* Header bar */}
-      <div className="dashboard-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+      <div className="dashboard-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "16px" }}>
         <div>
           <h1>Your Portfolio</h1>
           <p className="dashboard-subtitle">
             Manage your verified creator identity
           </p>
+          <div style={{ display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }}>
+            <a href={`/p/${portfolio.slug}#cv-upload-tool`} className="primary-action" style={{ backgroundColor: "var(--arcade-blue)", color: "white", padding: "8px 16px", textDecoration: "none", display: "flex", alignItems: "center", gap: "8px", fontSize: "12px" }}>
+              <FileText size={14} /> ADD CV FILES
+            </a>
+            <a href={`/p/${portfolio.slug}#matchmaking-tool`} className="primary-action" style={{ backgroundColor: "var(--arcade-green)", color: "white", padding: "8px 16px", textDecoration: "none", display: "flex", alignItems: "center", gap: "8px", fontSize: "12px" }}>
+              <MessageSquare size={14} /> GENERATE PITCH RESUME
+            </a>
+          </div>
         </div>
         <div style={{ display: "flex", gap: "12px" }}>
           <button
