@@ -91,10 +91,24 @@ async function main() {
     return originalCbCompletion({ ...req, model: "llama3.1-8b" }, sig);
   };
 
+  const groq = new GroqAdapter();
+  groq.supportsModel = () => true;
+  const originalGroqCompletion = groq._chatCompletion.bind(groq);
+  groq._chatCompletion = async (req: any, sig: any) => {
+    return originalGroqCompletion({ ...req, model: "llama-3.1-8b-instant" }, sig);
+  };
+
+  const gemini = new GeminiAdapter();
+  gemini.supportsModel = () => true;
+  const originalGeminiCompletion = gemini._chatCompletion.bind(gemini);
+  gemini._chatCompletion = async (req: any, sig: any) => {
+    return originalGeminiCompletion({ ...req, model: "gemini-2.5-flash" }, sig);
+  };
+
   const providers = [];
   providers.push(openRouter);
-  providers.push(new GroqAdapter());
-  providers.push(new GeminiAdapter());
+  providers.push(groq);
+  providers.push(gemini);
   providers.push(cerebras);
   
   const pipeline = new PipelineOrchestrator(providers);
