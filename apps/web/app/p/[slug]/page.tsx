@@ -13,6 +13,7 @@ import { AutoRefresh } from "@/components/AutoRefresh";
 import { BuildingBanner } from "@/components/retro/BuildingBanner";
 import { MatchmakingCard } from "@/components/retro/MatchmakingCard";
 import { LiveResume } from "@/components/retro/LiveResume";
+import { ColorfulCards } from "@/components/retro/ColorfulCards";
 
 type PlatformMetric = {
   platform: string;
@@ -385,36 +386,39 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
           />
         </div>
 
-        {/* Stats Row */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "32px", gridColumn: "1 / -1" }}>
+        {/* --- LEFT COLUMN --- */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "32px", minWidth: 0, overflow: "hidden" }}>
           {/* Category Breakdown (Radar Chart) */}
-          <div style={{ minWidth: 0, display: "flex", flexDirection: "column" }}>
+          <div style={{ minWidth: 0, overflow: "hidden" }}>
             <RetroRadar scores={profile.extra_analysis?.radar_scores} />
           </div>
 
           {/* Stats (Heatmap & Pie) */}
           {languages.length > 0 && (
-            <div style={{ minWidth: 0, display: "flex", flexDirection: "column" }}>
+            <div style={{ minWidth: 0, overflow: "hidden" }}>
               <RetroStats languages={languages} />
             </div>
           )}
 
           {/* Numbers */}
           {statsNumbers.length > 0 && (
-            <div style={{ minWidth: 0, display: "flex", flexDirection: "column" }}>
+            <div style={{ minWidth: 0, overflow: "hidden" }}>
               <RetroNumbers stats={statsNumbers} />
             </div>
           )}
         </div>
 
-        {/* Live Resume (Experience & Projects) */}
-        <div style={{ gridColumn: "1 / -1", marginTop: "32px" }}>
-          <LiveResume 
-            experience={profile.extra_analysis?.experience} 
-            projects={
-              profile.extra_analysis?.projects || 
-              profile.extra_analysis?.achievements?.map(a => ({ name: a.title, description: a.description, url: a.url }))
-            } 
+        {/* --- RIGHT COLUMN --- */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "64px", minWidth: 0, overflow: "hidden" }}>
+          {/* Live Resume (Experience only now) */}
+          <LiveResume experience={profile.extra_analysis?.experience} />
+          
+          {/* Colorful Data Cards (Projects + Legacy Achievements) */}
+          <ColorfulCards 
+            items={[
+              ...(profile.extra_analysis?.projects || []).slice(0, 4).map(p => ({ title: p.name, description: p.description, url: p.url, label: "PROJECT" })),
+              ...(profile.extra_analysis?.achievements || []).slice(0, 4).map(a => ({ title: a.title, description: a.description, url: a.url, label: "WIN" }))
+            ].slice(0, 6)}
           />
         </div>
         

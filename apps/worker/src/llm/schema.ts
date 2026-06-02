@@ -60,6 +60,18 @@ export const creatorIdentityZodSchema = z.object({
     url: z.string().optional()
   })).optional().default([]).describe("Extract specific side projects, major open source contributions, or content series."),
   
+  achievements: z.array(z.object({
+    title: z.string(),
+    description: z.string(),
+    url: z.string().optional()
+  })).optional().default([]).describe("Extract major wins, virality, awards, or highlight statistics."),
+  
+  timeline_events: z.array(z.object({
+    date: z.string(),
+    title: z.string(),
+    description: z.string()
+  })).optional().default([]),
+  
   radar_scores: z.object({
     impact: z.number().min(0).max(100).optional().default(50),
     consistency: z.number().min(0).max(100).optional().default(50),

@@ -19,8 +19,8 @@ type LiveResumeProps = {
   projects?: Project[];
 };
 
-export function LiveResume({ experience = [], projects = [] }: LiveResumeProps) {
-  if (experience.length === 0 && projects.length === 0) return null;
+export function LiveResume({ experience = [] }: LiveResumeProps) {
+  if (experience.length === 0) return null;
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "64px" }}>
@@ -60,60 +60,6 @@ export function LiveResume({ experience = [], projects = [] }: LiveResumeProps) 
         </section>
       )}
 
-      {/* PROJECTS SECTION */}
-      {projects.length > 0 && (
-        <section className="bento-card" style={{ border: "2px solid var(--arcade-purple)" }}>
-          <div className="card-header">
-            <h2 style={{ color: "var(--arcade-purple)", display: "flex", gap: "12px", alignItems: "center" }}>
-              <FolderGit2 size={16} /> PROJECTS
-            </h2>
-            <div className="header-decoration" style={{ backgroundColor: "var(--arcade-purple)" }} />
-          </div>
-
-          <div 
-            style={{ 
-              display: "grid", 
-              gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", 
-              gap: "16px",
-              marginTop: "16px"
-            }}
-          >
-            {projects.map((proj, idx) => {
-              const CardWrapper = proj.url ? "a" : "div";
-              return (
-                <CardWrapper 
-                  key={idx}
-                  href={proj.url}
-                  target={proj.url ? "_blank" : undefined}
-                  rel={proj.url ? "noopener noreferrer" : undefined}
-                  className="pixel-border"
-                  style={{
-                    backgroundColor: "var(--arcade-purple)",
-                    padding: "24px",
-                    display: "flex",
-                    flexDirection: "column",
-                    gap: "16px",
-                    boxShadow: "4px 4px 0 rgba(0,0,0,1)",
-                    textDecoration: "none",
-                    cursor: proj.url ? "pointer" : "default"
-                  }}
-                >
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
-                    <h3 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "14px", color: "var(--arcade-ink)", lineHeight: "1.4" }}>
-                      {proj.name}
-                    </h3>
-                    {proj.url && <ExternalLink size={16} color="var(--arcade-ink)" style={{ flexShrink: 0, opacity: 0.5 }} />}
-                  </div>
-                  
-                  <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "14px", lineHeight: "1.6", color: "var(--arcade-ink)", flexGrow: 1 }}>
-                    {proj.description}
-                  </p>
-                </CardWrapper>
-              );
-            })}
-          </div>
-        </section>
-      )}
     </div>
   );
 }

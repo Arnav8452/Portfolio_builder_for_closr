@@ -87,6 +87,9 @@ export async function extractCreatorIdentity(rawText: string, creatorName: strin
         projects: [...(p1.projects || []), ...(p2.projects || [])].filter((v, i, a) => 
           a.findIndex(t => isSimilar(t.name, v.name)) === i
         ).slice(0, 15),
+        achievements: [...(p1.achievements || []), ...(p2.achievements || [])].filter((v, i, a) => 
+          a.findIndex(t => isSimilar(t.title, v.title)) === i
+        ).slice(0, 10),
         radar_scores: radar_scores,
         confidence: Math.round(confidences.reduce((a, b) => a + b, 0) / confidences.length * 10) / 10
       },
