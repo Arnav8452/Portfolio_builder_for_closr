@@ -77,16 +77,16 @@ export async function extractCreatorIdentity(rawText: string, creatorName: strin
         primary_niche: p1.primary_niche || p2.primary_niche,
         bio_summary: (p1.bio_summary?.length || 0) > (p2.bio_summary?.length || 0) ? p1.bio_summary : p2.bio_summary,
         technical_skills: Array.from(new Set([...(p1.technical_skills || []), ...(p2.technical_skills || [])])),
-        brand_tone: Array.from(new Set([...(p1.brand_tone || []), ...(p2.brand_tone || [])])),
-        content_format: Array.from(new Set([...(p1.content_format || []), ...(p2.content_format || [])])),
-        audience_size_tier: p1.audience_size_tier || p2.audience_size_tier,
+        brand_tone: [], // Deprecated
+        content_format: [], // Deprecated
+        audience_size_tier: "micro", // Deprecated
         past_topics: Array.from(new Set([...(p1.past_topics || []), ...(p2.past_topics || [])])),
-        achievements: [...(p1.achievements || []), ...(p2.achievements || [])].filter((v, i, a) => 
-          a.findIndex(t => isSimilar(t.title, v.title)) === i
-        ).slice(0, 10),
-        timeline_events: [...(p1.timeline_events || []), ...(p2.timeline_events || [])].filter((v, i, a) => 
-          a.findIndex(t => isSimilar(t.title, v.title)) === i
-        ),
+        experience: [...(p1.experience || []), ...(p2.experience || [])].filter((v, i, a) => 
+          a.findIndex(t => isSimilar(t.role, v.role) && isSimilar(t.company, v.company)) === i
+        ).slice(0, 15),
+        projects: [...(p1.projects || []), ...(p2.projects || [])].filter((v, i, a) => 
+          a.findIndex(t => isSimilar(t.name, v.name)) === i
+        ).slice(0, 15),
         radar_scores: radar_scores,
         confidence: Math.round(confidences.reduce((a, b) => a + b, 0) / confidences.length * 10) / 10
       },

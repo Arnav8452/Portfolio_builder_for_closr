@@ -63,8 +63,6 @@ async function processAnalysisJob(job: AnalysisJob) {
     const existing = existingResult?.[0];
 
     const mergedSkills = [...new Set([...(existing?.technical_skills ?? []), ...(identity.technical_skills ?? [])])];
-    const mergedTone = [...new Set([...(existing?.brand_tone ?? []), ...(identity.brand_tone ?? [])])];
-    const mergedFormat = [...new Set([...(existing?.content_format ?? []), ...(identity.content_format ?? [])])];
     const mergedTopics = [...new Set([...(existing?.past_topics ?? []), ...(identity.past_topics ?? [])])];
 
     // Smart merge bio_summary
@@ -76,19 +74,19 @@ async function processAnalysisJob(job: AnalysisJob) {
     // Smart merge data cards (achievements, timeline, radar)
     const existingRaw = existing?.raw_model_output || {};
     
-    // Merge achievements
-    const existingAchievements = Array.isArray(existingRaw.achievements) ? existingRaw.achievements : [];
-    const newAchievements = Array.isArray(identity.achievements) ? identity.achievements : [];
-    const mergedAchievements = [...existingAchievements, ...newAchievements].reduce((acc, curr) => {
-      if (!acc.find((a: any) => a.title === curr.title)) acc.push(curr);
+    // Merge experience
+    const existingExperience = Array.isArray(existingRaw.experience) ? existingRaw.experience : [];
+    const newExperience = Array.isArray(identity.experience) ? identity.experience : [];
+    const mergedExperience = [...existingExperience, ...newExperience].reduce((acc, curr) => {
+      if (!acc.find((a: any) => a.company === curr.company && a.role === curr.role)) acc.push(curr);
       return acc;
     }, []);
 
-    // Merge timeline events
-    const existingTimeline = Array.isArray(existingRaw.timeline_events) ? existingRaw.timeline_events : [];
-    const newTimeline = Array.isArray(identity.timeline_events) ? identity.timeline_events : [];
-    const mergedTimeline = [...existingTimeline, ...newTimeline].reduce((acc, curr) => {
-      if (!acc.find((a: any) => a.title === curr.title)) acc.push(curr);
+    // Merge projects
+    const existingProjects = Array.isArray(existingRaw.projects) ? existingRaw.projects : [];
+    const newProjects = Array.isArray(identity.projects) ? identity.projects : [];
+    const mergedProjects = [...existingProjects, ...newProjects].reduce((acc, curr) => {
+      if (!acc.find((a: any) => a.name === curr.name)) acc.push(curr);
       return acc;
     }, []);
 
@@ -101,8 +99,8 @@ async function processAnalysisJob(job: AnalysisJob) {
     const finalRawModelOutput = {
       ...existingRaw,
       ...identity,
-      achievements: mergedAchievements,
-      timeline_events: mergedTimeline,
+      experience: mergedExperience,
+      projects: mergedProjects,
       radar_scores: mergedRadar,
       raw: result.raw_model_output,
       source_payload: job.payload
@@ -112,9 +110,6 @@ async function processAnalysisJob(job: AnalysisJob) {
       creator_id: job.creator_id,
       primary_niche: identity.primary_niche ?? existing?.primary_niche,
       technical_skills: mergedSkills,
-      brand_tone: mergedTone,
-      content_format: mergedFormat,
-      audience_size_tier: identity.audience_size_tier ?? existing?.audience_size_tier,
       past_topics: mergedTopics,
       bio_summary: mergedBioSummary,
       extraction_confidence: Math.max(identity.confidence ?? 0, existing?.extraction_confidence ?? 0),
