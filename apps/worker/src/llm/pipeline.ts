@@ -90,6 +90,9 @@ export async function extractCreatorIdentity(rawText: string, creatorName: strin
         achievements: [...(p1.achievements || []), ...(p2.achievements || [])].filter((v, i, a) => 
           a.findIndex(t => isSimilar(t.title, v.title)) === i
         ).slice(0, 10),
+        timeline_events: [...(p1.timeline_events || []), ...(p2.timeline_events || [])].filter((v, i, a) => 
+          a.findIndex(t => isSimilar(t.title, v.title)) === i
+        ),
         radar_scores: radar_scores,
         confidence: Math.round(confidences.reduce((a, b) => a + b, 0) / confidences.length * 10) / 10
       },
