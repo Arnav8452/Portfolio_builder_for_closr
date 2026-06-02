@@ -5,10 +5,10 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const slug = searchParams.get("slug");
-    const company = searchParams.get("company");
+    const jobUrl = searchParams.get("job");
 
-    if (!slug || !company) {
-      return NextResponse.json({ error: "Missing slug or company" }, { status: 400 });
+    if (!slug || !jobUrl) {
+      return NextResponse.json({ error: "Missing slug or job URL" }, { status: 400 });
     }
 
     // 1. Fetch Creator
@@ -33,30 +33,30 @@ export async function GET(request: Request) {
 
     // 2. Check if we already stored this match in raw_model_output to save DB calls
     const existingMatches = rawModelOutput.company_matches || {};
-    if (existingMatches[company]) {
-      return NextResponse.json({ pitch: existingMatches[company] });
+    // Use a hash or just the full URL as the cache key
+    if (existingMatches[jobUrl]) {
+      return NextResponse.json({ pitch: existingMatches[jobUrl] });
     }
 
-    // 3. Scrape the Company using Jina
-    let companyText = "";
+    // 3. Scrape the Job Description using Jina
+    let jobText = "";
     try {
-      // Use https to ensure valid Jina API call
-      const cleanCompany = company.replace(/^https?:\/\//, "");
-      const jinaRes = await fetch(`https://r.jina.ai/https://${cleanCompany}`, {
+      const cleanUrl = jobUrl.replace(/^https?:\/\//, "");
+      const jinaRes = await fetch(`https://r.jina.ai/https://${cleanUrl}`, {
         headers: { "Accept": "application/json" }
       });
       if (jinaRes.ok) {
         const jinaData = await jinaRes.json();
-        companyText = jinaData.data?.content || "";
-        // Truncate to save tokens
-        companyText = companyText.substring(0, 3000);
+        jobText = jinaData.data?.content || "";
+        // Truncate to save tokens (first ~3000 chars should cover most JDs)
+        jobText = jobText.substring(0, 3000);
       }
     } catch (e) {
-      console.warn("Jina scrape failed for", company, e);
+      console.warn("Jina scrape failed for", jobUrl, e);
     }
 
-    if (!companyText) {
-       companyText = `Target domain: ${company}. No scraping data available.`;
+    if (!jobText) {
+       jobText = `Target Job URL: ${jobUrl}. No scraping data available.`;
     }
 
     // 4. Generate Pitch via OpenRouter
@@ -66,16 +66,16 @@ export async function GET(request: Request) {
     }
 
     const systemPrompt = `You are a B2B AI Recruiter Matchmaker. 
-    You are analyzing if the creator '${creator.display_name}' is a good fit for the company '${company}'.
+    You are analyzing if the creator '${creator.display_name}' is a good fit for the provided Job Description.
     
     Here is the creator's raw profile telemetry data:
     ${JSON.stringify(rawModelOutput)}
     
-    Here is the company's scraped landing page data:
-    ${companyText}
+    Here is the scraped Job Description:
+    ${jobText}
     
-    Write a punchy, highly tailored 3-sentence pitch on why ${creator.display_name} is the perfect candidate/consultant for this company. 
-    Highlight overlapping technologies or domains. 
+    Write a punchy, highly tailored 3-sentence pitch on why ${creator.display_name} is the perfect candidate or consultant for this specific role. 
+    Highlight overlapping technologies, skills, or domains mentioned in the job description. 
     Do NOT use robotic phrases like "In summary" or "I am an AI". Output only the pitch text.`;
 
     const aiRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
@@ -98,8 +98,8 @@ export async function GET(request: Request) {
     const aiData = await aiRes.json();
     const pitch = aiData.choices?.[0]?.message?.content || "Could not generate pitch.";
 
-    // 5. Cache the pitch in raw_model_output (since we didn't add the company_matches table)
-    existingMatches[company] = pitch;
+    // 5. Cache the pitch in raw_model_output
+    existingMatches[jobUrl] = pitch;
     rawModelOutput.company_matches = existingMatches;
 
     await supabase

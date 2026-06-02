@@ -6,21 +6,21 @@ import { Activity } from "lucide-react";
 
 export function MatchmakingCardInner({ slug }: { slug: string }) {
   const searchParams = useSearchParams();
-  const company = searchParams.get("company");
+  const jobUrl = searchParams.get("job");
   
   const [pitch, setPitch] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
 
   useEffect(() => {
-    if (!company) {
+    if (!jobUrl) {
       setLoading(false);
       return;
     }
 
     async function fetchMatch() {
       try {
-        const res = await fetch(`/api/matchmake?slug=${encodeURIComponent(slug)}&company=${encodeURIComponent(company!)}`);
+        const res = await fetch(`/api/matchmake?slug=${encodeURIComponent(slug)}&job=${encodeURIComponent(jobUrl!)}`);
         if (!res.ok) throw new Error("Matchmaking failed");
         const data = await res.json();
         setPitch(data.pitch);
@@ -33,9 +33,18 @@ export function MatchmakingCardInner({ slug }: { slug: string }) {
     }
     
     fetchMatch();
-  }, [slug, company]);
+  }, [slug, jobUrl]);
 
-  if (!company || (error && !pitch)) return null;
+  if (!jobUrl || (error && !pitch)) return null;
+
+  // Extract a readable domain or short string from the jobUrl for the UI
+  let displayTarget = "JOB DESCRIPTION";
+  try {
+    const urlObj = new URL(jobUrl);
+    displayTarget = "ROLE AT " + urlObj.hostname.replace('www.', '').toUpperCase();
+  } catch (e) {
+    // ignore
+  }
 
   return (
     <div 
@@ -52,7 +61,7 @@ export function MatchmakingCardInner({ slug }: { slug: string }) {
     >
       <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "16px", borderBottom: "1px dashed var(--arcade-green)", paddingBottom: "12px" }}>
         <span style={{ color: "var(--arcade-green)", fontFamily: "'VT323', monospace", fontSize: "24px", textTransform: "uppercase" }}>
-          TARGET: {company}
+          TARGET: {displayTarget}
         </span>
       </div>
       
@@ -60,7 +69,7 @@ export function MatchmakingCardInner({ slug }: { slug: string }) {
         <div style={{ display: "flex", gap: "16px", alignItems: "center", color: "var(--arcade-cream)" }}>
           <Activity className="animate-pulse" size={24} color="var(--arcade-green)" />
           <span style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "12px", color: "var(--arcade-green)" }}>
-            ANALYZING COMPANY TECH STACK...
+            ANALYZING JOB DESCRIPTION...
           </span>
         </div>
       ) : pitch ? (
