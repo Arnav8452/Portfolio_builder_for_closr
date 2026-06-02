@@ -55,9 +55,11 @@ export async function POST(request: Request) {
     Here is the provided Job Description text:
     ${truncatedJd}
     
-    Write a punchy, highly tailored 3-sentence pitch on why ${creator.display_name} is the perfect candidate or consultant for this specific role. 
-    Highlight overlapping technologies, skills, or domains mentioned in the job description. 
-    Do NOT use robotic phrases like "In summary" or "I am an AI". Output only the pitch text.`;
+    Write a highly tailored 3-sentence pitch on why ${creator.display_name} is the perfect candidate for this role.
+    CRITICAL ATS INSTRUCTIONS:
+    1. Extract the core exact-match keywords (languages, frameworks, methodologies) from the Job Description and seamlessly weave them into the pitch to ensure it scores highly in Applicant Tracking Systems (ATS).
+    2. Quantify the creator's impact using metrics from their profile (e.g. followers, repo stars, audience size, years of experience) where applicable.
+    3. Do NOT use robotic phrases like "In summary" or "I am an AI". Output only the ATS-optimized pitch text.`;
 
     const aiRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",

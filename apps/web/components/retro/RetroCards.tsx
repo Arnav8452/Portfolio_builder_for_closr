@@ -14,10 +14,10 @@ type RetroCardsProps = {
 };
 
 const BG_COLORS = [
-  "var(--arcade-red)",
+  "var(--arcade-purple)",
   "var(--arcade-yellow)",
   "var(--arcade-blue)",
-  "var(--arcade-purple)",
+  "var(--arcade-red)",
   "var(--arcade-green)",
 ];
 
@@ -30,16 +30,16 @@ export function RetroCards({ achievements }: RetroCardsProps) {
         style={{ 
           fontFamily: "'Press Start 2P', monospace", 
           fontSize: "12px", 
-          color: "var(--arcade-red)",
+          color: "var(--arcade-purple)",
           textTransform: "uppercase",
           marginBottom: "32px",
           display: "flex",
           gap: "16px"
         }}
       >
-        <span>01</span>
+        <span>02</span>
         <span>.</span>
-        <span>ACHIEVEMENTS</span>
+        <span>PROJECTS</span>
       </h2>
 
       <div 
@@ -61,29 +61,26 @@ export function RetroCards({ achievements }: RetroCardsProps) {
             style={{
               backgroundColor: BG_COLORS[index % BG_COLORS.length],
               padding: "24px",
-              color: index % BG_COLORS.length === 1 || index % BG_COLORS.length === 4 ? "var(--arcade-ink)" : "white",
               display: "flex",
               flexDirection: "column",
-              gap: "12px",
+              gap: "16px",
+              boxShadow: "4px 4px 0 rgba(0,0,0,1)",
               textDecoration: "none",
-              cursor: "pointer",
-              transition: "transform 0.1s ease",
+              cursor: item.url ? "pointer" : "default"
             }}
-            onMouseOver={(e: any) => (e.currentTarget.style.transform = "translate(-2px, -2px)")}
-            onMouseOut={(e: any) => (e.currentTarget.style.transform = "translate(0, 0)")}
           >
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
-              <h3 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "12px", margin: 0, textTransform: "uppercase", lineHeight: 1.5, flex: 1 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
+              <h3 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "14px", color: "var(--arcade-ink)", lineHeight: "1.4" }}>
                 {item.title}
               </h3>
-              {item.url && <ExternalLink size={16} style={{ marginLeft: "8px", flexShrink: 0 }} />}
+              {item.url && <ExternalLink size={16} color="var(--arcade-ink)" style={{ flexShrink: 0, opacity: 0.5 }} />}
             </div>
-            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "12px", margin: 0, lineHeight: 1.5, fontWeight: 500, color: "inherit" }}>
+            
+            <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "16px", lineHeight: "1.6", color: "var(--arcade-ink)", flexGrow: 1 }}>
               {item.description}
             </p>
           </CardWrapper>
         )})}
-
       </div>
     </div>
   );

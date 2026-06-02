@@ -50,23 +50,25 @@ export async function GET(request: Request) {
 
     // 3. Scrape the Job Description using Jina
     let jobText = "";
-    try {
-      const cleanUrl = jobUrl.replace(/^https?:\/\//, "");
-      const jinaRes = await fetch(`https://r.jina.ai/https://${cleanUrl}`, {
-        headers: { "Accept": "application/json" }
-      });
-      if (jinaRes.ok) {
-        const jinaData = await jinaRes.json();
-        jobText = jinaData.data?.content || "";
-        // Truncate to save tokens (first ~3000 chars should cover most JDs)
-        jobText = jobText.substring(0, 3000);
+    if (jobUrl) {
+      try {
+        const cleanUrl = jobUrl.replace(/^https?:\/\//, "");
+        const jinaRes = await fetch(`https://r.jina.ai/https://${cleanUrl}`, {
+          headers: { "Accept": "application/json" }
+        });
+        if (jinaRes.ok) {
+          const jinaData = await jinaRes.json();
+          jobText = jinaData.data?.content || "";
+          // Truncate to save tokens (first ~3000 chars should cover most JDs)
+          jobText = jobText.substring(0, 3000);
+        }
+      } catch (e) {
+        console.warn("Jina scrape failed for", jobUrl, e);
       }
-    } catch (e) {
-      console.warn("Jina scrape failed for", jobUrl, e);
     }
 
     if (!jobText) {
-       jobText = `Target Job URL: ${jobUrl}. No scraping data available.`;
+       jobText = `Target Job URL: ${jobUrl || 'Unknown'}. No scraping data available.`;
     }
 
     // 4. Generate Pitch via OpenRouter
@@ -84,9 +86,11 @@ export async function GET(request: Request) {
     Here is the scraped Job Description:
     ${jobText}
     
-    Write a punchy, highly tailored 3-sentence pitch on why ${creator.display_name} is the perfect candidate or consultant for this specific role. 
-    Highlight overlapping technologies, skills, or domains mentioned in the job description. 
-    Do NOT use robotic phrases like "In summary" or "I am an AI". Output only the pitch text.`;
+    Write a highly tailored 3-sentence pitch on why ${creator.display_name} is the perfect candidate for this role.
+    CRITICAL ATS INSTRUCTIONS:
+    1. Extract the core exact-match keywords (languages, frameworks, methodologies) from the Job Description and seamlessly weave them into the pitch to ensure it scores highly in Applicant Tracking Systems (ATS).
+    2. Quantify the creator's impact using metrics from their profile (e.g. followers, repo stars, audience size, years of experience) where applicable.
+    3. Do NOT use robotic phrases like "In summary" or "I am an AI". Output only the ATS-optimized pitch text.`;
 
     const aiRes = await fetch("https://openrouter.ai/api/v1/chat/completions", {
       method: "POST",

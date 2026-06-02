@@ -13,6 +13,7 @@ import { RetroPlatformData } from "@/components/retro/RetroPlatformData";
 import { AutoRefresh } from "@/components/AutoRefresh";
 import { BuildingBanner } from "@/components/retro/BuildingBanner";
 import { MatchmakingCard } from "@/components/retro/MatchmakingCard";
+import { RetroTimeline } from "@/components/retro/RetroTimeline";
 
 type PlatformMetric = {
   platform: string;
@@ -399,7 +400,12 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
 
         {/* Right Column */}
         <div style={{ display: "flex", flexDirection: "column", gap: "64px" }}>
-          {/* 2. Roasts / Achievements Cards */}
+          {/* Experience Timeline */}
+          {profile.extra_analysis?.timeline_events && profile.extra_analysis.timeline_events.length > 0 && (
+            <RetroTimeline events={profile.extra_analysis.timeline_events} />
+          )}
+
+          {/* 2. Projects / Achievements Cards */}
           <RetroCards achievements={profile.extra_analysis?.achievements} />
         </div>
         
