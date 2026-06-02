@@ -12,6 +12,7 @@ import { RetroNumbers } from "@/components/retro/RetroNumbers";
 import { RetroPlatformData } from "@/components/retro/RetroPlatformData";
 import { AutoRefresh } from "@/components/AutoRefresh";
 import { BuildingBanner } from "@/components/retro/BuildingBanner";
+import { MatchmakingCard } from "@/components/retro/MatchmakingCard";
 
 type PlatformMetric = {
   platform: string;
@@ -368,6 +369,11 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
       )}
 
       <div className="bento-grid" style={{ paddingTop: (!profile.confidence || profile.bio_summary === "Pending summary.") ? 0 : undefined }}>
+        {/* Matchmaking Lead Gen Card */}
+        <div style={{ gridColumn: "1 / -1" }}>
+          <MatchmakingCard slug={profile.slug} />
+        </div>
+
         {/* 1. Main Header */}
         <div style={{ gridColumn: "1 / -1" }}>
           <RetroHeader 

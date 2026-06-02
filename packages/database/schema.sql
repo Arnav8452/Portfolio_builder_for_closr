@@ -489,3 +489,12 @@ ALTER TABLE social_cache ENABLE ROW LEVEL SECURITY;
 -- Note: All frontend interactions with the DB happen through Next.js server actions (using Service Role)
 -- or through the Worker (using Service Role). If public user policies are ever needed, they should
 -- be tightly scoped using auth.uid().
+C R E A T E   T A B L E   I F   N O T   E X I S T S   c o m p a n y _ m a t c h e s   ( 
+         i d   U U I D   P R I M A R Y   K E Y   D E F A U L T   g e n _ r a n d o m _ u u i d ( ) , 
+         c r e a t o r _ i d   U U I D   N O T   N U L L   R E F E R E N C E S   c r e a t o r s ( i d )   O N   D E L E T E   C A S C A D E , 
+         c o m p a n y _ d o m a i n   T E X T   N O T   N U L L , 
+         p i t c h   T E X T   N O T   N U L L , 
+         c r e a t e d _ a t   T I M E S T A M P T Z   N O T   N U L L   D E F A U L T   N O W ( ) , 
+         U N I Q U E ( c r e a t o r _ i d ,   c o m p a n y _ d o m a i n ) 
+ ) ;  
+ 

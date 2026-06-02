@@ -8,7 +8,37 @@ import { GeminiAdapter, GroqAdapter, CerebrasAdapter, OpenRouterAdapter } from "
 import { authenticate } from "./middleware/auth.js";
 import { pollAnalysisQueue } from "./queues/analysis-queue.js";
 import { pollScrapingQueue } from "./queues/scraping-queue.js";
+import { getRow, insertRow } from "./supabase-rest.js";
 import { env } from "./env.js";
+
+async function triggerDailySyncs() {
+  console.log("[worker] Running daily sync check...");
+  try {
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    // Fetch live creators whose last update was >24h ago
+    const creators = await getRow<any[]>("creators", `onboarding_status=eq.live&updated_at=lt.${twentyFourHoursAgo}`);
+    if (!creators || creators.length === 0) return;
+    
+    console.log(`[worker] Found ${creators.length} stale profiles to resync.`);
+    for (const c of creators) {
+      // Find their root link
+      const links = await getRow<any[]>("creator_links", `creator_id=eq.${c.id}&platform=eq.${c.root_platform}`);
+      if (links && links.length > 0) {
+        await insertRow("scraping_queue", {
+          creator_id: c.id,
+          link_id: links[0].id,
+          platform: c.root_platform,
+          handle: c.root_handle,
+          status: "pending",
+          priority: 0 // low priority for bg sync
+        });
+        console.log(`[worker] Queued background sync for ${c.display_name}`);
+      }
+    }
+  } catch (error) {
+    console.error("[worker] Daily sync failed", error);
+  }
+}
 
 // 1. Initialize Sentry if configured
 if (env.sentryDsn) {
@@ -99,8 +129,16 @@ async function main() {
   });
 
   // 5. Start Background Polling Loop
+  let lastSyncCheck = 0;
+  
   while (isRunning) {
     try {
+      const now = Date.now();
+      if (now - lastSyncCheck > 60 * 60 * 1000) { // Every 1 hour
+        lastSyncCheck = now;
+        await triggerDailySyncs();
+      }
+
       const processed = await tick();
       if (processed === 0 && isRunning) {
         await sleep(env.pollSeconds * 1000);
