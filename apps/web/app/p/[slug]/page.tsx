@@ -22,6 +22,7 @@ type PlatformMetric = {
 
 type PublicProfile = {
   slug: string;
+  onboarding_status: string;
   display_name: string;
   root_platform: string;
   root_handle: string | null;
@@ -164,6 +165,7 @@ export default async function PublicProfilePage({ params }: { params: Promise<{ 
        data = {
          id: creator.id,
          slug: creator.slug,
+         onboarding_status: creator.onboarding_status,
          display_name: creator.display_name,
          root_platform: creator.root_platform,
          root_handle: creator.root_handle,
@@ -361,7 +363,7 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       
-      {(!profile.confidence || profile.bio_summary === "Pending summary." || !profile.extra_analysis || Object.keys(profile.extra_analysis).length === 0) && (
+      {(!profile.confidence || profile.onboarding_status === "analysis_completed" || profile.bio_summary === "Pending summary." || !profile.extra_analysis || Object.keys(profile.extra_analysis).length === 0) && (
         <BuildingBanner />
       )}
 
@@ -387,16 +389,19 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
           {/* 5. Numbers */}
           {statsNumbers.length > 0 && <RetroNumbers stats={statsNumbers} />}
 
-          {/* 6. Platform Data Dumps */}
-          {profile.platform_metrics && profile.platform_metrics.length > 0 && (
-            <RetroPlatformData metrics={profile.platform_metrics} links={profile.verified_links} />
-          )}
         </div>
 
         {/* Right Column */}
         <div style={{ display: "flex", flexDirection: "column", gap: "64px" }}>
           {/* 2. Roasts / Achievements Cards */}
           <RetroCards achievements={profile.extra_analysis?.achievements} />
+        </div>
+        
+        {/* Full Width Footer Data */}
+        <div style={{ gridColumn: "1 / -1", marginTop: "32px" }}>
+          {profile.platform_metrics && profile.platform_metrics.length > 0 && (
+            <RetroPlatformData metrics={profile.platform_metrics} links={profile.verified_links} />
+          )}
         </div>
       </div>
       

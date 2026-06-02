@@ -156,6 +156,7 @@ async function fetchGithubProfile(url: string, creatorId?: string): Promise<Oaut
   }
 
   const repoText = repos
+    .filter((repo) => !repo.fork)
     .map((repo) => `${repo.name ?? "repo"} - URL: ${repo.html_url ?? repo.url ?? ""}\nDescription: ${repo.description ?? ""}`)
     .join("\n\n");
 
