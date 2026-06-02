@@ -38,6 +38,7 @@ type PublicProfile = {
   extra_analysis?: {
     experience?: { company: string; role: string; timeframe: string; description: string }[];
     projects?: { name: string; description: string; url?: string }[];
+    achievements?: { title: string; description: string; url?: string }[];
     radar_scores?: {
       impact: number;
       consistency: number;
@@ -384,23 +385,36 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
           />
         </div>
 
-        {/* Left Column -> Now Full Width or Mixed Grid */}
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "64px", gridColumn: "1 / -1" }}>
+        {/* Stats Row */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "32px", gridColumn: "1 / -1" }}>
           {/* Category Breakdown (Radar Chart) */}
-          <RetroRadar scores={profile.extra_analysis?.radar_scores} />
+          <div style={{ minWidth: 0, display: "flex", flexDirection: "column" }}>
+            <RetroRadar scores={profile.extra_analysis?.radar_scores} />
+          </div>
 
           {/* Stats (Heatmap & Pie) */}
-          {languages.length > 0 && <RetroStats languages={languages} />}
+          {languages.length > 0 && (
+            <div style={{ minWidth: 0, display: "flex", flexDirection: "column" }}>
+              <RetroStats languages={languages} />
+            </div>
+          )}
 
           {/* Numbers */}
-          {statsNumbers.length > 0 && <RetroNumbers stats={statsNumbers} />}
+          {statsNumbers.length > 0 && (
+            <div style={{ minWidth: 0, display: "flex", flexDirection: "column" }}>
+              <RetroNumbers stats={statsNumbers} />
+            </div>
+          )}
         </div>
 
         {/* Live Resume (Experience & Projects) */}
         <div style={{ gridColumn: "1 / -1", marginTop: "32px" }}>
           <LiveResume 
             experience={profile.extra_analysis?.experience} 
-            projects={profile.extra_analysis?.projects} 
+            projects={
+              profile.extra_analysis?.projects || 
+              profile.extra_analysis?.achievements?.map(a => ({ name: a.title, description: a.description, url: a.url }))
+            } 
           />
         </div>
         
