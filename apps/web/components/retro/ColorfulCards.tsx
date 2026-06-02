@@ -53,30 +53,19 @@ export function ColorfulCards({ items, title = "HIGHLIGHTS", icon = <Star size={
         }}
       >
         {items.map((item, index) => {
-          const CardWrapper = item.url ? "a" : "div";
-          const bgColor = BG_COLORS[index % BG_COLORS.length];
-          
-          return (
-            <CardWrapper 
-              key={index}
-              href={item.url}
-              target={item.url ? "_blank" : undefined}
-              rel={item.url ? "noopener noreferrer" : undefined}
-              className="pixel-border"
+          const CardContent = (
+            <div 
+              className="pixel-border hover-lift"
               style={{
-                backgroundColor: bgColor,
+                backgroundColor: BG_COLORS[index % BG_COLORS.length],
                 padding: "24px",
                 display: "flex",
                 flexDirection: "column",
                 gap: "16px",
-                boxShadow: "6px 6px 0 rgba(0,0,0,1)",
-                textDecoration: "none",
-                cursor: item.url ? "pointer" : "default",
-                transition: "transform 0.1s ease",
-                border: "2px solid var(--arcade-ink)"
+                height: "100%",
+                border: "2px solid var(--arcade-ink)",
+                cursor: item.url ? "pointer" : "default"
               }}
-              onMouseEnter={(e: any) => { if(item.url) e.currentTarget.style.transform = "translate(-2px, -2px)"; }}
-              onMouseLeave={(e: any) => { if(item.url) e.currentTarget.style.transform = "translate(0, 0)"; }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: "12px" }}>
                 <h3 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "14px", color: "var(--arcade-ink)", lineHeight: "1.4" }}>
@@ -85,25 +74,27 @@ export function ColorfulCards({ items, title = "HIGHLIGHTS", icon = <Star size={
                 {item.url && <ExternalLink size={16} color="var(--arcade-ink)" style={{ flexShrink: 0, opacity: 0.7 }} />}
               </div>
               
-              {item.label && (
-                <span style={{ 
-                  display: "inline-block",
-                  fontFamily: "'VT323', monospace", 
-                  fontSize: "14px", 
-                  backgroundColor: "rgba(0,0,0,0.1)",
-                  padding: "2px 8px",
-                  color: "var(--arcade-ink)",
-                  alignSelf: "flex-start"
-                }}>
-                  {item.label}
-                </span>
-              )}
-              
               <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "15px", lineHeight: "1.6", color: "var(--arcade-ink)", flexGrow: 1, fontWeight: 500 }}>
                 {item.description}
               </p>
-            </CardWrapper>
+            </div>
           );
+
+          if (item.url) {
+            return (
+              <a 
+                key={index}
+                href={item.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={{ textDecoration: "none", display: "block", height: "100%" }}
+              >
+                {CardContent}
+              </a>
+            );
+          }
+
+          return <div key={index} style={{ height: "100%" }}>{CardContent}</div>;
         })}
       </div>
     </div>
