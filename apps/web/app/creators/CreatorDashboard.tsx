@@ -186,11 +186,11 @@ export function CreatorDashboard({ portfolio, missingProviders = [], hasLinkedin
             Manage your verified creator identity
           </p>
           <div style={{ display: "flex", gap: "12px", marginTop: "16px", flexWrap: "wrap" }}>
-            <a href={`/p/${portfolio.slug}#cv-upload-tool`} className="primary-action" style={{ backgroundColor: "var(--arcade-blue)", color: "white", padding: "8px 16px", textDecoration: "none", display: "flex", alignItems: "center", gap: "8px", fontSize: "12px" }}>
-              <FileText size={14} /> ADD CV FILES
+            <a href="#cv-upload-tool" className="secondary-action" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "6px" }}>
+              <FileText size={14} /> Add CV Files
             </a>
-            <a href={`/p/${portfolio.slug}#matchmaking-tool`} className="primary-action" style={{ backgroundColor: "var(--arcade-green)", color: "white", padding: "8px 16px", textDecoration: "none", display: "flex", alignItems: "center", gap: "8px", fontSize: "12px" }}>
-              <MessageSquare size={14} /> GENERATE PITCH RESUME
+            <a href="#matchmaking-tool" className="secondary-action" style={{ textDecoration: "none", display: "flex", alignItems: "center", gap: "6px" }}>
+              <MessageSquare size={14} /> Generate Pitch Resume
             </a>
           </div>
         </div>
@@ -379,7 +379,7 @@ export function CreatorDashboard({ portfolio, missingProviders = [], hasLinkedin
       )}
 
       {/* Upload File / Resume */}
-      <div className="share-card" style={{ marginBottom: "24px", border: "2px solid var(--arcade-purple)" }}>
+      <div id="cv-upload-tool" className="share-card" style={{ marginBottom: "24px", border: "2px solid var(--arcade-purple)", scrollMarginTop: "32px" }}>
         <h3 style={{ color: "var(--arcade-purple)" }}>Upload Document / Resume</h3>
         <p className="dashboard-subtitle" style={{ marginBottom: "16px", marginTop: "4px" }}>
           Upload a PDF, TXT, or Markdown file to be merged into your AI analysis.
@@ -471,7 +471,9 @@ export function CreatorDashboard({ portfolio, missingProviders = [], hasLinkedin
       </div>
 
       {/* Matchmaking Link Generator */}
-      <MatchGenerator slug={portfolio.slug} />
+      <div id="matchmaking-tool" style={{ scrollMarginTop: "32px" }}>
+        <MatchGenerator slug={portfolio.slug} />
+      </div>
     </div>
   );
 }
