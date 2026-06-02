@@ -16,7 +16,7 @@ async function triggerDailySyncs() {
   try {
     const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
     // Fetch live creators whose last update was >24h ago
-    const creators = await getRow<any[]>("creators", `onboarding_status=eq.live&updated_at=lt.${twentyFourHoursAgo}`);
+    const creators = await getRow<any[]>("creators", `onboarding_status=eq.live&updated_at=lt.${twentyFourHoursAgo}&limit=100`);
     if (!creators || creators.length === 0) return;
     
     console.log(`[worker] Found ${creators.length} stale profiles to resync.`);

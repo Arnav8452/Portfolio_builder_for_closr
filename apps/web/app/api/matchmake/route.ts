@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 
+export const maxDuration = 60;
+
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
@@ -114,7 +116,21 @@ export async function GET(request: Request) {
 
     // 5. Cache the pitch in raw_model_output
     if (jobUrl) {
-      existingMatches[jobUrl] = pitch;
+      existingMatches[jobUrl] = {
+        pitch,
+        companyName: "CUSTOM ROLE",
+        createdAt: new Date().toISOString()
+      };
+
+      // PRUNE CACHE TO 15 MAX ITEMS
+      const matchKeys = Object.keys(existingMatches);
+      if (matchKeys.length > 15) {
+        matchKeys
+          .sort((a, b) => new Date(existingMatches[a].createdAt || 0).getTime() - new Date(existingMatches[b].createdAt || 0).getTime())
+          .slice(0, matchKeys.length - 15)
+          .forEach(key => delete existingMatches[key]);
+      }
+
       rawModelOutput.company_matches = existingMatches;
 
       await supabase

@@ -3,6 +3,8 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 
+export const maxDuration = 60;
+
 export async function POST(request: Request) {
   try {
     const session = await getServerSession(authOptions);
@@ -90,6 +92,16 @@ export async function POST(request: Request) {
       companyName,
       createdAt: new Date().toISOString()
     };
+
+    // PRUNE CACHE TO 15 MAX ITEMS
+    const matchKeys = Object.keys(existingMatches);
+    if (matchKeys.length > 15) {
+      matchKeys
+        .sort((a, b) => new Date(existingMatches[a].createdAt || 0).getTime() - new Date(existingMatches[b].createdAt || 0).getTime())
+        .slice(0, matchKeys.length - 15)
+        .forEach(key => delete existingMatches[key]);
+    }
+
     rawModelOutput.company_matches = existingMatches;
 
     await supabase

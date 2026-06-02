@@ -10,9 +10,23 @@ export function MatchmakingCardInner({ slug }: { slug: string }) {
   const matchId = searchParams.get("match");
   
   const [pitch, setPitch] = useState<string | null>(null);
+  const [displayedPitch, setDisplayedPitch] = useState<string>("");
   const [targetName, setTargetName] = useState<string>("JOB DESCRIPTION");
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<boolean>(false);
+
+  // Typewriter effect logic
+  useEffect(() => {
+    if (!pitch) return;
+    let i = 0;
+    setDisplayedPitch("");
+    const timer = setInterval(() => {
+      setDisplayedPitch(pitch.substring(0, i));
+      i++;
+      if (i > pitch.length) clearInterval(timer);
+    }, 15); // Adjust speed here
+    return () => clearInterval(timer);
+  }, [pitch]);
 
   useEffect(() => {
     if (!jobUrl && !matchId) {
@@ -85,11 +99,12 @@ export function MatchmakingCardInner({ slug }: { slug: string }) {
         </div>
       ) : pitch ? (
         <div>
-          <h3 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "14px", color: "var(--arcade-cream)", marginBottom: "16px" }}>
-            AI RECRUITER MATCH ANALYSIS
+          <h3 style={{ fontFamily: "'Press Start 2P', monospace", fontSize: "14px", color: "var(--arcade-cream)", marginBottom: "16px", display: "flex", alignItems: "center", gap: "8px" }}>
+            <Activity size={16} color="var(--arcade-green)" /> AI RECRUITER ANALYSIS
           </h3>
           <p style={{ fontFamily: "'Inter', sans-serif", fontSize: "16px", lineHeight: "1.6", color: "var(--arcade-cream)", opacity: 0.9 }}>
-            {pitch}
+            {displayedPitch}
+            {displayedPitch.length < pitch.length && <span style={{ display: "inline-block", width: "8px", height: "16px", backgroundColor: "var(--arcade-green)", marginLeft: "4px", animation: "blink 1s step-end infinite" }} />}
           </p>
         </div>
       ) : null}
