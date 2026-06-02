@@ -42,25 +42,24 @@ export const creatorIdentityZodSchema = z.object({
     "other",
   ] as const).optional().default("other"),
   technical_skills: arrayField(25),
-  brand_tone: arrayField(15),
-  content_format: arrayField(15),
-  audience_size_tier: z.enum([
-    "micro",
-    "emerging",
-    "mid_market",
-    "large",
-    "enterprise"
-  ] as const).optional().default("micro"),
   past_topics: arrayField(25),
   bio_summary: z.string().optional().default("Pending summary."),
   confidence: z.number().min(0).max(1).optional().default(0),
   
   // Retro UI dynamic fields
-  achievements: z.array(z.object({
-    title: z.string(),
+  experience: z.array(z.object({
+    company: z.string(),
+    role: z.string(),
+    timeframe: z.string().describe("e.g., '2020 - 2023' or 'Jan 2023 - Present'"),
+    description: z.string()
+  })).optional().default([]).describe("Extract professional work history, roles, or major employment milestones from the provided telemetry, resumes, or platforms."),
+  
+  projects: z.array(z.object({
+    name: z.string(),
     description: z.string(),
-    url: z.string().optional().describe("Optional URL linking to the source of this achievement (e.g. repo URL, video URL).")
-  })).optional().default([]),
+    url: z.string().optional()
+  })).optional().default([]).describe("Extract specific side projects, major open source contributions, or content series."),
+  
   radar_scores: z.object({
     impact: z.number().min(0).max(100).optional().default(50),
     consistency: z.number().min(0).max(100).optional().default(50),
@@ -68,12 +67,7 @@ export const creatorIdentityZodSchema = z.object({
     depth: z.number().min(0).max(100).optional().default(50),
     breadth: z.number().min(0).max(100).optional().default(50),
     community: z.number().min(0).max(100).optional().default(50)
-  }).optional(),
-  timeline_events: z.array(z.object({
-    date: z.string(),
-    title: z.string(),
-    description: z.string()
-  })).optional().default([])
+  }).optional()
 });
 
 export type ParsedCreatorIdentity = z.infer<typeof creatorIdentityZodSchema>;

@@ -5,7 +5,6 @@ export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 import { Activity } from "lucide-react";
 import { RetroHeader } from "@/components/retro/RetroHeader";
-import { RetroCards } from "@/components/retro/RetroCards";
 import { RetroRadar } from "@/components/retro/RetroRadar";
 import { RetroStats } from "@/components/retro/RetroStats";
 import { RetroNumbers } from "@/components/retro/RetroNumbers";
@@ -13,7 +12,7 @@ import { RetroPlatformData } from "@/components/retro/RetroPlatformData";
 import { AutoRefresh } from "@/components/AutoRefresh";
 import { BuildingBanner } from "@/components/retro/BuildingBanner";
 import { MatchmakingCard } from "@/components/retro/MatchmakingCard";
-import { RetroTimeline } from "@/components/retro/RetroTimeline";
+import { LiveResume } from "@/components/retro/LiveResume";
 
 type PlatformMetric = {
   platform: string;
@@ -385,28 +384,24 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
           />
         </div>
 
-        {/* Left Column */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "64px" }}>
-          {/* 3. Category Breakdown (Radar Chart) */}
+        {/* Left Column -> Now Full Width or Mixed Grid */}
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))", gap: "64px", gridColumn: "1 / -1" }}>
+          {/* Category Breakdown (Radar Chart) */}
           <RetroRadar scores={profile.extra_analysis?.radar_scores} />
 
-          {/* 4. Stats (Heatmap & Pie) */}
+          {/* Stats (Heatmap & Pie) */}
           {languages.length > 0 && <RetroStats languages={languages} />}
 
-          {/* 5. Numbers */}
+          {/* Numbers */}
           {statsNumbers.length > 0 && <RetroNumbers stats={statsNumbers} />}
-
         </div>
 
-        {/* Right Column */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "64px" }}>
-          {/* Experience Timeline */}
-          {profile.extra_analysis?.timeline_events && profile.extra_analysis.timeline_events.length > 0 && (
-            <RetroTimeline events={profile.extra_analysis.timeline_events} />
-          )}
-
-          {/* 2. Projects / Achievements Cards */}
-          <RetroCards achievements={profile.extra_analysis?.achievements} />
+        {/* Live Resume (Experience & Projects) */}
+        <div style={{ gridColumn: "1 / -1", marginTop: "32px" }}>
+          <LiveResume 
+            experience={profile.extra_analysis?.experience} 
+            projects={profile.extra_analysis?.projects} 
+          />
         </div>
         
         {/* Full Width Footer Data */}
