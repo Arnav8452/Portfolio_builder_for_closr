@@ -14,6 +14,7 @@ import { BuildingBanner } from "@/components/retro/BuildingBanner";
 import { MatchmakingCard } from "@/components/retro/MatchmakingCard";
 import { LiveResume } from "@/components/retro/LiveResume";
 import { ColorfulCards } from "@/components/retro/ColorfulCards";
+import { FileText, MessageSquare } from "lucide-react";
 
 type PlatformMetric = {
   platform: string;
@@ -371,8 +372,18 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
       )}
 
       <div className="bento-grid" style={{ paddingTop: (!profile.confidence || profile.bio_summary === "Pending summary.") ? 0 : undefined }}>
+        {/* Quick Actions Row */}
+        <div style={{ gridColumn: "1 / -1", display: "flex", gap: "16px", flexWrap: "wrap", justifyContent: "flex-end" }}>
+          <a href="#cv-upload-tool" className="pixel-border hover-lift" style={{ backgroundColor: "var(--arcade-blue)", color: "white", padding: "12px 24px", fontFamily: "'Press Start 2P', monospace", fontSize: "12px", display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
+            <FileText size={16} /> ADD CV FILES
+          </a>
+          <a href="#matchmaking-tool" className="pixel-border hover-lift" style={{ backgroundColor: "var(--arcade-green)", color: "white", padding: "12px 24px", fontFamily: "'Press Start 2P', monospace", fontSize: "12px", display: "flex", alignItems: "center", gap: "8px", textDecoration: "none" }}>
+            <MessageSquare size={16} /> GENERATE PITCH RESUME
+          </a>
+        </div>
+
         {/* Matchmaking Lead Gen Card */}
-        <div style={{ gridColumn: "1 / -1" }}>
+        <div id="matchmaking-tool" style={{ gridColumn: "1 / -1", scrollMarginTop: "32px" }}>
           <MatchmakingCard slug={profile.slug} />
         </div>
 
@@ -411,7 +422,9 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
         {/* --- RIGHT COLUMN --- */}
         <div style={{ display: "flex", flexDirection: "column", gap: "64px", minWidth: 0, overflow: "hidden" }}>
           {/* Live Resume (Experience only now) */}
-          <LiveResume experience={profile.extra_analysis?.experience} />
+          <div id="cv-upload-tool" style={{ scrollMarginTop: "32px" }}>
+            <LiveResume experience={profile.extra_analysis?.experience} />
+          </div>
           
           {/* Colorful Data Cards (Projects + Legacy Achievements) */}
           <ColorfulCards 

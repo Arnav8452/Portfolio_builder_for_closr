@@ -44,6 +44,10 @@ body {
   letter-spacing: 0;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   background-color: var(--arcade-cream);
   position: relative;
