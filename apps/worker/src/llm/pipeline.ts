@@ -135,18 +135,20 @@ export async function executeWithRepair(
   
   CRITICAL GROUNDING INSTRUCTION: You MUST ground ALL your extraction and analysis STRICTLY in the provided telemetry data payload. DO NOT hallucinate, guess, or invent external information. If a field like bio_summary cannot be confidently deduced from the payload, clearly state 'Insufficient data to generate summary.' instead of inventing one.
   CRITICAL UI FIELDS:
-  1. 'achievements': Extract EXACTLY the top 1 to 10 MOST IMPRESSIVE achievements, major projects, or top content. Limit to a MAXIMUM of 10. Treat prominent repositories or projects as distinct achievements. You MUST extract a 'url' field if a link is present in the raw data (e.g. 'URL: https://...'). CRITICAL: Do NOT copy-paste the raw README or raw text into the description. You MUST summarize it into 1-2 short sentences. CRITICAL: NEVER list generic skills, languages, or tools (like "Docker", "React", or "Python") as achievements. Use the project/video name or metric as the 'title' with a brief summary as the 'description'. Return an array of these achievements.
-  2. 'radar_scores': Score the creator from 0 to 100 on the following metrics using this STRICT RUBRIC:
+  1. 'experience': Extract professional work history, roles, and major employment milestones.
+  2. 'projects': Extract EXACTLY the top 1 to 10 MOST IMPRESSIVE side projects, open source contributions, or content series. You MUST extract a 'url' field if a link is present. CRITICAL: Do NOT copy-paste the raw README or raw text into the description. You MUST summarize it into 1-2 short sentences.
+  3. 'achievements': Extract major wins, virality, awards, high-impact statistics (e.g. "PUBLISHED TO NPM", "1M Views"), or notable recognitions. Limit to a MAXIMUM of 10. CRITICAL: NEVER list generic skills, languages, or tools (like "Docker" or "Python") as achievements. Return an array of these achievements.
+  4. 'radar_scores': Score the creator from 0 to 100 on the following metrics using this STRICT RUBRIC:
      - IMPACT: How much reach or tangible influence does their work have? (e.g. >10k followers/stars = 90+, <100 = 50-).
      - CONSISTENCY: How regularly and reliably do they publish, commit, or upload? (e.g. Daily/Weekly = 90+, Sporadic/Inactive = 50-).
      - QUALITY: How polished and well-received is their content/code? (e.g. High engagement, clean code, highly praised = 90+).
      - DEPTH: Do they demonstrate profound expertise or build complex/advanced projects?
      - BREADTH: Do they cover multiple domains, technologies, or topics? (e.g. Polyglot dev, multi-niche creator = 85+).
      - COMMUNITY: How much do they interact, collaborate, and respond to their audience/peers?
-  3. 'timeline_events': Extract any notable dates/events to build a timeline. Each event MUST have a 'date', a 'title', and a 'description'.
-  4. 'confidence': A decimal from 0.0 to 1.0 representing how much raw, hard data was actually available to make these assessments. If the data is extremely sparse or missing, confidence MUST be low (< 0.4). If there is rich, verifiable data, set it high (> 0.8).
+  5. 'timeline_events': Extract any notable dates/events to build a timeline. Each event MUST have a 'date', a 'title', and a 'description'.
+  6. 'confidence': A decimal from 0.0 to 1.0 representing how much raw, hard data was actually available to make these assessments. If the data is extremely sparse or missing, confidence MUST be low (< 0.4). If there is rich, verifiable data, set it high (> 0.8).
   CRITICAL: bio_summary MUST be a single plain string, NOT an object or array.
-  ANTI-HALLUCINATION PROTOCOL: If the rawText says "No tweets found", "data extraction is not supported", or clearly lacks profile data, you MUST return empty arrays [] for achievements, technical_skills, past_topics, brand_tone, content_format, and timeline_events, and an empty string "" for bio_summary. NEVER invent default placeholders like "100 Tweets" or "Bachelor's Degree".`;
+  ANTI-HALLUCINATION PROTOCOL: If the rawText says "No tweets found", "data extraction is not supported", or clearly lacks profile data, you MUST return empty arrays [] for experience, projects, achievements, technical_skills, past_topics, and timeline_events, and an empty string "" for bio_summary. NEVER invent default placeholders like "100 Tweets" or "Bachelor's Degree".`;
 
   let response: Response | null = null;
   let fetchAttempt = 0;
