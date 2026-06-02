@@ -36,7 +36,8 @@ type PublicProfile = {
   bio_summary: string | null;
   confidence: number | null;
   extra_analysis?: {
-    achievements?: { title: string; description: string }[];
+    experience?: { company: string; role: string; timeframe: string; description: string }[];
+    projects?: { name: string; description: string; url?: string }[];
     radar_scores?: {
       impact: number;
       consistency: number;
@@ -45,7 +46,6 @@ type PublicProfile = {
       breadth: number;
       community: number;
     };
-    timeline_events?: { date: string; title: string; description: string }[];
   };
   verified_links: Array<{
     platform: string;
