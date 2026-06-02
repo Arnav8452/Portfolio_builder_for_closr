@@ -427,9 +427,9 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
           {/* Colorful Data Cards (Projects + Legacy Achievements) */}
           <ColorfulCards 
             items={[
-              ...(profile.extra_analysis?.projects || []).slice(0, 4).map(p => ({ title: p.name, description: p.description, url: p.url })),
-              ...(profile.extra_analysis?.achievements || []).slice(0, 4).map(a => ({ title: a.title, description: a.description, url: a.url }))
-            ].slice(0, 6)}
+              ...(profile.extra_analysis?.projects || []).slice(0, 8).map(p => ({ title: p.name, description: p.description, url: p.url })),
+              ...(profile.extra_analysis?.achievements || []).slice(0, 8).map(a => ({ title: a.title, description: a.description, url: a.url }))
+            ].slice(0, 10)}
           />
         </div>
         
