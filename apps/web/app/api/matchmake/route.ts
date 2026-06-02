@@ -113,13 +113,15 @@ export async function GET(request: Request) {
     const pitch = aiData.choices?.[0]?.message?.content || "Could not generate pitch.";
 
     // 5. Cache the pitch in raw_model_output
-    existingMatches[jobUrl] = pitch;
-    rawModelOutput.company_matches = existingMatches;
+    if (jobUrl) {
+      existingMatches[jobUrl] = pitch;
+      rawModelOutput.company_matches = existingMatches;
 
-    await supabase
-      .from("creator_identities")
-      .update({ raw_model_output: rawModelOutput })
-      .eq("creator_id", creator.id);
+      await supabase
+        .from("creator_identities")
+        .update({ raw_model_output: rawModelOutput })
+        .eq("creator_id", creator.id);
+    }
 
     return NextResponse.json({ pitch });
   } catch (error) {
