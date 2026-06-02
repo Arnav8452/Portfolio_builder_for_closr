@@ -40,6 +40,7 @@ type PublicProfile = {
     experience?: { company: string; role: string; timeframe: string; description: string }[];
     projects?: { name: string; description: string; url?: string }[];
     achievements?: { title: string; description: string; url?: string }[];
+    timeline_events?: { date: string; title: string; description: string }[];
     radar_scores?: {
       impact: number;
       consistency: number;
@@ -412,14 +413,22 @@ function ProfileView({ profile }: { profile: PublicProfile }) {
         <div style={{ display: "flex", flexDirection: "column", gap: "64px", minWidth: 0, overflow: "hidden" }}>
           {/* Live Resume (Experience only now) */}
           <div id="cv-upload-tool" style={{ scrollMarginTop: "32px" }}>
-            <LiveResume experience={profile.extra_analysis?.experience} />
+            <LiveResume experience={
+              profile.extra_analysis?.experience || 
+              profile.extra_analysis?.timeline_events?.map(t => ({
+                role: t.title,
+                company: "Milestone",
+                timeframe: t.date,
+                description: t.description
+              }))
+            } />
           </div>
           
           {/* Colorful Data Cards (Projects + Legacy Achievements) */}
           <ColorfulCards 
             items={[
-              ...(profile.extra_analysis?.projects || []).slice(0, 4).map(p => ({ title: p.name, description: p.description, url: p.url, label: "PROJECT" })),
-              ...(profile.extra_analysis?.achievements || []).slice(0, 4).map(a => ({ title: a.title, description: a.description, url: a.url, label: "WIN" }))
+              ...(profile.extra_analysis?.projects || []).slice(0, 4).map(p => ({ title: p.name, description: p.description, url: p.url })),
+              ...(profile.extra_analysis?.achievements || []).slice(0, 4).map(a => ({ title: a.title, description: a.description, url: a.url }))
             ].slice(0, 6)}
           />
         </div>
