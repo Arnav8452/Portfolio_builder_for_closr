@@ -98,17 +98,25 @@ async function main() {
     return originalGroqCompletion({ ...req, model: "llama-3.1-8b-instant" }, sig);
   };
 
-  const gemini = new GeminiAdapter();
-  gemini.supportsModel = () => true;
-  const originalGeminiCompletion = gemini._chatCompletion.bind(gemini);
-  gemini._chatCompletion = async (req: any, sig: any) => {
-    return originalGeminiCompletion({ ...req, model: "gemini-3.5-flash" }, sig);
+  const geminiFlash = new GeminiAdapter();
+  geminiFlash.supportsModel = () => true;
+  const originalGeminiFlashCompletion = geminiFlash._chatCompletion.bind(geminiFlash);
+  geminiFlash._chatCompletion = async (req: any, sig: any) => {
+    return originalGeminiFlashCompletion({ ...req, model: "gemini-3.5-flash" }, sig);
+  };
+
+  const geminiPro = new GeminiAdapter();
+  geminiPro.supportsModel = () => true;
+  const originalGeminiProCompletion = geminiPro._chatCompletion.bind(geminiPro);
+  geminiPro._chatCompletion = async (req: any, sig: any) => {
+    return originalGeminiProCompletion({ ...req, model: "gemini-3.1-pro" }, sig);
   };
 
   const providers = [];
   providers.push(openRouter);
   providers.push(groq);
-  providers.push(gemini);
+  providers.push(geminiFlash);
+  providers.push(geminiPro);
   providers.push(cerebras);
   
   const pipeline = new PipelineOrchestrator(providers);
