@@ -102,7 +102,7 @@ async function main() {
   gemini.supportsModel = () => true;
   const originalGeminiCompletion = gemini._chatCompletion.bind(gemini);
   gemini._chatCompletion = async (req: any, sig: any) => {
-    return originalGeminiCompletion({ ...req, model: "gemini-2.5-flash" }, sig);
+    return originalGeminiCompletion({ ...req, model: "gemini-3.5-flash" }, sig);
   };
 
   const providers = [];
